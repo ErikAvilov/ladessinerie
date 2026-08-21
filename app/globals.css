@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+:root { --cream: #faf6ee; --ink: #2b2927; --terracotta: #d96b43; --sage: #8a9a86; --mustard: #e5b25d; --cobalt: #4a6b82; }
+@theme inline { --color-background: var(--cream); --color-foreground: var(--ink); --font-sans: var(--font-body); --font-serif: var(--font-display); }
+* { box-sizing: border-box; }
+html { background: var(--cream); scroll-behavior: smooth; }
+body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--font-body), sans-serif; }
+button, a, input, select, textarea { font: inherit; }
+::selection { background: var(--mustard); color: var(--ink); }
+.display { font-family: var(--font-display), serif; }
+.paper-shadow { box-shadow: 0 10px 30px rgba(43,41,39,.10); }
