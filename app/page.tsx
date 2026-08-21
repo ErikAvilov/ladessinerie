@@ -1,34 +1,73 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Camera, ShoppingBag, Upload, Send } from 'lucide-react'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { artworks } from '@/lib/artworks'
 
-const prints = [
-  ['Le soleil dans la tasse', 'Small', '8,00 €', '🌞'], ['La sieste du dimanche', 'Medium', '16,00 €', '☁'], ['Les fleurs parlent', 'Large', '24,00 €', '✿'],
-  ['Pique-nique sauvage', 'Medium', '16,00 €', '♧'], ['La maison bleue', 'Small', '8,00 €', '⌂'], ['Tout ira bien', 'Large', '24,00 €', '♡']
+const scatter = [
+  { art: artworks[0], x: -300, y: -40, rotate: -12, width: 120 },
+  { art: artworks[1], x: 310, y: -20, rotate: 9, width: 128 },
+  { art: artworks[2], x: -360, y: 80, rotate: 5, width: 100 },
+  { art: artworks[3], x: 370, y: 90, rotate: -8, width: 104 },
+  { art: artworks[4], x: -210, y: -200, rotate: 13, width: 92 },
+  { art: artworks[5], x: 195, y: -210, rotate: -7, width: 98 },
+  { art: artworks[6], x: -145, y: -240, rotate: -4, width: 82 },
+  { art: artworks[7], x: 130, y: -250, rotate: 11, width: 86 },
 ]
-const projects = { Fresques: ['Le mur des possibles', 'Une cour haute en couleur'], 'Branding / Graphisme': ['Maison Moka', 'La petite épicerie'], Illustrations: ['Lettres à la mer', 'Carnet botanique'] }
 
-type Panel = 'particulier' | 'home' | 'pro'
-export default function Page() {
-  const [panel, setPanel] = useState<Panel>('home')
-  const [filter, setFilter] = useState('Tous')
-  const [cart, setCart] = useState(0)
-  const [cartOpen, setCartOpen] = useState(false)
-  const [tab, setTab] = useState<keyof typeof projects>('Fresques')
-  useEffect(() => { const p = window.location.pathname; setPanel(p.includes('particulier') ? 'particulier' : p.includes('pro') ? 'pro' : 'home') }, [])
-  const navigate = (next: Panel) => { setPanel(next); window.history.pushState({}, '', next === 'home' ? '/' : `/${next}`) }
-  const shown = prints.filter((p) => filter === 'Tous' || p[1] === filter)
-  return <main className="min-h-screen overflow-hidden bg-background">
-    <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 md:px-10"><button onClick={() => navigate('home')} className="display text-2xl font-semibold tracking-tight">la dessinerie<span className="text-[var(--terracotta)]">.</span></button><a href="https://instagram.com" aria-label="Instagram" className="rounded-full border border-foreground/15 p-2 transition hover:bg-[var(--mustard)]"><Camera size={18}/></a></header>
-    <AnimatePresence mode="wait"><motion.section key={panel} initial={{ opacity: 0, x: panel === 'home' ? 0 : panel === 'pro' ? 80 : -80 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: panel === 'pro' ? -80 : 80 }} transition={{ duration: .45, ease: 'easeOut' }} className="min-h-screen px-5 pb-24 pt-28 md:px-10">
-      {panel === 'home' && <Home navigate={navigate}/>} {panel === 'particulier' && <Shop filter={filter} setFilter={setFilter} shown={shown} cart={cart} setCart={setCart} open={() => setCartOpen(true)}/>} {panel === 'pro' && <Pro tab={tab} setTab={setTab}/>} 
-    </motion.section></AnimatePresence>
-    <footer className="fixed inset-x-0 bottom-0 z-10 flex justify-between px-5 py-4 text-xs text-foreground/50 md:px-10"><span>© 2026 La Dessinerie</span><span>Mentions légales · Confidentialité</span></footer>
-    {cartOpen && <div className="fixed inset-0 z-30 bg-foreground/20" onClick={() => setCartOpen(false)}><aside onClick={(e) => e.stopPropagation()} className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-background p-7 shadow-2xl"><div className="flex items-center justify-between"><h2 className="display text-3xl">Votre panier</h2><button onClick={() => setCartOpen(false)} aria-label="Fermer" className="text-2xl">×</button></div><div className="flex flex-1 flex-col items-center justify-center text-center"><ShoppingBag size={34} className="mb-4 text-[var(--sage)]"/><p className="text-foreground/60">{cart ? `${cart} tirage${cart > 1 ? 's' : ''} sélectionné${cart > 1 ? 's' : ''}.` : 'Votre panier est encore vide.'}</p></div><a href="mailto:bonjour@ladessinerie.fr?subject=Commande de tirages" className="flex items-center justify-center gap-2 rounded-full bg-[var(--terracotta)] px-5 py-4 font-semibold text-white">Faire une demande <Send size={17}/></a></aside></div>}
-  </main>
+const ART_RATIO = 509 / 360
+
+export default function HomePage() {
+  return (
+    <div className="relative flex h-full min-h-0 flex-col items-center justify-center overflow-hidden px-20 text-center sm:px-28 md:px-36">
+      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block" aria-hidden>
+        {scatter.map((card, i) => (
+          <motion.div
+            key={card.art.src}
+            initial={{ x: 0, y: 0, rotate: 0, scale: 0.35, opacity: 0 }}
+            animate={{ x: card.x, y: card.y, rotate: card.rotate, scale: 1, opacity: 1 }}
+            transition={{ delay: i * 0.07, type: 'spring', stiffness: 90, damping: 14 }}
+            className="absolute left-1/2 top-1/2 overflow-hidden rounded-sm paper-shadow"
+            style={{
+              width: card.width,
+              height: card.width * ART_RATIO,
+              marginLeft: -card.width / 2,
+              marginTop: -(card.width * ART_RATIO) / 2,
+            }}
+          >
+            <Image
+              src={card.art.src}
+              alt=""
+              width={360}
+              height={509}
+              className="h-full w-full object-cover"
+              sizes="160px"
+            />
+          </motion.div>
+        ))}
+      </div>
+      <motion.div
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        className="relative z-10 size-28 shrink-0 md:size-36"
+      >
+        <Image
+          src="/art/logo.png"
+          alt="La Dessinerie"
+          width={150}
+          height={150}
+          className="h-full w-full object-contain"
+          priority
+        />
+      </motion.div>
+      <h1 className="display relative z-10 mt-5 shrink-0 text-4xl font-semibold md:mt-7 md:text-6xl lg:text-7xl">
+        Anna dessine
+        <br />
+        <em className="text-[var(--terracotta)]">des histoires.</em>
+      </h1>
+      <p className="relative z-10 mt-4 max-w-md shrink-0 text-sm leading-6 text-foreground/65 md:mt-5 md:text-base md:leading-7">
+        Illustratrice optimiste, amoureuse des couleurs, des mots doux et des idées un peu grandes.
+      </p>
+    </div>
+  )
 }
-function Home({ navigate }: { navigate: (p: Panel) => void }) { const cards = ['✿','☼','⌂','♡','♧','☁','✦','◌']; return <div className="relative flex min-h-[calc(100vh-9rem)] flex-col items-center justify-center text-center"><div className="absolute inset-0 hidden md:block">{cards.map((c,i)=><motion.div key={i} initial={{ x: 0, y: 0, scale: 0 }} animate={{ x: Math.cos(i*.8)*260, y: Math.sin(i*.8)*180, scale: 1 }} transition={{ delay: i*.07, type: 'spring' }} className="absolute left-1/2 top-1/2 flex size-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--mustard)] text-4xl shadow-lg" style={{ background: i%3===0?'var(--terracotta)':i%3===1?'var(--sage)':'var(--mustard)' }}>{c}</motion.div>)}</div><motion.div initial={{ scale: .8 }} animate={{ scale: 1 }} className="relative z-10 flex size-36 items-center justify-center rounded-[42%] border-2 border-foreground/10 bg-background text-7xl paper-shadow">☺</motion.div><h1 className="display relative z-10 mt-7 text-5xl font-semibold md:text-7xl">Anna dessine<br/><em className="text-[var(--terracotta)]">des histoires.</em></h1><p className="relative z-10 mt-5 max-w-md text-base leading-7 text-foreground/65">Illustratrice optimiste, amoureuse des couleurs, des mots doux et des idées un peu grandes.</p><div className="relative z-10 mt-12 flex w-full max-w-3xl justify-between"><button onClick={() => navigate('particulier')} className="group flex items-center gap-3 text-left text-lg font-semibold"><ArrowLeft className="transition group-hover:-translate-x-2"/> <span>Pour les particuliers</span></button><button onClick={() => navigate('pro')} className="group flex items-center gap-3 text-right text-lg font-semibold"><span>Pour les pros</span><ArrowRight className="transition group-hover:translate-x-2"/></button></div></div> }
-function Shop({filter,setFilter,shown,cart,setCart,open}:{filter:string;setFilter:(x:string)=>void;shown:string[][];cart:number;setCart:(x:number)=>void;open:()=>void}) { return <div className="mx-auto max-w-6xl"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><p className="font-mono text-xs uppercase tracking-[.2em] text-[var(--sage)]">La boutique</p><h1 className="display mt-2 text-5xl font-semibold">Des images à<br/><em className="text-[var(--terracotta)]">accrocher partout.</em></h1></div><div className="flex gap-2">{['Tous','Small','Medium','Large'].map(x=><button key={x} onClick={()=>setFilter(x)} className={`rounded-full border px-4 py-2 text-sm ${filter===x?'border-[var(--sage)] bg-[var(--sage)] text-white':'border-foreground/15'}`}>{x}</button>)}</div></div><div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{shown.map((p,i)=><article key={p[0]} className="group"><div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-[var(--mustard)] text-8xl transition group-hover:-rotate-2 group-hover:shadow-xl" style={{background:i%3===0?'#e5b25d':i%3===1?'#8a9a86':'#4a6b82'}}>{p[3]}</div><div className="flex justify-between pt-3"><div><h2 className="font-semibold">{p[0]}</h2><p className="text-sm text-foreground/55">Tirage {p[1]}</p></div><div className="text-right"><p className="font-semibold">{p[2]}</p><button onClick={()=>setCart(cart+1)} className="mt-1 text-sm underline">Ajouter</button></div></div></article>)}</div>{cart>0&&<button onClick={open} className="fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-full bg-[var(--terracotta)] px-6 py-4 font-semibold text-white shadow-xl"><ShoppingBag size={18}/> Panier <span className="rounded-full bg-white/20 px-2">{cart}</span></button>}</div> }
-function Pro({tab,setTab}:{tab:keyof typeof projects;setTab:(x:keyof typeof projects)=>void}) { return <div className="mx-auto max-w-6xl"><div className="max-w-3xl"><p className="font-mono text-xs uppercase tracking-[.2em] text-[var(--cobalt)]">Pour les pros</p><h1 className="display mt-2 text-5xl font-semibold md:text-7xl">Des projets qui<br/><em className="text-[var(--terracotta)]">font sourire.</em></h1><p className="mt-6 max-w-xl text-lg leading-8 text-foreground/65">Fresques murales, identités visuelles ou illustrations sur mesure : je mets de la couleur dans vos histoires de marque.</p></div><div className="mt-16 flex flex-wrap gap-2 border-b border-foreground/10 pb-3">{Object.keys(projects).map(x=><button key={x} onClick={()=>setTab(x as keyof typeof projects)} className={`rounded-t-2xl px-5 py-3 font-semibold ${tab===x?'bg-[var(--mustard)]':'bg-foreground/5'}`}>{x}</button>)}</div><div className="grid gap-5 py-8 md:grid-cols-2">{projects[tab].map((x,i)=><div key={x} className="flex aspect-[16/8] items-end rounded-2xl p-6 text-2xl font-semibold" style={{background:i?'var(--sage)':'var(--cobalt)',color:'var(--cream)'}}>{x}</div>)}</div><div className="my-14 h-12 overflow-hidden"><svg viewBox="0 0 1200 80" preserveAspectRatio="none" className="h-full w-full fill-[var(--mustard)]"><path d="M0 35 Q150 80 300 35 T600 35 T900 35 T1200 35 V80 H0Z"/></svg></div><div className="grid gap-10 pb-12 md:grid-cols-2"><div><h2 className="display text-4xl">On imagine quelque chose ?</h2><p className="mt-4 leading-7 text-foreground/60">Parlez-moi de votre projet, même s&apos;il n&apos;est pas encore très précis.</p></div><form className="flex flex-col gap-4" onSubmit={(e)=>e.preventDefault()}><input required placeholder="Votre nom" className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"/><input placeholder="Entreprise" className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"/><select className="rounded-xl border border-foreground/15 bg-transparent p-4"><option>Type de projet</option><option>Fresque</option><option>Illustration</option><option>Branding</option></select><textarea placeholder="Quelques mots sur votre idée..." rows={4} className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"/><label className="flex cursor-pointer items-center gap-2 text-sm text-foreground/60"><Upload size={16}/> Joindre un brief <input type="file" className="sr-only"/></label><button className="rounded-full bg-[var(--terracotta)] px-5 py-4 font-semibold text-white">Envoyer le message</button></form></div></div>}
