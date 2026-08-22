@@ -27,13 +27,13 @@ export function ParticulierPageClient({ illustrations }: ParticulierPageClientPr
   )
 
   return (
-    <div className="mx-auto max-w-5xl pb-28">
+    <div className="mx-auto max-w-5xl pb-24 md:pb-28">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
             La boutique
           </p>
-          <h1 className="display mt-1.5 text-3xl font-semibold md:text-4xl">
+          <h1 className="display mt-1.5 text-[1.65rem] font-semibold leading-tight md:text-4xl">
             Des images à{' '}
             <em className="text-[var(--terracotta)]">accrocher partout.</em>
           </h1>

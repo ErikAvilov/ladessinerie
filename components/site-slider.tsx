@@ -150,15 +150,15 @@ export function SiteSlider({
               animate={{ x: `-${panelIndex(panel) * 100}vw` }}
               transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
             >
-              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto px-5 pb-24 pt-28 md:px-10">
+              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-32 pl-4 pr-14 md:pt-28 md:pb-24 md:pl-10 md:pr-20">
                 <ParticulierPageClient illustrations={particulierIllustrations} />
               </section>
 
-              <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-5 pb-10 pt-24 md:px-10">
+              <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
                 <HomePageClient illustrations={homeIllustrations} />
               </section>
 
-              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto px-5 pb-24 pt-28 md:px-10">
+              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
                 <ProPageClient illustrations={proIllustrations} />
               </section>
             </motion.div>

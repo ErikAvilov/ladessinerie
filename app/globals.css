@@ -235,19 +235,48 @@ input[type='file']::file-selector-button {
   white-space: nowrap;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .side-gate {
-    width: 6.5rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    width: 2.65rem;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+  }
+
+  .side-gate__content {
+    flex-direction: column;
+    gap: 0.4rem;
   }
 
   .side-gate__label {
-    font-size: 0.85rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .side-gate--left .side-gate__label {
+    transform: rotate(180deg);
   }
 
   .side-gate svg {
-    height: 1.35rem;
-    width: 2.75rem;
+    height: 1.05rem;
+    width: 2.1rem;
+  }
+
+  .side-gate--left:hover .side-gate__content,
+  .side-gate--left:focus-visible .side-gate__content,
+  .side-gate--left:active .side-gate__content {
+    transform: translateX(3px);
+  }
+
+  .side-gate--right:hover .side-gate__content,
+  .side-gate--right:focus-visible .side-gate__content,
+  .side-gate--right:active .side-gate__content {
+    transform: translateX(-3px);
+  }
+
+  .side-gate:active .side-gate__glow {
+    opacity: 1;
   }
 }

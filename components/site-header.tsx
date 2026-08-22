@@ -43,7 +43,7 @@ export function SiteHeader() {
           priority
         />
       </span>
-      <span className="display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] md:text-xl">
+      <span className="display hidden text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] sm:inline md:text-xl">
         La Dessinerie
       </span>
     </>

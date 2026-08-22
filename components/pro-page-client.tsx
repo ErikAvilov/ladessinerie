@@ -31,12 +31,12 @@ export function ProPageClient({ illustrations }: ProPageClientProps) {
         <p className="font-mono text-xs uppercase tracking-[.2em] text-[var(--cobalt)]">
           Pour les pros
         </p>
-        <h1 className="display mt-2 text-5xl font-semibold md:text-7xl">
+        <h1 className="display mt-2 text-4xl font-semibold leading-tight md:text-7xl">
           Des projets qui
           <br />
           <em className="text-[var(--terracotta)]">font sourire.</em>
         </h1>
-        <p className="mt-6 max-w-xl text-lg leading-8 text-foreground/65">
+        <p className="mt-5 max-w-xl text-base leading-7 text-foreground/65 md:mt-6 md:text-lg md:leading-8">
           Fresques murales, identités visuelles ou illustrations sur mesure : je mets de la couleur
           dans vos histoires de marque.
         </p>

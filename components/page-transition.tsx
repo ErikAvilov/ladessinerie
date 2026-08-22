@@ -46,7 +46,13 @@ export function PageTransition({ children }: { children: ReactNode }) {
         <div className="absolute inset-0 flex h-dvh flex-col bg-background">
           <SiteHeader />
           <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />
-          <div className="relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10">
+          <div
+            className={
+              isParticulierNested
+                ? 'relative flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-[5.75rem] pt-[4.75rem] md:overflow-y-auto md:px-10 md:pb-24 md:pt-28'
+                : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
+            }
+          >
             {children}
           </div>
           <SiteFooter showTagline={false} />

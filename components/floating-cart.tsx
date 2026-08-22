@@ -66,7 +66,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
 
   return createPortal(
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-5 z-20 flex justify-center md:bottom-7">
+      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-20 flex justify-center md:bottom-7">
         <button
           type="button"
           data-cart-target
@@ -77,7 +77,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               : 'Ouvrir le panier'
           }
           className={[
-            'cart-float pointer-events-auto relative flex size-24 cursor-pointer items-center justify-center md:size-28',
+            'cart-float pointer-events-auto relative flex size-[4.5rem] cursor-pointer items-center justify-center md:size-28',
             entranceReady || reduceMotion ? 'cart-float--ready' : '',
             bumping ? 'cart-float--bump' : '',
           ]
@@ -116,8 +116,8 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               alt=""
               width={691}
               height={800}
-              className="h-[4.75rem] w-auto object-contain drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] md:h-[5.5rem]"
-              sizes="96px"
+              className="h-14 w-auto object-contain drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] md:h-[5.5rem]"
+              sizes="(max-width: 767px) 56px, 96px"
               priority
             />
           </motion.span>

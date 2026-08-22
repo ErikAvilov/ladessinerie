@@ -10,13 +10,15 @@ import { particulierArtPath } from '@/lib/particulier-routes'
 import type { Illustration } from '@/lib/supabase'
 
 const ART_RATIO = 509 / 360
-const CARD_WIDTH = 98
+const DESKTOP_CARD_WIDTH = 98
+const MOBILE_CARD_WIDTH = 62
+const MOBILE_MAX = 767
 
 /**
  * Fixed symmetric halo — 5 per side, no slot below the logo.
  * nx / ny are normalized (−1…1) relative to the scatter area.
  */
-const LAYOUT = [
+const DESKTOP_LAYOUT = [
   { nx: -0.58, ny: -0.6, rotate: -9 },
   { nx: -0.52, ny: -0.14, rotate: 7 },
   { nx: -0.55, ny: 0.3, rotate: -5 },
@@ -29,6 +31,18 @@ const LAYOUT = [
   { nx: 0.3, ny: 0.38, rotate: 4 },
 ] as const
 
+/** Tighter 6-card halo — clears logo, tagline, and narrow side gates. */
+const MOBILE_LAYOUT = [
+  { nx: -0.4, ny: -0.58, rotate: -8 },
+  { nx: -0.46, ny: -0.08, rotate: 6 },
+  { nx: -0.34, ny: 0.4, rotate: -5 },
+  { nx: 0.4, ny: -0.58, rotate: 8 },
+  { nx: 0.46, ny: -0.08, rotate: -6 },
+  { nx: 0.34, ny: 0.4, rotate: 5 },
+] as const
+
+type LayoutSlot = { nx: number; ny: number; rotate: number }
+
 type PlacedCard = {
   illustration: Illustration
   x: number
@@ -36,19 +50,37 @@ type PlacedCard = {
   rotate: number
 }
 
-function placeCards(illustrations: Illustration[], boxW: number, boxH: number): PlacedCard[] {
-  const maxX = boxW / 2 - 8
-  const maxY = boxH / 2 - 8
+function placeCards(
+  illustrations: Illustration[],
+  boxW: number,
+  boxH: number,
+  layout: readonly LayoutSlot[],
+  cardW: number,
+): PlacedCard[] {
+  const cardH = cardW * ART_RATIO
+  const maxX = Math.max(boxW / 2 - cardW / 2 - 4, 8)
+  const maxY = Math.max(boxH / 2 - cardH / 2 - 4, 8)
+  const spreadX = boxW < MOBILE_MAX ? 0.9 : 0.86
+  const spreadY = boxW < MOBILE_MAX ? 0.88 : 0.94
 
-  return illustrations.slice(0, LAYOUT.length).map((illustration, i) => {
-    const slot = LAYOUT[i]
+  return illustrations.slice(0, layout.length).map((illustration, i) => {
+    const slot = layout[i]
     return {
       illustration,
-      x: slot.nx * maxX * 0.86,
-      y: slot.ny * maxY * 0.94,
+      x: slot.nx * maxX * spreadX,
+      y: slot.ny * maxY * spreadY,
       rotate: slot.rotate,
     }
   })
+}
+
+function layoutForWidth(width: number) {
+  const mobile = width <= MOBILE_MAX
+  return {
+    mobile,
+    layout: mobile ? MOBILE_LAYOUT : DESKTOP_LAYOUT,
+    cardWidth: mobile ? MOBILE_CARD_WIDTH : DESKTOP_CARD_WIDTH,
+  }
 }
 
 type HomeScatterProps = {
@@ -59,6 +91,7 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
+  const [cardWidth, setCardWidth] = useState(DESKTOP_CARD_WIDTH)
   const [explode, setExplode] = useState(false)
 
   useLayoutEffect(() => {
@@ -67,7 +100,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
     const { width, height } = el.getBoundingClientRect()
     if (width > 0 && height > 0) {
-      setCards(placeCards(illustrations, width, height))
+      const { layout, cardWidth: nextWidth } = layoutForWidth(width)
+      setCardWidth(nextWidth)
+      setCards(placeCards(illustrations, width, height, layout, nextWidth))
     }
   }, [illustrations])
 
@@ -89,7 +124,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
       timeoutId = window.setTimeout(() => {
         const { width, height } = el.getBoundingClientRect()
         if (width > 0 && height > 0) {
-          setCards(placeCards(illustrations, width, height))
+          const { layout, cardWidth: nextWidth } = layoutForWidth(width)
+          setCardWidth(nextWidth)
+          setCards(placeCards(illustrations, width, height, layout, nextWidth))
         }
       }, 150)
     }
@@ -103,11 +140,10 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
   if (illustrations.length === 0) return null
 
+  const cardHeight = cardWidth * ART_RATIO
+
   return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden md:block"
-    >
+    <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       {cards?.map((card, i) => {
         const href = particulierArtPath(card.illustration.id)
 
@@ -123,7 +159,7 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                 loading="lazy"
                 fetchPriority="low"
                 className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
-                sizes="120px"
+                sizes="(max-width: 767px) 72px, 120px"
               />
             </div>
           </>
@@ -166,10 +202,10 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
             }}
             className="scatter-card group pointer-events-auto absolute left-1/2 top-1/2 cursor-pointer"
             style={{
-              width: CARD_WIDTH,
-              height: CARD_WIDTH * ART_RATIO,
-              marginLeft: -CARD_WIDTH / 2,
-              marginTop: -(CARD_WIDTH * ART_RATIO) / 2,
+              width: cardWidth,
+              height: cardHeight,
+              marginLeft: -cardWidth / 2,
+              marginTop: -cardHeight / 2,
             }}
           >
             <Link
