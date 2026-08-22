@@ -1,10 +1,11 @@
-import { ParticulierPageClient } from '@/components/particulier-page-client'
+import { SiteSlider } from '@/components/site-slider'
+import { pickHomeScatterIllustrations } from '@/lib/home-scatter-pick'
 import { getIllustrations } from '@/lib/supabase'
 import type { Metadata } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Tirages d’art & illustrations à accrocher',
@@ -26,15 +27,20 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     type: 'website',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Tirages d’art — La Dessinerie',
-    description:
-      'Illustrations originales et tirages d’art à accrocher partout.',
-  },
 }
 
 export default async function ParticulierPage() {
-  const illustrations = await getIllustrations('particulier')
-  return <ParticulierPageClient illustrations={illustrations} />
+  const [particulier, pro] = await Promise.all([
+    getIllustrations('particulier'),
+    getIllustrations('pro'),
+  ])
+
+  return (
+    <SiteSlider
+      initialPanel="particulier"
+      initialHome={pickHomeScatterIllustrations(particulier)}
+      initialParticulier={particulier}
+      initialPro={pro}
+    />
+  )
 }

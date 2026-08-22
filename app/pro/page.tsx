@@ -1,10 +1,11 @@
-import { ProPageClient } from '@/components/pro-page-client'
+import { SiteSlider } from '@/components/site-slider'
+import { pickHomeScatterIllustrations } from '@/lib/home-scatter-pick'
 import { getIllustrations } from '@/lib/supabase'
 import type { Metadata } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Fresques murales & illustration sur mesure',
@@ -26,15 +27,20 @@ export const metadata: Metadata = {
     locale: 'fr_FR',
     type: 'website',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Fresques murales & illustration sur mesure — La Dessinerie',
-    description:
-      'Fresques murales, identité visuelle et illustration sur mesure pour marques et entreprises.',
-  },
 }
 
 export default async function ProPage() {
-  const illustrations = await getIllustrations('pro')
-  return <ProPageClient illustrations={illustrations} />
+  const [particulier, pro] = await Promise.all([
+    getIllustrations('particulier'),
+    getIllustrations('pro'),
+  ])
+
+  return (
+    <SiteSlider
+      initialPanel="pro"
+      initialHome={pickHomeScatterIllustrations(particulier)}
+      initialParticulier={particulier}
+      initialPro={pro}
+    />
+  )
 }

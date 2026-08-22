@@ -84,6 +84,65 @@ input[type='file']::file-selector-button {
   opacity: 0.85;
 }
 
+@keyframes cart-swing-in {
+  0% {
+    transform: translateY(28px) rotate(-22deg) scale(0.88);
+  }
+  28% {
+    transform: translateY(-6px) rotate(16deg) scale(1.06);
+  }
+  48% {
+    transform: translateY(0) rotate(-12deg) scale(0.98);
+  }
+  66% {
+    transform: rotate(8deg) scale(1.02);
+  }
+  82% {
+    transform: rotate(-3deg) scale(1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes cart-hover-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(7deg);
+  }
+  55% {
+    transform: rotate(-6deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+.cart-float {
+  transform-origin: 50% 12%;
+  animation: cart-swing-in 1.15s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
+.cart-float--ready {
+  animation: none;
+  transform: none;
+}
+
+.cart-float--ready:hover:not(.cart-float--bump) {
+  animation: cart-hover-sway 0.75s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-float,
+  .cart-float--ready:hover:not(.cart-float--bump) {
+    animation: none;
+    transform: none;
+  }
+}
+
 .side-gate {
   position: absolute;
   top: 0;
@@ -92,9 +151,15 @@ input[type='file']::file-selector-button {
   display: flex;
   align-items: center;
   width: clamp(9rem, 18vw, 15rem);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--ink);
   text-decoration: none;
+  cursor: pointer;
   overflow: hidden;
+  font: inherit;
 }
 
 .side-gate--left {

@@ -1,22 +1,54 @@
 'use client'
 
 import { SideGate } from '@/components/side-gate'
+import type { SitePanel } from '@/lib/site-panels'
 
-type Panel = 'home' | 'particulier' | 'pro'
+type RouteSideGatesProps = {
+  panel: SitePanel
+  onNavigate?: (panel: SitePanel) => void
+}
 
-export function RouteSideGates({ panel }: { panel: Panel }) {
+export function RouteSideGates({ panel, onNavigate }: RouteSideGatesProps) {
   if (panel === 'home') {
     return (
       <>
-        <SideGate href="/particulier" side="left" label="Particulier" tone="grass" />
-        <SideGate href="/pro" side="right" label="Pro" tone="navy" />
+        <SideGate
+          href="/particulier"
+          side="left"
+          label="Particulier"
+          tone="grass"
+          onNavigate={onNavigate ? () => onNavigate('particulier') : undefined}
+        />
+        <SideGate
+          href="/pro"
+          side="right"
+          label="Pro"
+          tone="navy"
+          onNavigate={onNavigate ? () => onNavigate('pro') : undefined}
+        />
       </>
     )
   }
 
   if (panel === 'particulier') {
-    return <SideGate href="/" side="right" label="Accueil" tone="navy" />
+    return (
+      <SideGate
+        href="/"
+        side="right"
+        label="Accueil"
+        tone="navy"
+        onNavigate={onNavigate ? () => onNavigate('home') : undefined}
+      />
+    )
   }
 
-  return <SideGate href="/" side="left" label="Accueil" tone="grass" />
+  return (
+    <SideGate
+      href="/"
+      side="left"
+      label="Accueil"
+      tone="grass"
+      onNavigate={onNavigate ? () => onNavigate('home') : undefined}
+    />
+  )
 }

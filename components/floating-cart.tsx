@@ -1,9 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion } from 'framer-motion'
-import { Send, ShoppingBag } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { Send } from 'lucide-react'
 import { formatEuro } from '@/lib/illustration-utils'
 
 export type CartItem = {
@@ -26,11 +27,32 @@ type FloatingCartProps = {
 
 export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCartProps) {
   const [mounted, setMounted] = useState(false)
+  const [entranceReady, setEntranceReady] = useState(false)
+  const [bumping, setBumping] = useState(false)
+  const reduceMotion = useReducedMotion()
   const count = items.reduce((sum, item) => sum + item.quantity, 0)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    if (reduceMotion) {
+      setEntranceReady(true)
+      return
+    }
+    setEntranceReady(false)
+    const timer = window.setTimeout(() => setEntranceReady(true), 1150)
+    return () => window.clearTimeout(timer)
+  }, [mounted, reduceMotion])
+
+  useEffect(() => {
+    if (bump <= 0) return
+    setBumping(true)
+    const timer = window.setTimeout(() => setBumping(false), 560)
+    return () => window.clearTimeout(timer)
+  }, [bump])
 
   if (!mounted) return null
 
@@ -44,8 +66,8 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
 
   return createPortal(
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-20 flex justify-center md:bottom-8">
-        <motion.button
+      <div className="pointer-events-none fixed inset-x-0 bottom-5 z-20 flex justify-center md:bottom-7">
+        <button
           type="button"
           data-cart-target
           onClick={onOpen}
@@ -54,46 +76,62 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               ? `Ouvrir le panier, ${count} article${count > 1 ? 's' : ''}`
               : 'Ouvrir le panier'
           }
-          className="pointer-events-auto relative flex size-14 cursor-pointer items-center justify-center rounded-full border border-foreground/10 bg-background text-[var(--ink)] origin-center md:size-16"
-          initial={{ rotate: -14, scale: 1 }}
-          animate={
-            bump > 0
-              ? {
-                  rotate: [0, -14, 12, -8, 4, 0],
-                  scale: [1, 0.78, 1.28, 0.92, 1.08, 1],
-                }
-              : { rotate: 0, scale: 1 }
-          }
-          transition={
-            bump > 0
-              ? { duration: 0.55, ease: [0.2, 0.9, 0.3, 1] }
-              : { type: 'spring', stiffness: 36, damping: 5.2, mass: 1.4 }
-          }
-          whileHover={{ rotate: 3 }}
+          className={[
+            'cart-float pointer-events-auto relative flex size-24 cursor-pointer items-center justify-center md:size-28',
+            entranceReady || reduceMotion ? 'cart-float--ready' : '',
+            bumping ? 'cart-float--bump' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
-          {bump > 0 && (
-            <motion.span
-              key={`bump-${bump}`}
-              aria-hidden
-              className="pointer-events-none absolute inset-[-10px] rounded-full border-2 border-[var(--terracotta)]"
-              initial={{ opacity: 0.7, scale: 0.7 }}
-              animate={{ opacity: 0, scale: 1.85 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+          <motion.span
+            className="relative flex size-full items-center justify-center"
+            animate={
+              bumping
+                ? {
+                    rotate: [0, -14, 12, -8, 4, 0],
+                    scale: [1, 0.82, 1.22, 0.94, 1.06, 1],
+                  }
+                : { rotate: 0, scale: 1 }
+            }
+            transition={
+              bumping
+                ? { duration: 0.55, ease: [0.2, 0.9, 0.3, 1] }
+                : { duration: 0 }
+            }
+            style={{ transformOrigin: '50% 12%' }}
+          >
+            {bumping && (
+              <motion.span
+                key={`bump-${bump}`}
+                aria-hidden
+                className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)]"
+                initial={{ opacity: 0.7, scale: 0.7 }}
+                animate={{ opacity: 0, scale: 1.85 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            )}
+            <Image
+              src="/images/panier.png"
+              alt=""
+              width={691}
+              height={800}
+              className="h-[4.75rem] w-auto object-contain drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] md:h-[5.5rem]"
+              sizes="96px"
+              priority
             />
-          )}
-          <ShoppingBag size={26} strokeWidth={1.75} className="md:hidden" />
-          <ShoppingBag size={30} strokeWidth={1.75} className="hidden md:block" />
+          </motion.span>
           {count > 0 && (
             <motion.span
               key={`count-${count}`}
               initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-[var(--terracotta)] text-xs font-semibold text-white"
+              className="absolute right-0 top-0 flex size-7 items-center justify-center rounded-full bg-[var(--terracotta)] text-xs font-semibold text-white shadow-sm"
             >
               {count}
             </motion.span>
           )}
-        </motion.button>
+        </button>
       </div>
       {open && (
         <div className="fixed inset-0 z-30 bg-foreground/20" onClick={onClose}>
@@ -114,7 +152,14 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
             <div className="mt-6 flex-1 overflow-y-auto">
               {count === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <ShoppingBag size={40} strokeWidth={1.5} className="mb-4 text-[var(--sage)]" />
+                  <Image
+                    src="/images/panier.png"
+                    alt=""
+                    width={691}
+                    height={800}
+                    className="mb-4 h-20 w-auto object-contain opacity-70"
+                    sizes="80px"
+                  />
                   <p className="text-foreground/60">Votre panier est encore vide.</p>
                 </div>
               ) : (

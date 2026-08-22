@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -41,13 +42,23 @@ function mergeCartItem(items: CartItem[], incoming: CartItem, quantity: number):
   return [...items, { ...incoming, quantity }]
 }
 
-export function ParticulierCartProvider({ children }: { children: ReactNode }) {
+export function ParticulierCartProvider({
+  children,
+  visible = true,
+}: {
+  children: ReactNode
+  visible?: boolean
+}) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
   const [bump, setBump] = useState(0)
   const [flights, setFlights] = useState<FlyPayload[]>([])
   const flightId = useRef(0)
   const pendingAdds = useRef<Map<number, PendingAdd>>(new Map())
+
+  useEffect(() => {
+    if (!visible) setCartOpen(false)
+  }, [visible])
 
   const addToCart = useCallback(
     (
@@ -104,14 +115,18 @@ export function ParticulierCartProvider({ children }: { children: ReactNode }) {
   return (
     <ParticulierCartContext.Provider value={value}>
       {children}
-      <FlyToCart flights={flights} onComplete={handleFlightComplete} />
-      <FloatingCart
-        items={cartItems}
-        bump={bump}
-        open={cartOpen}
-        onOpen={() => setCartOpen(true)}
-        onClose={() => setCartOpen(false)}
-      />
+      {visible && (
+        <>
+          <FlyToCart flights={flights} onComplete={handleFlightComplete} />
+          <FloatingCart
+            items={cartItems}
+            bump={bump}
+            open={cartOpen}
+            onOpen={() => setCartOpen(true)}
+            onClose={() => setCartOpen(false)}
+          />
+        </>
+      )}
     </ParticulierCartContext.Provider>
   )
 }

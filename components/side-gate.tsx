@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 
 type SideGateProps = {
@@ -5,6 +7,7 @@ type SideGateProps = {
   side: 'left' | 'right'
   label: string
   tone: 'grass' | 'navy'
+  onNavigate?: () => void
 }
 
 function ArchedArrow({ side }: { side: 'left' | 'right' }) {
@@ -35,13 +38,9 @@ function ArchedArrow({ side }: { side: 'left' | 'right' }) {
   )
 }
 
-export function SideGate({ href, side, label, tone }: SideGateProps) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      className={`side-gate side-gate--${side} side-gate--${tone}`}
-    >
+export function SideGate({ href, side, label, tone, onNavigate }: SideGateProps) {
+  const content = (
+    <>
       <span className="side-gate__glow" aria-hidden />
       <span className="side-gate__content">
         {side === 'left' ? (
@@ -56,6 +55,27 @@ export function SideGate({ href, side, label, tone }: SideGateProps) {
           </>
         )}
       </span>
+    </>
+  )
+
+  const className = `side-gate side-gate--${side} side-gate--${tone}`
+
+  if (onNavigate) {
+    return (
+      <button
+        type="button"
+        aria-label={label}
+        className={className}
+        onClick={onNavigate}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <Link href={href} aria-label={label} className={className}>
+      {content}
     </Link>
   )
 }
