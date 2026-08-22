@@ -1,12 +1,11 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { SideGate } from '@/components/side-gate'
 
-export function RouteSideGates() {
-  const pathname = usePathname()
+type Panel = 'home' | 'particulier' | 'pro'
 
-  if (pathname === '/') {
+export function RouteSideGates({ panel }: { panel: Panel }) {
+  if (panel === 'home') {
     return (
       <>
         <SideGate href="/particulier" side="left" label="Particulier" tone="grass" />
@@ -15,13 +14,9 @@ export function RouteSideGates() {
     )
   }
 
-  if (pathname.startsWith('/particulier')) {
+  if (panel === 'particulier') {
     return <SideGate href="/" side="right" label="Accueil" tone="navy" />
   }
 
-  if (pathname.startsWith('/pro')) {
-    return <SideGate href="/" side="left" label="Accueil" tone="grass" />
-  }
-
-  return null
+  return <SideGate href="/" side="left" label="Accueil" tone="grass" />
 }

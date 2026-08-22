@@ -9,6 +9,7 @@
   --cobalt: #4a6b82;
   --grass: #6f8f5e;
   --navy: #3d5c74;
+  --forest: #3a4f3c;
 }
 @theme inline { --color-background: var(--cream); --color-foreground: var(--ink); --font-sans: var(--font-body); --font-serif: var(--font-display); }
 * { box-sizing: border-box; }
@@ -35,6 +36,34 @@ a[aria-disabled='true'] {
 .display { font-family: var(--font-display), serif; }
 .paper-shadow { box-shadow: 0 10px 30px rgba(43,41,39,.10); }
 
+.scatter-card {
+  z-index: 1;
+}
+
+.scatter-card:hover {
+  z-index: 25;
+}
+
+.scatter-glow {
+  position: absolute;
+  inset: -28%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(229, 178, 93, 0.45) 0%,
+    rgba(217, 107, 67, 0.22) 38%,
+    transparent 68%
+  );
+  filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.scatter-card:hover .scatter-glow {
+  opacity: 1;
+}
+
 .meteor-core {
   -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 78%);
   mask-image: radial-gradient(circle, #000 52%, transparent 78%);
@@ -52,7 +81,7 @@ a[aria-disabled='true'] {
 }
 
 .side-gate {
-  position: fixed;
+  position: absolute;
   top: 0;
   bottom: 0;
   z-index: 15;

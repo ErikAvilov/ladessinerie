@@ -53,7 +53,7 @@ export function FloatingCart({ count, open, bump, onOpen, onClose }: FloatingCar
         >
           {bump > 0 && (
             <motion.span
-              key={bump}
+              key={`bump-${bump}`}
               aria-hidden
               className="pointer-events-none absolute inset-[-10px] rounded-full border-2 border-[var(--terracotta)]"
               initial={{ opacity: 0.7, scale: 0.7 }}
@@ -65,7 +65,7 @@ export function FloatingCart({ count, open, bump, onOpen, onClose }: FloatingCar
           <ShoppingBag size={30} strokeWidth={1.75} className="hidden md:block" />
           {count > 0 && (
             <motion.span
-              key={count}
+              key={`count-${count}`}
               initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-[var(--terracotta)] text-xs font-semibold text-white"

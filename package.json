@@ -9,6 +9,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
     "@tailwindcss/postcss": "^4.3.3",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.33.0",
@@ -16,7 +18,8 @@
     "postcss": "^8.5.26",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "vercel": "^59.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
