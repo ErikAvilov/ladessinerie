@@ -6,7 +6,7 @@ import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
 import { refreshIllustrations } from '@/lib/admin-actions'
-import { formatFromPrice, parseSizeFields } from '@/lib/illustration-utils'
+import { formatFromPrice, illustrationAlt, parseSizeFields } from '@/lib/illustration-utils'
 import { supabase, type Illustration } from '@/lib/supabase'
 
 const BUCKET = 'illustrations'
@@ -35,6 +35,7 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
   const [success, setSuccess] = useState<string | null>(null)
 
   const [title, setTitle] = useState('')
+  const [altText, setAltText] = useState('')
   const [category, setCategory] = useState<'particulier' | 'pro'>('particulier')
   const [subcategory, setSubcategory] = useState('')
   const [sizeFields, setSizeFields] = useState<SizeField[]>([{ size: '', price: '' }])
@@ -118,6 +119,7 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
 
     const { error: insertError } = await supabase.from('illustrations').insert({
       title,
+      alt_text: altText.trim() || null,
       category,
       subcategory: subcategory.trim() || null,
       sizes,
@@ -133,6 +135,7 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
     }
 
     setTitle('')
+    setAltText('')
     setCategory('particulier')
     setSubcategory('')
     setSizeFields([{ size: '', price: '' }])
@@ -234,6 +237,20 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
             />
           </label>
 
+          <label className="block md:col-span-2">
+            <span className="mb-1.5 block text-sm font-medium">Texte alternatif (SEO / accessibilité)</span>
+            <input
+              type="text"
+              value={altText}
+              onChange={(event) => setAltText(event.target.value)}
+              placeholder="Ex. : Illustration aquarelle d’une cafetière fleurie sur fond crème"
+              className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
+            />
+            <span className="mt-1.5 block text-xs text-foreground/50">
+              Décrit l&apos;image pour les lecteurs d&apos;écran et les moteurs de recherche. Si vide, le titre sera utilisé.
+            </span>
+          </label>
+
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Catégorie</span>
             <select
@@ -315,7 +332,7 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
                   <div className="relative mx-auto h-36 w-24 bg-foreground/5 sm:h-40 sm:w-28">
                     <Image
                       src={illustration.image_url}
-                      alt={illustration.title}
+                      alt={illustrationAlt(illustration)}
                       fill
                       className="object-cover"
                       sizes="112px"

@@ -40,7 +40,7 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
           width={150}
           height={150}
           className="h-full w-full object-contain"
-          priority
+          sizes="160px"
         />
       </motion.div>
     </div>

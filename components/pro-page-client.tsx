@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { Upload } from 'lucide-react'
+import { illustrationAlt } from '@/lib/illustration-utils'
 import type { Illustration } from '@/lib/supabase'
 
 type ProPageClientProps = {
@@ -71,7 +72,7 @@ export function ProPageClient({ illustrations }: ProPageClientProps) {
             >
               <Image
                 src={item.image_url}
-                alt={item.title}
+                alt={illustrationAlt(item)}
                 fill
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"
                 sizes="(max-width: 768px) 100vw, 50vw"

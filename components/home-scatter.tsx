@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { PanelEnterContext } from '@/components/page-transition'
+import { illustrationAlt } from '@/lib/illustration-utils'
 import type { Illustration } from '@/lib/supabase'
 
 const ART_RATIO = 509 / 360
@@ -79,15 +80,23 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
     const el = containerRef.current
     if (!el) return
 
+    let timeoutId: number | undefined
+
     const onResize = () => {
-      const { width, height } = el.getBoundingClientRect()
-      if (width > 0 && height > 0) {
-        setCards(placeCards(illustrations, width, height))
-      }
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId)
+      timeoutId = window.setTimeout(() => {
+        const { width, height } = el.getBoundingClientRect()
+        if (width > 0 && height > 0) {
+          setCards(placeCards(illustrations, width, height))
+        }
+      }, 150)
     }
 
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    return () => {
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId)
+      window.removeEventListener('resize', onResize)
+    }
   }, [illustrations])
 
   if (illustrations.length === 0) return null
@@ -144,9 +153,11 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
           <div className="relative h-full w-full overflow-hidden rounded-sm paper-shadow">
             <Image
               src={card.illustration.image_url}
-              alt={card.illustration.title}
+              alt={illustrationAlt(card.illustration)}
               width={360}
               height={509}
+              loading="lazy"
+              fetchPriority="low"
               className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
               sizes="120px"
             />

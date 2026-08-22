@@ -4,23 +4,28 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 export function SiteHeader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session)
+    let subscription: { unsubscribe: () => void } | undefined
+
+    void import('@/lib/supabase').then(({ supabase }) => {
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        setIsAuthenticated(!!session)
+      })
+
+      const {
+        data: { subscription: authSubscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setIsAuthenticated(!!session)
+      })
+
+      subscription = authSubscription
     })
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => subscription?.unsubscribe()
   }, [])
 
   return (

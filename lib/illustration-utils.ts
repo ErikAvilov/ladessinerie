@@ -1,5 +1,9 @@
 import type { Illustration, IllustrationSize } from '@/lib/supabase'
 
+export function illustrationAlt(item: Pick<Illustration, 'alt_text' | 'title'>) {
+  return item.alt_text?.trim() || item.title
+}
+
 export function formatEuro(price: number) {
   return `${price.toFixed(2).replace('.', ',')} €`
 }

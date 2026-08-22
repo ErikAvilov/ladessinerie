@@ -8,6 +8,7 @@ export type IllustrationSize = {
 export type Illustration = {
   id: string
   title: string
+  alt_text?: string
   category: 'particulier' | 'pro'
   subcategory?: string
   image_url: string

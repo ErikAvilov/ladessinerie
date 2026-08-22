@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
-import { formatFromPrice, parseSizeFields, sizesToFields } from '@/lib/illustration-utils'
+import { formatFromPrice, illustrationAlt, parseSizeFields, sizesToFields } from '@/lib/illustration-utils'
 import { supabase, type Illustration } from '@/lib/supabase'
 
 const BUCKET = 'illustrations'
@@ -30,6 +30,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
   const [success, setSuccess] = useState<string | null>(null)
 
   const [title, setTitle] = useState(illustration.title)
+  const [altText, setAltText] = useState(illustration.alt_text ?? '')
   const [category, setCategory] = useState<'particulier' | 'pro'>(illustration.category)
   const [subcategory, setSubcategory] = useState(illustration.subcategory ?? '')
   const [sizeFields, setSizeFields] = useState<SizeField[]>(sizesToFields(illustration.sizes))
@@ -82,6 +83,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
       .from('illustrations')
       .update({
         title,
+        alt_text: altText.trim() || null,
         category,
         subcategory: subcategory.trim() || null,
         sizes,
@@ -154,6 +156,17 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             />
           </label>
 
+          <label className="block md:col-span-2">
+            <span className="mb-1.5 block text-sm font-medium">Texte alternatif (SEO / accessibilité)</span>
+            <input
+              type="text"
+              value={altText}
+              onChange={(event) => setAltText(event.target.value)}
+              placeholder="Ex. : Fresque murale colorée dans une cour d’école"
+              className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
+            />
+          </label>
+
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Catégorie</span>
             <select
@@ -189,7 +202,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             <div className="relative mx-auto mb-4 h-56 w-40 overflow-hidden rounded-xl bg-foreground/5">
               <Image
                 src={illustration.image_url}
-                alt={illustration.title}
+                alt={illustrationAlt(illustration)}
                 fill
                 className="object-cover"
                 sizes="160px"

@@ -1,12 +1,27 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Fraunces } from 'next/font/google'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PageTransition } from '@/components/page-transition'
 import './globals.css'
 
-const body = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
-const display = Fraunces({ subsets: ['latin'], variable: '--font-display' })
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
+
+const body = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-body',
+  weight: ['400', '500', '600'],
+  display: 'swap',
+})
+const display = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'La Dessinerie',
     template: '%s — La Dessinerie',
@@ -25,6 +40,7 @@ export default function RootLayout({
         <div className="h-dvh overflow-hidden bg-background">
           <PageTransition>{children}</PageTransition>
         </div>
+        <SpeedInsights />
       </body>
     </html>
   )

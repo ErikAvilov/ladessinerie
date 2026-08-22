@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FloatingCart, type CartItem } from '@/components/floating-cart'
 import { FlyToCart, type FlyPayload } from '@/components/fly-to-cart'
-import { formatEuro, formatFromPrice } from '@/lib/illustration-utils'
+import { formatEuro, formatFromPrice, illustrationAlt } from '@/lib/illustration-utils'
 import type { Illustration } from '@/lib/supabase'
 
 type ParticulierPageClientProps = {
@@ -156,7 +156,7 @@ export function ParticulierPageClient({ illustrations }: ParticulierPageClientPr
                   >
                     <Image
                       src={item.image_url}
-                      alt={item.title}
+                      alt={illustrationAlt(item)}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -208,7 +208,7 @@ export function ParticulierPageClient({ illustrations }: ParticulierPageClientPr
             >
               <Image
                 src={selected.image_url}
-                alt={selected.title}
+                alt={illustrationAlt(selected)}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
