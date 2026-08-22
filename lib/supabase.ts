@@ -25,10 +25,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+/** Lectures publiques côté serveur (pages vitrine). */
+const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey)
 
 export async function getIllustrations(category?: 'particulier' | 'pro'): Promise<Illustration[]> {
-  let query = supabase.from('illustrations').select('*').order('created_at', { ascending: false })
+  let query = supabaseAnon.from('illustrations').select('*').order('created_at', { ascending: false })
   if (category) query = query.eq('category', category)
   const { data, error } = await query
   if (error) {
@@ -39,7 +40,11 @@ export async function getIllustrations(category?: 'particulier' | 'pro'): Promis
 }
 
 export async function getIllustrationById(id: string): Promise<Illustration | null> {
-  const { data, error } = await supabase.from('illustrations').select('*').eq('id', id).single()
+  const { data, error } = await supabaseAnon
+    .from('illustrations')
+    .select('*')
+    .eq('id', id)
+    .single()
   if (error) {
     console.error('Erreur Supabase:', error)
     return null

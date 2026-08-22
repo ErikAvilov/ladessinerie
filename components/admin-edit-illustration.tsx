@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
+import { updateIllustration } from '@/lib/admin-actions'
 import { formatFromPrice, illustrationAlt, parseSizeFields, sizesToFields } from '@/lib/illustration-utils'
-import { supabase, type Illustration } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-browser'
+import type { Illustration } from '@/lib/supabase'
 
 const BUCKET = 'illustrations'
-const PRINT_SIZES = ['Small', 'Medium', 'Large'] as const
+const SUBCATEGORIES = ['Fleurs', 'Canapé', 'Autour de la nourriture'] as const
 
 function storagePathFromUrl(url: string) {
   const marker = `/${BUCKET}/`
@@ -34,6 +36,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
   const [category, setCategory] = useState<'particulier' | 'pro'>(illustration.category)
   const [subcategory, setSubcategory] = useState(illustration.subcategory ?? '')
   const [sizeFields, setSizeFields] = useState<SizeField[]>(sizesToFields(illustration.sizes))
+  const [imageUrl, setImageUrl] = useState(illustration.image_url)
   const [file, setFile] = useState<File | null>(null)
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
 
     setSubmitting(true)
 
-    let imageUrl = illustration.image_url
+    let nextImageUrl = imageUrl
 
     if (file) {
       const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
@@ -76,31 +79,39 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
       const oldPath = storagePathFromUrl(illustration.image_url)
       if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath])
 
-      imageUrl = supabase.storage.from(BUCKET).getPublicUrl(filePath).data.publicUrl
+      nextImageUrl = supabase.storage.from(BUCKET).getPublicUrl(filePath).data.publicUrl
     }
 
-    const { error: updateError } = await supabase
-      .from('illustrations')
-      .update({
-        title,
-        alt_text: altText.trim() || null,
-        category,
-        subcategory: subcategory.trim() || null,
-        sizes,
-        image_url: imageUrl,
-      })
-      .eq('id', illustration.id)
+    const result = await updateIllustration(illustration.id, {
+      title,
+      altText,
+      category,
+      subcategory,
+      sizes,
+      image_url: nextImageUrl,
+    })
 
     setSubmitting(false)
 
-    if (updateError) {
-      setError(`Mise à jour impossible : ${updateError.message}`)
+    if (result.error) {
+      setError(`Mise à jour impossible : ${result.error}`)
       return
     }
 
-    setSuccess('Illustration mise à jour.')
+    setTitle(title.trim())
+    setAltText(altText.trim())
+    setCategory(category)
+    setSubcategory(subcategory)
+    setSizeFields(sizesToFields(sizes))
+    setImageUrl(nextImageUrl)
+
     setFile(null)
+    setSuccess('Illustration mise à jour.')
     router.refresh()
+
+    window.setTimeout(() => {
+      router.push('/admin')
+    }, 900)
   }
 
   if (checkingSession) {
@@ -110,6 +121,14 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
       </div>
     )
   }
+
+  const previewIllustration: Illustration = {
+    ...illustration,
+    title,
+    alt_text: altText,
+    image_url: imageUrl,
+  }
+  const priceLabel = formatFromPrice(parseSizeFields(sizeFields))
 
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-8 md:px-10 md:py-12">
@@ -125,17 +144,48 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
           Édition
         </p>
         <h1 className="display mt-1.5 text-2xl font-semibold text-[var(--forest)] md:text-3xl">
-          {illustration.title}
+          {title}
         </h1>
-        {formatFromPrice(illustration.sizes) && (
-          <p className="mt-2 text-sm text-foreground/55">{formatFromPrice(illustration.sizes)}</p>
+        {priceLabel && (
+          <p className="mt-2 text-sm text-foreground/55">{priceLabel}</p>
         )}
       </header>
 
       {error && (
-        <p className="mb-6 rounded-xl bg-[var(--terracotta)]/10 px-4 py-3 text-sm text-[var(--terracotta)]">
-          {error}
-        </p>
+        <div className="mb-6 space-y-3 rounded-xl bg-[var(--terracotta)]/10 px-4 py-3 text-sm text-[var(--terracotta)]">
+          <p>{error}</p>
+          {error.includes('droits Supabase') && (
+            <div className="rounded-lg bg-background/80 p-3 text-foreground/80">
+              <p className="mb-2 font-medium text-foreground">SQL à exécuter dans Supabase → SQL Editor :</p>
+              <pre className="overflow-x-auto whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">{`GRANT SELECT ON TABLE illustrations TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE illustrations TO authenticated;
+
+DO $$
+DECLARE pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'illustrations'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.illustrations', pol.policyname);
+  END LOOP;
+END $$;
+
+ALTER TABLE public.illustrations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "illustrations_select_public"
+  ON public.illustrations FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "illustrations_insert_authenticated"
+  ON public.illustrations FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "illustrations_update_authenticated"
+  ON public.illustrations FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "illustrations_delete_authenticated"
+  ON public.illustrations FOR DELETE TO authenticated USING (true);
+
+ALTER TABLE public.illustrations ADD COLUMN IF NOT EXISTS alt_text text;`}</pre>
+            </div>
+          )}
+        </div>
       )}
       {success && (
         <p className="mb-6 rounded-xl bg-[var(--grass)]/10 px-4 py-3 text-sm text-[var(--forest)]">
@@ -162,9 +212,12 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
               type="text"
               value={altText}
               onChange={(event) => setAltText(event.target.value)}
-              placeholder="Ex. : Fresque murale colorée dans une cour d’école"
+              placeholder="Ex. : Illustration aquarelle d'une cafetière fleurie"
               className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
             />
+            <span className="mt-1.5 block text-xs text-foreground/50">
+              Si vide, le titre sera utilisé sur le site.
+            </span>
           </label>
 
           <label className="block">
@@ -187,9 +240,9 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
               className="w-full cursor-pointer rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
             >
               <option value="">— Choisir —</option>
-              {PRINT_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {SUBCATEGORIES.map((value) => (
+                <option key={value} value={value}>
+                  {value}
                 </option>
               ))}
             </select>
@@ -201,8 +254,8 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             <p className="mb-2 text-sm font-medium">Image actuelle</p>
             <div className="relative mx-auto mb-4 h-56 w-40 overflow-hidden rounded-xl bg-foreground/5">
               <Image
-                src={illustration.image_url}
-                alt={illustrationAlt(illustration)}
+                src={imageUrl}
+                alt={illustrationAlt(previewIllustration)}
                 fill
                 className="object-cover"
                 sizes="160px"
@@ -228,7 +281,7 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             />
           </label>
 
-          <div className="md:col-span-2">
+          <div className="flex flex-wrap gap-3 md:col-span-2">
             <button
               type="submit"
               disabled={submitting}
@@ -236,6 +289,12 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             >
               {submitting ? 'Enregistrement…' : 'Enregistrer les modifications'}
             </button>
+            <Link
+              href="/admin"
+              className="inline-flex cursor-pointer items-center rounded-full border border-foreground/15 px-6 py-3 text-sm font-medium transition hover:border-foreground/30"
+            >
+              Annuler
+            </Link>
           </div>
         </form>
       </section>

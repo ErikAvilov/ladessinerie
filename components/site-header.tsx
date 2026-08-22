@@ -11,7 +11,7 @@ export function SiteHeader() {
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | undefined
 
-    void import('@/lib/supabase').then(({ supabase }) => {
+    void import('@/lib/supabase-browser').then(({ supabase }) => {
       void supabase.auth.getSession().then(({ data: { session } }) => {
         setIsAuthenticated(!!session)
       })

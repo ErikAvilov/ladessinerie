@@ -12,6 +12,7 @@ export type CartItem = {
   title: string
   size: string
   price: number
+  quantity: number
   image_url: string
 }
 
@@ -25,7 +26,7 @@ type FloatingCartProps = {
 
 export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCartProps) {
   const [mounted, setMounted] = useState(false)
-  const count = items.length
+  const count = items.reduce((sum, item) => sum + item.quantity, 0)
 
   useEffect(() => {
     setMounted(true)
@@ -34,7 +35,11 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
   if (!mounted) return null
 
   const mailBody = items
-    .map((item) => `- ${item.title} (${item.size}) : ${formatEuro(item.price)}`)
+    .map((item) => {
+      const lineTotal = item.price * item.quantity
+      const qtyLabel = item.quantity > 1 ? ` × ${item.quantity}` : ''
+      return `- ${item.title} (${item.size}${qtyLabel}) : ${formatEuro(lineTotal)}`
+    })
     .join('%0A')
 
   return createPortal(
@@ -121,7 +126,9 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
                     >
                       <p className="font-semibold">{item.title}</p>
                       <p className="mt-1 text-sm text-foreground/60">
-                        Format {item.size} · {formatEuro(item.price)}
+                        Format {item.size}
+                        {item.quantity > 1 ? ` · Qté ${item.quantity}` : ''} ·{' '}
+                        {formatEuro(item.price * item.quantity)}
                       </p>
                     </li>
                   ))}

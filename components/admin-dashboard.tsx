@@ -2,15 +2,23 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
-import { refreshIllustrations } from '@/lib/admin-actions'
-import { formatFromPrice, illustrationAlt, parseSizeFields } from '@/lib/illustration-utils'
-import { supabase, type Illustration } from '@/lib/supabase'
+import { deleteIllustration, insertIllustration, refreshIllustrations } from '@/lib/admin-actions'
+import {
+  formatFromPrice,
+  getMinPrice,
+  illustrationAlt,
+  parseSizeFields,
+} from '@/lib/illustration-utils'
+import { supabase } from '@/lib/supabase-browser'
+import type { Illustration } from '@/lib/supabase'
 
 const BUCKET = 'illustrations'
-const PRINT_SIZES = ['Small', 'Medium', 'Large'] as const
+const SUBCATEGORIES = ['Fleurs', 'Canapé', 'Autour de la nourriture'] as const
+
+type SortOption = 'date-desc' | 'date-asc' | 'price-asc' | 'price-desc'
 
 function storagePathFromUrl(url: string) {
   const marker = `/${BUCKET}/`
@@ -40,6 +48,10 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
   const [subcategory, setSubcategory] = useState('')
   const [sizeFields, setSizeFields] = useState<SizeField[]>([{ size: '', price: '' }])
   const [file, setFile] = useState<File | null>(null)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterSubcategory, setFilterSubcategory] = useState('all')
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc')
 
   const loadIllustrations = useCallback(async () => {
     setLoadingList(true)
@@ -77,6 +89,48 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [pendingDelete])
+
+  const subcategoryOptions = useMemo(() => {
+    const fromData = illustrations
+      .map((item) => item.subcategory)
+      .filter((value): value is string => Boolean(value))
+    return [...new Set([...SUBCATEGORIES, ...fromData])]
+  }, [illustrations])
+
+  const filteredIllustrations = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    const filtered = illustrations.filter((item) => {
+      const matchesSearch =
+        !query ||
+        item.title.toLowerCase().includes(query) ||
+        (item.alt_text?.toLowerCase().includes(query) ?? false) ||
+        (item.subcategory?.toLowerCase().includes(query) ?? false)
+
+      const matchesSubcategory =
+        filterSubcategory === 'all' ||
+        (filterSubcategory === 'none'
+          ? !item.subcategory
+          : item.subcategory === filterSubcategory)
+
+      return matchesSearch && matchesSubcategory
+    })
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'date-asc' || sortBy === 'date-desc') {
+        const aTime = new Date(a.created_at).getTime()
+        const bTime = new Date(b.created_at).getTime()
+        return sortBy === 'date-desc' ? bTime - aTime : aTime - bTime
+      }
+
+      const aPrice = getMinPrice(a.sizes) ?? Number.POSITIVE_INFINITY
+      const bPrice = getMinPrice(b.sizes) ?? Number.POSITIVE_INFINITY
+      return sortBy === 'price-asc' ? aPrice - bPrice : bPrice - aPrice
+    })
+  }, [illustrations, searchQuery, filterSubcategory, sortBy])
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' || filterSubcategory !== 'all' || sortBy !== 'date-desc'
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -117,20 +171,20 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
 
     const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(filePath)
 
-    const { error: insertError } = await supabase.from('illustrations').insert({
+    const result = await insertIllustration({
       title,
-      alt_text: altText.trim() || null,
+      altText,
       category,
-      subcategory: subcategory.trim() || null,
+      subcategory,
       sizes,
       image_url: publicData.publicUrl,
     })
 
     setSubmitting(false)
 
-    if (insertError) {
+    if (result.error) {
       await supabase.storage.from(BUCKET).remove([filePath])
-      setError(`Enregistrement impossible : ${insertError.message}`)
+      setError(`Enregistrement impossible : ${result.error}`)
       return
     }
 
@@ -159,15 +213,12 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
       await supabase.storage.from(BUCKET).remove([storagePath])
     }
 
-    const { error: deleteError } = await supabase
-      .from('illustrations')
-      .delete()
-      .eq('id', illustration.id)
+    const result = await deleteIllustration(illustration.id)
 
     setDeletingId(null)
 
-    if (deleteError) {
-      setError(`Suppression impossible : ${deleteError.message}`)
+    if (result.error) {
+      setError(`Suppression impossible : ${result.error}`)
       return
     }
 
@@ -238,7 +289,9 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
           </label>
 
           <label className="block md:col-span-2">
-            <span className="mb-1.5 block text-sm font-medium">Texte alternatif (SEO / accessibilité)</span>
+            <span className="mb-1.5 block text-sm font-medium">
+              Texte alternatif (SEO / accessibilité)
+            </span>
             <input
               type="text"
               value={altText}
@@ -247,7 +300,8 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
               className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
             />
             <span className="mt-1.5 block text-xs text-foreground/50">
-              Décrit l&apos;image pour les lecteurs d&apos;écran et les moteurs de recherche. Si vide, le titre sera utilisé.
+              Décrit l&apos;image pour les lecteurs d&apos;écran et les moteurs de recherche. Si vide,
+              le titre sera utilisé.
             </span>
           </label>
 
@@ -271,9 +325,9 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
               className="w-full cursor-pointer rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
             >
               <option value="">— Choisir —</option>
-              {PRINT_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {SUBCATEGORIES.map((value) => (
+                <option key={value} value={value}>
+                  {value}
                 </option>
               ))}
             </select>
@@ -313,14 +367,93 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
       </section>
 
       <section>
-        <h2 className="display text-xl font-semibold">Illustrations existantes</h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="display text-xl font-semibold">Illustrations existantes</h2>
+            <p className="mt-1 text-sm text-foreground/50">
+              {loadingList
+                ? 'Chargement…'
+                : `${filteredIllustrations.length} résultat${filteredIllustrations.length > 1 ? 's' : ''}${
+                    hasActiveFilters ? ` sur ${illustrations.length}` : ''
+                  }`}
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('')
+                setFilterSubcategory('all')
+                setSortBy('date-desc')
+              }}
+              className="cursor-pointer self-start text-sm font-medium text-[var(--forest)] underline-offset-2 hover:underline"
+            >
+              Réinitialiser les filtres
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="block sm:col-span-2">
+            <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-foreground/50">
+              Recherche
+            </span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Titre, alt text, sous-catégorie…"
+              className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-2.5 text-sm outline-none transition focus:border-[var(--terracotta)]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-foreground/50">
+              Sous-catégorie
+            </span>
+            <select
+              value={filterSubcategory}
+              onChange={(event) => setFilterSubcategory(event.target.value)}
+              className="w-full cursor-pointer rounded-xl border border-foreground/15 bg-background px-4 py-2.5 text-sm outline-none transition focus:border-[var(--terracotta)]"
+            >
+              <option value="all">Toutes</option>
+              <option value="none">Sans sous-catégorie</option>
+              {subcategoryOptions.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-foreground/50">
+              Trier par
+            </span>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value as SortOption)}
+              className="w-full cursor-pointer rounded-xl border border-foreground/15 bg-background px-4 py-2.5 text-sm outline-none transition focus:border-[var(--terracotta)]"
+            >
+              <option value="date-desc">Date · plus récentes</option>
+              <option value="date-asc">Date · plus anciennes</option>
+              <option value="price-asc">Prix · croissant</option>
+              <option value="price-desc">Prix · décroissant</option>
+            </select>
+          </label>
+        </div>
+
         {loadingList ? (
           <p className="mt-4 text-sm text-foreground/50">Chargement…</p>
         ) : illustrations.length === 0 ? (
           <p className="mt-4 text-sm text-foreground/50">Aucune illustration pour le moment.</p>
+        ) : filteredIllustrations.length === 0 ? (
+          <p className="mt-4 text-sm text-foreground/50">
+            Aucune illustration ne correspond à ces critères.
+          </p>
         ) : (
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {illustrations.map((illustration) => (
+            {filteredIllustrations.map((illustration) => (
               <li
                 key={illustration.id}
                 className="overflow-hidden rounded-xl border border-foreground/10 bg-background paper-shadow"

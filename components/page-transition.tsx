@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useIsPresent } from 'framer-motion'
 import { LayoutRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import { usePathname } from 'next/navigation'
 import { useContext, useEffect, useRef, type ReactNode, createContext } from 'react'
@@ -39,7 +39,15 @@ export const PanelEnterContext = createContext(0)
 function FrozenRouter({ children }: { children: ReactNode }) {
   const context = useContext(LayoutRouterContext)
   const frozen = useRef(context)
+  const isPresent = useIsPresent()
 
+  // Panel actif : laisser le routeur Next.js gérer la navigation (ex. /particulier → /particulier/art/id)
+  if (isPresent) {
+    frozen.current = context
+    return children
+  }
+
+  // Panel en sortie (slide) : figer le contenu pour l'animation
   if (!frozen.current) {
     return children
   }

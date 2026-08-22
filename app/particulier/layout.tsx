@@ -1,3 +1,4 @@
+import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -9,5 +10,5 @@ export default function ParticulierLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return children
+  return <ParticulierCartProvider>{children}</ParticulierCartProvider>
 }
