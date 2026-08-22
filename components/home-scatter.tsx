@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { PanelEnterContext } from '@/components/page-transition'
-import { artworks } from '@/lib/artworks'
+import type { Illustration } from '@/lib/supabase'
 
 const ART_RATIO = 509 / 360
 const CARD_WIDTH = 98
@@ -27,20 +27,20 @@ const LAYOUT = [
 ] as const
 
 type PlacedCard = {
-  art: (typeof artworks)[number]
+  illustration: Illustration
   x: number
   y: number
   rotate: number
 }
 
-function placeCards(boxW: number, boxH: number): PlacedCard[] {
+function placeCards(illustrations: Illustration[], boxW: number, boxH: number): PlacedCard[] {
   const maxX = boxW / 2 - 8
   const maxY = boxH / 2 - 8
 
-  return artworks.slice(0, LAYOUT.length).map((art, i) => {
+  return illustrations.slice(0, LAYOUT.length).map((illustration, i) => {
     const slot = LAYOUT[i]
     return {
-      art,
+      illustration,
       x: slot.nx * maxX * 0.86,
       y: slot.ny * maxY * 0.94,
       rotate: slot.rotate,
@@ -48,7 +48,11 @@ function placeCards(boxW: number, boxH: number): PlacedCard[] {
   })
 }
 
-export function HomeScatter() {
+type HomeScatterProps = {
+  illustrations: Illustration[]
+}
+
+export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
@@ -56,13 +60,13 @@ export function HomeScatter() {
 
   useLayoutEffect(() => {
     const el = containerRef.current
-    if (!el) return
+    if (!el || illustrations.length === 0) return
 
     const { width, height } = el.getBoundingClientRect()
     if (width > 0 && height > 0) {
-      setCards(placeCards(width, height))
+      setCards(placeCards(illustrations, width, height))
     }
-  }, [])
+  }, [illustrations])
 
   useEffect(() => {
     if (!cards) return
@@ -78,13 +82,15 @@ export function HomeScatter() {
     const onResize = () => {
       const { width, height } = el.getBoundingClientRect()
       if (width > 0 && height > 0) {
-        setCards(placeCards(width, height))
+        setCards(placeCards(illustrations, width, height))
       }
     }
 
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [])
+  }, [illustrations])
+
+  if (illustrations.length === 0) return null
 
   return (
     <div
@@ -93,7 +99,7 @@ export function HomeScatter() {
     >
       {cards?.map((card, i) => (
         <motion.div
-          key={card.art.src}
+          key={card.illustration.id}
           initial={{
             translateX: 0,
             translateY: 0,
@@ -137,8 +143,8 @@ export function HomeScatter() {
           <span className="scatter-glow" aria-hidden />
           <div className="relative h-full w-full overflow-hidden rounded-sm paper-shadow">
             <Image
-              src={card.art.src}
-              alt={card.art.alt}
+              src={card.illustration.image_url}
+              alt={card.illustration.title}
               width={360}
               height={509}
               className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"

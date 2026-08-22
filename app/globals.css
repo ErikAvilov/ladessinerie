@@ -32,6 +32,10 @@ button:disabled,
 a[aria-disabled='true'] {
   cursor: not-allowed;
 }
+input[type='file'],
+input[type='file']::file-selector-button {
+  cursor: pointer;
+}
 ::selection { background: var(--mustard); color: var(--ink); }
 .display { font-family: var(--font-display), serif; }
 .paper-shadow { box-shadow: 0 10px 30px rgba(43,41,39,.10); }

@@ -4,23 +4,38 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { Send, ShoppingBag } from 'lucide-react'
+import { formatEuro } from '@/lib/illustration-utils'
+
+export type CartItem = {
+  key: string
+  illustrationId: string
+  title: string
+  size: string
+  price: number
+  image_url: string
+}
 
 type FloatingCartProps = {
-  count: number
+  items: CartItem[]
   open: boolean
   bump: number
   onOpen: () => void
   onClose: () => void
 }
 
-export function FloatingCart({ count, open, bump, onOpen, onClose }: FloatingCartProps) {
+export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCartProps) {
   const [mounted, setMounted] = useState(false)
+  const count = items.length
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   if (!mounted) return null
+
+  const mailBody = items
+    .map((item) => `- ${item.title} (${item.size}) : ${formatEuro(item.price)}`)
+    .join('%0A')
 
   return createPortal(
     <>
@@ -34,7 +49,7 @@ export function FloatingCart({ count, open, bump, onOpen, onClose }: FloatingCar
               ? `Ouvrir le panier, ${count} article${count > 1 ? 's' : ''}`
               : 'Ouvrir le panier'
           }
-          className="pointer-events-auto relative flex size-14 items-center justify-center rounded-full border border-foreground/10 bg-background text-[var(--ink)] origin-center md:size-16"
+          className="pointer-events-auto relative flex size-14 cursor-pointer items-center justify-center rounded-full border border-foreground/10 bg-background text-[var(--ink)] origin-center md:size-16"
           initial={{ rotate: -14, scale: 1 }}
           animate={
             bump > 0
@@ -83,21 +98,43 @@ export function FloatingCart({ count, open, bump, onOpen, onClose }: FloatingCar
           >
             <div className="flex items-center justify-between">
               <h2 className="display text-3xl">Votre panier</h2>
-              <button onClick={onClose} aria-label="Fermer" className="text-2xl">
+              <button
+                onClick={onClose}
+                aria-label="Fermer"
+                className="cursor-pointer text-2xl"
+              >
                 ×
               </button>
             </div>
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <ShoppingBag size={40} strokeWidth={1.5} className="mb-4 text-[var(--sage)]" />
-              <p className="text-foreground/60">
-                {count
-                  ? `${count} tirage${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}.`
-                  : 'Votre panier est encore vide.'}
-              </p>
+            <div className="mt-6 flex-1 overflow-y-auto">
+              {count === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <ShoppingBag size={40} strokeWidth={1.5} className="mb-4 text-[var(--sage)]" />
+                  <p className="text-foreground/60">Votre panier est encore vide.</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  {items.map((item) => (
+                    <li
+                      key={item.key}
+                      className="rounded-xl border border-foreground/10 px-4 py-3"
+                    >
+                      <p className="font-semibold">{item.title}</p>
+                      <p className="mt-1 text-sm text-foreground/60">
+                        Format {item.size} · {formatEuro(item.price)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <a
-              href="mailto:bonjour@ladessinerie.fr?subject=Commande de tirages"
-              className="flex items-center justify-center gap-2 rounded-full bg-[var(--terracotta)] px-5 py-4 font-semibold text-white"
+              href={
+                count
+                  ? `mailto:bonjour@ladessinerie.fr?subject=Commande de tirages&body=${mailBody}`
+                  : 'mailto:bonjour@ladessinerie.fr?subject=Commande de tirages'
+              }
+              className="mt-6 flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[var(--terracotta)] px-5 py-4 font-semibold text-white"
             >
               Faire une demande <Send size={17} />
             </a>

@@ -1,8 +1,28 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export function SiteHeader() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-30 grid grid-cols-4 items-center py-4">
       <div className="col-span-1 px-5 md:px-10">
@@ -27,11 +47,19 @@ export function SiteHeader() {
         </Link>
       </div>
       <div className="col-span-2" aria-hidden />
-      <div className="col-span-1 flex justify-end px-5 md:px-10">
+      <div className="col-span-1 flex justify-end gap-2 px-5 md:px-10">
+        {isAuthenticated && (
+          <Link
+            href="/admin"
+            className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--forest)] backdrop-blur-sm transition hover:border-[var(--forest)] md:text-sm"
+          >
+            Admin
+          </Link>
+        )}
         <a
           href="https://instagram.com"
           aria-label="Instagram"
-          className="pointer-events-auto rounded-full border border-foreground/15 bg-background/70 p-2 backdrop-blur-sm transition hover:bg-[var(--mustard)]"
+          className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 p-2 backdrop-blur-sm transition hover:bg-[var(--mustard)]"
         >
           <Camera size={18} />
         </a>

@@ -53,6 +53,7 @@ function FrozenRouter({ children }: { children: ReactNode }) {
 
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
   const prevPathnameRef = useRef(pathname)
   const directionRef = useRef(0)
 
@@ -60,7 +61,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const isHome = key === 'home'
 
   let panelEnterDelay = 0
-  if (key !== routeKey(prevPathnameRef.current)) {
+  if (!isAdmin && key !== routeKey(prevPathnameRef.current)) {
     directionRef.current = routeIndex(pathname) - routeIndex(prevPathnameRef.current)
     if (key === 'home') panelEnterDelay = SLIDE_DURATION_MS
     prevPathnameRef.current = pathname
@@ -68,6 +69,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement
+    if (isAdmin) {
+      root.classList.remove('no-scroll')
+      document.body.classList.remove('no-scroll')
+      return
+    }
+
     if (isHome) {
       root.classList.add('no-scroll')
       document.body.classList.add('no-scroll')
@@ -79,7 +86,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
       root.classList.remove('no-scroll')
       document.body.classList.remove('no-scroll')
     }
-  }, [isHome])
+  }, [isAdmin, isHome])
+
+  if (isAdmin) {
+    return <div className="h-dvh overflow-x-hidden overflow-y-auto bg-background">{children}</div>
+  }
 
   return (
     <PanelEnterContext.Provider value={panelEnterDelay}>
