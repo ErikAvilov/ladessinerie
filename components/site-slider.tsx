@@ -140,7 +140,7 @@ export function SiteSlider({
     <SitePanelContext.Provider value={contextValue}>
       <PanelEnterContext.Provider value={enterDelay}>
         <ParticulierCartProvider visible={panel === 'particulier'}>
-          <div className="relative h-dvh overflow-hidden bg-background">
+          <div className="site-background relative h-dvh overflow-hidden">
             <SiteHeader />
             <RouteSideGates panel={panel} onNavigate={goTo} />
 

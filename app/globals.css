@@ -40,6 +40,14 @@ input[type='file']::file-selector-button {
 .display { font-family: var(--font-display), serif; }
 .paper-shadow { box-shadow: 0 10px 30px rgba(43,41,39,.10); }
 
+.site-background {
+  background-color: var(--cream);
+  background-image: url('/images/background.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
 .scatter-card {
   z-index: 1;
 }
