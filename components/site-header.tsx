@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -30,24 +29,8 @@ export function SiteHeader() {
     return () => subscription?.unsubscribe()
   }, [])
 
-  const logoClassName = 'pointer-events-auto flex items-center gap-3'
-  const logoInner = (
-    <>
-      <span className="relative block h-10 w-10 shrink-0 md:h-11 md:w-11">
-        <Image
-          src="/art/logo.png"
-          alt=""
-          fill
-          className="object-contain"
-          sizes="44px"
-          priority
-        />
-      </span>
-      <span className="display hidden text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] sm:inline md:text-xl">
-        La Dessinerie
-      </span>
-    </>
-  )
+  const brandClassName =
+    'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] md:text-xl'
 
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-30 grid grid-cols-4 items-center py-4">
@@ -56,14 +39,14 @@ export function SiteHeader() {
           <button
             type="button"
             aria-label="La Dessinerie, accueil"
-            className={logoClassName}
+            className={brandClassName}
             onClick={() => sitePanel.goTo('home')}
           >
-            {logoInner}
+            La Dessinerie
           </button>
         ) : (
-          <Link href="/" aria-label="La Dessinerie, accueil" className={logoClassName}>
-            {logoInner}
+          <Link href="/" aria-label="La Dessinerie, accueil" className={brandClassName}>
+            La Dessinerie
           </Link>
         )}
       </div>

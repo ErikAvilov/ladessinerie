@@ -44,12 +44,13 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
         className="relative z-10 size-24 shrink-0 md:size-40"
       >
         <Image
-          src="/art/logo.png"
+          src="/images/logo.webp"
           alt="La Dessinerie"
-          width={150}
-          height={150}
+          width={13244}
+          height={9354}
           className="h-full w-full object-contain"
           sizes="160px"
+          priority
         />
       </motion.div>
 

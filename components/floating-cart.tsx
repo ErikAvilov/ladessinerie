@@ -7,6 +7,9 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Send } from 'lucide-react'
 import { formatEuro } from '@/lib/illustration-utils'
 
+const PANIER_WIDTH = 13244
+const PANIER_HEIGHT = 9354
+
 export type CartItem = {
   key: string
   illustrationId: string
@@ -66,7 +69,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
 
   return createPortal(
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-20 flex justify-center md:bottom-7">
+      <div className="pointer-events-none fixed inset-x-0 bottom-2 z-20 flex justify-center md:bottom-4">
         <button
           type="button"
           data-cart-target
@@ -77,7 +80,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               : 'Ouvrir le panier'
           }
           className={[
-            'cart-float pointer-events-auto relative flex size-[4.5rem] cursor-pointer items-center justify-center md:size-28',
+            'cart-float pointer-events-auto relative flex size-[16.5rem] cursor-pointer items-center justify-center md:size-[27rem]',
             entranceReady || reduceMotion ? 'cart-float--ready' : '',
             bumping ? 'cart-float--bump' : '',
           ]
@@ -105,19 +108,19 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               <motion.span
                 key={`bump-${bump}`}
                 aria-hidden
-                className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)]"
+                className="pointer-events-none absolute inset-[-28px] rounded-full border-[3px] border-[var(--terracotta)] md:inset-[-40px] md:border-4"
                 initial={{ opacity: 0.7, scale: 0.7 }}
                 animate={{ opacity: 0, scale: 1.85 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             )}
             <Image
-              src="/images/panier.png"
+              src="/images/panier.webp"
               alt=""
-              width={691}
-              height={800}
-              className="h-14 w-auto object-contain drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] md:h-[5.5rem]"
-              sizes="(max-width: 767px) 56px, 96px"
+              width={PANIER_WIDTH}
+              height={PANIER_HEIGHT}
+              className="h-[14.25rem] w-auto object-contain drop-shadow-[0_12px_28px_rgba(43,41,39,0.22)] md:h-[22.5rem]"
+              sizes="(max-width: 767px) 240px, 360px"
               priority
             />
           </motion.span>
@@ -126,7 +129,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               key={`count-${count}`}
               initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              className="absolute right-0 top-0 flex size-7 items-center justify-center rounded-full bg-[var(--terracotta)] text-xs font-semibold text-white shadow-sm"
+              className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full bg-[var(--terracotta)] text-sm font-semibold text-white shadow-md md:right-5 md:top-5 md:size-14 md:text-lg"
             >
               {count}
             </motion.span>
@@ -153,12 +156,12 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               {count === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <Image
-                    src="/images/panier.png"
+                    src="/images/panier.webp"
                     alt=""
-                    width={691}
-                    height={800}
-                    className="mb-4 h-20 w-auto object-contain opacity-70"
-                    sizes="80px"
+                    width={PANIER_WIDTH}
+                    height={PANIER_HEIGHT}
+                    className="mb-4 h-72 w-auto object-contain opacity-70 md:h-[22rem]"
+                    sizes="288px"
                   />
                   <p className="text-foreground/60">Votre panier est encore vide.</p>
                 </div>
