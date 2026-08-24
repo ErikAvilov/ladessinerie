@@ -33,8 +33,8 @@ export function SiteHeader() {
     'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] md:text-xl'
 
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 grid grid-cols-4 items-center py-4">
-      <div className="col-span-1 px-5 md:px-10">
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between py-4">
+      <div className="px-5 md:px-10">
         {sitePanel ? (
           <button
             type="button"
@@ -50,8 +50,8 @@ export function SiteHeader() {
           </Link>
         )}
       </div>
-      <div className="col-span-2" aria-hidden />
-      <div className="col-span-1 flex justify-end gap-2 px-5 md:px-10">
+
+      <div className="flex gap-2 px-5 md:px-10">
         {isAuthenticated && (
           <Link
             href="/admin"

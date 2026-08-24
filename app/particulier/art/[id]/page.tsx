@@ -33,7 +33,14 @@ export async function generateMetadata({ params }: ArtPageProps): Promise<Metada
       siteName: 'La Dessinerie',
       locale: 'fr_FR',
       type: 'website',
-      images: [{ url: illustration.image_url, alt: illustration.alt_text || illustration.title }],
+      images: [
+        {
+          url: illustration.image_url.startsWith('/')
+            ? `${siteUrl}${illustration.image_url}`
+            : illustration.image_url,
+          alt: illustration.alt_text || illustration.title,
+        },
+      ],
     },
   }
 }

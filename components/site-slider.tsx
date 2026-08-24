@@ -7,6 +7,7 @@ import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
 import { ParticulierPageClient } from '@/components/particulier-page-client'
 import { PanelEnterContext, SLIDE_DURATION_MS } from '@/components/page-transition'
 import { ProPageClient } from '@/components/pro-page-client'
+import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { RouteSideGates } from '@/components/route-side-gates'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
@@ -140,7 +141,9 @@ export function SiteSlider({
     <SitePanelContext.Provider value={contextValue}>
       <PanelEnterContext.Provider value={enterDelay}>
         <ParticulierCartProvider visible={panel === 'particulier'}>
-          <div className="site-background relative h-dvh overflow-hidden">
+          <div className="relative h-dvh overflow-hidden">
+            <SiteBackgroundLayer className="absolute inset-0 z-0" />
+            <div className="relative z-[1] h-dvh">
             <SiteHeader />
             <RouteSideGates panel={panel} onNavigate={goTo} />
 
@@ -164,6 +167,7 @@ export function SiteSlider({
             </motion.div>
 
             <SiteFooter />
+            </div>
           </div>
         </ParticulierCartProvider>
       </PanelEnterContext.Provider>

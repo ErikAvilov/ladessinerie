@@ -40,12 +40,29 @@ input[type='file']::file-selector-button {
 .display { font-family: var(--font-display), serif; }
 .paper-shadow { box-shadow: 0 10px 30px rgba(43,41,39,.10); }
 
-.site-background {
-  background-color: var(--cream);
-  background-image: url('/images/background.webp');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
+.image-load-shimmer {
+  background: linear-gradient(
+    110deg,
+    rgba(43, 41, 39, 0.04) 8%,
+    rgba(138, 154, 134, 0.16) 22%,
+    rgba(217, 107, 67, 0.1) 38%,
+    rgba(43, 41, 39, 0.04) 52%
+  );
+  background-size: 220% 100%;
+  animation: image-shimmer 1.35s ease-in-out infinite;
+  transition: opacity 0.35s ease-out;
+}
+
+@keyframes image-shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-load-shimmer {
+    animation: none;
+    background: rgba(138, 154, 134, 0.12);
+  }
 }
 
 .scatter-card {

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { createContext, useEffect, type ReactNode } from 'react'
 import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
 import { RouteSideGates } from '@/components/route-side-gates'
+import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { isSitePanelPath, panelFromPathname } from '@/lib/site-panels'
@@ -42,8 +43,9 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   const chrome = (
     <PanelEnterContext.Provider value={0}>
-      <div className="relative h-dvh overflow-hidden bg-background">
-        <div className="absolute inset-0 flex h-dvh flex-col bg-background">
+      <div className="relative h-dvh overflow-hidden">
+        <SiteBackgroundLayer className="absolute inset-0 z-0" />
+        <div className="absolute inset-0 z-[1] flex h-dvh flex-col">
           <SiteHeader />
           <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />
           <div

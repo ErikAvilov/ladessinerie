@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { IllustrationImage } from '@/components/illustration-image'
 import { formatFromPrice, illustrationAlt } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
 import type { Illustration } from '@/lib/supabase'
@@ -70,7 +70,7 @@ export function ParticulierPageClient({ illustrations }: ParticulierPageClientPr
               Aucun tirage disponible pour le moment.
             </p>
           ) : (
-            shown.map((item) => {
+            shown.map((item, index) => {
               const priceLabel = formatFromPrice(item.sizes)
               const href = particulierArtPath(item.id)
               return (
@@ -87,10 +87,12 @@ export function ParticulierPageClient({ illustrations }: ParticulierPageClientPr
                     href={href}
                     className="relative block aspect-[3/4] w-full cursor-pointer overflow-hidden rounded-xl transition group-hover:-rotate-1 group-hover:shadow-lg"
                   >
-                    <Image
+                    <IllustrationImage
                       src={item.image_url}
                       alt={illustrationAlt(item)}
                       fill
+                      rounded="xl"
+                      priority={index < 4}
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     />

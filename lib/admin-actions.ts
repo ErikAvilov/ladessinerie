@@ -8,6 +8,7 @@ import {
 } from '@/lib/illustration-record'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { getIllustrations, type Illustration } from '@/lib/supabase'
+import { parseSiteThemeInput, type SiteTheme } from '@/lib/site-theme'
 
 const RLS_FIX_HINT =
   'Les droits Supabase bloquent l’écriture. Exécute le SQL affiché ci-dessous (ou le fichier supabase/rls-illustrations.sql), puis déconnecte/reconnecte-toi sur /admin.'
@@ -89,6 +90,46 @@ export async function insertIllustration(
 
   revalidateIllustrationPaths()
   return {}
+}
+
+export async function updateSiteTheme(
+  input: SiteTheme,
+): Promise<{ error?: string; theme?: SiteTheme }> {
+  const { supabase, error: authError } = await requireAdminSupabase()
+  if (!supabase) return { error: authError ?? 'Non authentifié.' }
+
+  const parsed = parseSiteThemeInput(input)
+  if ('error' in parsed) return { error: parsed.error }
+
+  const { data, error } = await supabase
+    .from('site_theme')
+    .update({
+      panier_fond: parsed.panier_fond,
+      panier_traits: parsed.panier_traits,
+      background_fond: parsed.background_fond,
+      background_traits: parsed.background_traits,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', 1)
+    .select('panier_fond, panier_traits, background_fond, background_traits')
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  if (!data?.length) {
+    return {
+      error:
+        'Mise à jour impossible. Exécute supabase/site-theme.sql dans Supabase, puis reconnecte-toi.',
+    }
+  }
+
+  revalidatePath('/')
+  revalidatePath('/particulier')
+  revalidatePath('/pro')
+  revalidatePath('/admin')
+
+  return { theme: parsed }
 }
 
 export async function deleteIllustration(id: string): Promise<{ error?: string }> {

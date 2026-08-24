@@ -1,17 +1,16 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { IllustrationImage } from '@/components/illustration-image'
 import { PanelEnterContext } from '@/components/page-transition'
 import { illustrationAlt } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
 import type { Illustration } from '@/lib/supabase'
 
-const ART_RATIO = 509 / 360
-const DESKTOP_CARD_WIDTH = 98
-const MOBILE_CARD_WIDTH = 62
+const DESKTOP_CARD_SIZE = 108
+const MOBILE_CARD_SIZE = 72
 const MOBILE_MAX = 767
 
 /**
@@ -55,11 +54,10 @@ function placeCards(
   boxW: number,
   boxH: number,
   layout: readonly LayoutSlot[],
-  cardW: number,
+  cardSize: number,
 ): PlacedCard[] {
-  const cardH = cardW * ART_RATIO
-  const maxX = Math.max(boxW / 2 - cardW / 2 - 4, 8)
-  const maxY = Math.max(boxH / 2 - cardH / 2 - 4, 8)
+  const maxX = Math.max(boxW / 2 - cardSize / 2 - 4, 8)
+  const maxY = Math.max(boxH / 2 - cardSize / 2 - 4, 8)
   const spreadX = boxW < MOBILE_MAX ? 0.9 : 0.86
   const spreadY = boxW < MOBILE_MAX ? 0.88 : 0.94
 
@@ -79,7 +77,7 @@ function layoutForWidth(width: number) {
   return {
     mobile,
     layout: mobile ? MOBILE_LAYOUT : DESKTOP_LAYOUT,
-    cardWidth: mobile ? MOBILE_CARD_WIDTH : DESKTOP_CARD_WIDTH,
+    cardSize: mobile ? MOBILE_CARD_SIZE : DESKTOP_CARD_SIZE,
   }
 }
 
@@ -91,7 +89,7 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
-  const [cardWidth, setCardWidth] = useState(DESKTOP_CARD_WIDTH)
+  const [cardSize, setCardSize] = useState(DESKTOP_CARD_SIZE)
   const [explode, setExplode] = useState(false)
 
   useLayoutEffect(() => {
@@ -100,9 +98,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
     const { width, height } = el.getBoundingClientRect()
     if (width > 0 && height > 0) {
-      const { layout, cardWidth: nextWidth } = layoutForWidth(width)
-      setCardWidth(nextWidth)
-      setCards(placeCards(illustrations, width, height, layout, nextWidth))
+      const { layout, cardSize: nextSize } = layoutForWidth(width)
+      setCardSize(nextSize)
+      setCards(placeCards(illustrations, width, height, layout, nextSize))
     }
   }, [illustrations])
 
@@ -124,9 +122,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
       timeoutId = window.setTimeout(() => {
         const { width, height } = el.getBoundingClientRect()
         if (width > 0 && height > 0) {
-          const { layout, cardWidth: nextWidth } = layoutForWidth(width)
-          setCardWidth(nextWidth)
-          setCards(placeCards(illustrations, width, height, layout, nextWidth))
+          const { layout, cardSize: nextSize } = layoutForWidth(width)
+          setCardSize(nextSize)
+          setCards(placeCards(illustrations, width, height, layout, nextSize))
         }
       }, 150)
     }
@@ -140,30 +138,10 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
   if (illustrations.length === 0) return null
 
-  const cardHeight = cardWidth * ART_RATIO
-
   return (
     <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       {cards?.map((card, i) => {
         const href = particulierArtPath(card.illustration.id)
-
-        const cardInner = (
-          <>
-            <span className="scatter-glow" aria-hidden />
-            <div className="relative h-full w-full overflow-hidden rounded-sm paper-shadow">
-              <Image
-                src={card.illustration.image_url}
-                alt={illustrationAlt(card.illustration)}
-                width={360}
-                height={509}
-                loading="lazy"
-                fetchPriority="low"
-                className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
-                sizes="(max-width: 767px) 72px, 120px"
-              />
-            </div>
-          </>
-        )
 
         return (
           <motion.div
@@ -202,10 +180,10 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
             }}
             className="scatter-card group pointer-events-auto absolute left-1/2 top-1/2 cursor-pointer"
             style={{
-              width: cardWidth,
-              height: cardHeight,
-              marginLeft: -cardWidth / 2,
-              marginTop: -cardHeight / 2,
+              width: cardSize,
+              height: cardSize,
+              marginLeft: -cardSize / 2,
+              marginTop: -cardSize / 2,
             }}
           >
             <Link
@@ -213,7 +191,19 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
               aria-label={card.illustration.title}
               className="block h-full w-full"
             >
-              {cardInner}
+              <span className="scatter-glow" aria-hidden />
+              <div className="relative h-full w-full overflow-hidden rounded-full paper-shadow">
+                <IllustrationImage
+                  src={card.illustration.image_url}
+                  alt={illustrationAlt(card.illustration)}
+                  width={360}
+                  height={360}
+                  rounded="full"
+                  priority={i < 2}
+                  className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
+                  sizes="(max-width: 767px) 72px, 120px"
+                />
+              </div>
             </Link>
           </motion.div>
         )

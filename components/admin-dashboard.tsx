@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AdminSiteThemePanel } from '@/components/admin-site-theme'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
 import { deleteIllustration, insertIllustration, refreshIllustrations } from '@/lib/admin-actions'
 import {
@@ -14,6 +15,7 @@ import {
 } from '@/lib/illustration-utils'
 import { supabase } from '@/lib/supabase-browser'
 import type { Illustration } from '@/lib/supabase'
+import type { SiteTheme } from '@/lib/site-theme'
 
 const BUCKET = 'illustrations'
 const SUBCATEGORIES = ['Fleurs', 'Canapé', 'Autour de la nourriture'] as const
@@ -29,9 +31,10 @@ function storagePathFromUrl(url: string) {
 
 type AdminDashboardProps = {
   initialIllustrations: Illustration[]
+  initialTheme: SiteTheme
 }
 
-export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
+export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDashboardProps) {
   const router = useRouter()
   const [checkingSession, setCheckingSession] = useState(true)
   const [illustrations, setIllustrations] = useState<Illustration[]>(initialIllustrations)
@@ -273,6 +276,8 @@ export function AdminDashboard({ initialIllustrations }: AdminDashboardProps) {
           {success}
         </p>
       )}
+
+      <AdminSiteThemePanel initialTheme={initialTheme} />
 
       <section className="mb-10 rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
         <h2 className="display text-xl font-semibold">Ajouter une illustration</h2>

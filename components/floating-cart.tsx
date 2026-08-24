@@ -1,14 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Send } from 'lucide-react'
+import { PanierIcon } from '@/components/panier-icon'
 import { formatEuro } from '@/lib/illustration-utils'
-
-const PANIER_WIDTH = 13244
-const PANIER_HEIGHT = 9354
 
 export type CartItem = {
   key: string
@@ -114,15 +111,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             )}
-            <Image
-              src="/images/panier.webp"
-              alt=""
-              width={PANIER_WIDTH}
-              height={PANIER_HEIGHT}
-              className="h-[14.25rem] w-auto object-contain drop-shadow-[0_12px_28px_rgba(43,41,39,0.22)] md:h-[22.5rem]"
-              sizes="(max-width: 767px) 240px, 360px"
-              priority
-            />
+            <PanierIcon className="block h-[14.25rem] w-[20rem] drop-shadow-[0_12px_28px_rgba(43,41,39,0.22)] md:h-[22.5rem] md:w-[32rem]" />
           </motion.span>
           {count > 0 && (
             <motion.span
@@ -155,14 +144,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
             <div className="mt-6 flex-1 overflow-y-auto">
               {count === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <Image
-                    src="/images/panier.webp"
-                    alt=""
-                    width={PANIER_WIDTH}
-                    height={PANIER_HEIGHT}
-                    className="mb-4 h-72 w-auto object-contain opacity-70 md:h-[22rem]"
-                    sizes="288px"
-                  />
+                  <PanierIcon className="mb-4 block h-72 w-[26rem] opacity-70 md:h-[22rem] md:w-[32rem]" />
                   <p className="text-foreground/60">Votre panier est encore vide.</p>
                 </div>
               ) : (
