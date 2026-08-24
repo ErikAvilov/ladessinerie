@@ -3,10 +3,12 @@
 import { useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { BoutonIcon } from '@/components/bouton-icon'
 import {
   DIVE_DURATION_MS,
   ParticulierDiveOverlay,
 } from '@/components/particulier-dive-overlay'
+import { useSiteTheme } from '@/components/site-theme-context'
 import {
   PARTICULIER_CATEGORIES,
   particulierCategoryPath,
@@ -15,11 +17,13 @@ import {
 
 type DiveState = {
   category: ParticulierCategory
+  color: string
   from: { top: number; left: number; width: number; height: number }
 }
 
 export function ParticulierPageClient() {
   const router = useRouter()
+  const theme = useSiteTheme()
   const [, startTransition] = useTransition()
   const [dive, setDive] = useState<DiveState | null>(null)
   const divingRef = useRef(false)
@@ -33,6 +37,7 @@ export function ParticulierPageClient() {
       const rect = (media ?? button).getBoundingClientRect()
       setDive({
         category,
+        color: theme.boutonColor(category.slug),
         from: {
           top: rect.top,
           left: rect.left,
@@ -47,7 +52,7 @@ export function ParticulierPageClient() {
         })
       }, Math.round(DIVE_DURATION_MS * 0.88))
     },
-    [router],
+    [router, theme],
   )
 
   return (
@@ -60,36 +65,37 @@ export function ParticulierPageClient() {
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col md:mt-6">
         <div className="grid shrink-0 grid-cols-4 items-start gap-1.5 sm:gap-3 md:gap-5">
-          {PARTICULIER_CATEGORIES.map((category, index) => (
-            <motion.button
-              key={category.slug}
-              type="button"
-              initial={{ opacity: 0, y: 12, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.05, duration: 0.3, ease: 'easeOut' }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={(event) => handleSelect(category, event.currentTarget)}
-              className="group relative flex min-w-0 cursor-pointer flex-col items-center gap-1.5 md:gap-2.5"
-              aria-label={`Ouvrir ${category.label}`}
-            >
-              <span
-                data-dive-target
-                className="relative flex aspect-square w-full max-w-[5.5rem] items-center justify-center sm:max-w-[7rem] md:max-w-[9.5rem]"
+          {PARTICULIER_CATEGORIES.map((category, index) => {
+            const color = theme.boutonColor(category.slug)
+            return (
+              <motion.button
+                key={category.slug}
+                type="button"
+                initial={{ opacity: 0, y: 12, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.05, duration: 0.3, ease: 'easeOut' }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={(event) => handleSelect(category, event.currentTarget)}
+                className="group relative flex min-w-0 cursor-pointer flex-col items-center gap-1.5 md:gap-2.5"
+                aria-label={`Ouvrir ${category.label}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={category.imageSrc}
-                  alt=""
-                  className="h-full w-full object-contain drop-shadow-[0_8px_18px_rgba(43,41,39,0.16)]"
-                  draggable={false}
-                />
-              </span>
-              <span className="display relative line-clamp-2 text-center text-[10px] font-semibold leading-tight sm:text-xs md:text-sm">
-                {category.label}
-              </span>
-            </motion.button>
-          ))}
+                <span
+                  data-dive-target
+                  className="relative flex aspect-square w-full max-w-[5.5rem] items-center justify-center sm:max-w-[7rem] md:max-w-[9.5rem]"
+                >
+                  <BoutonIcon
+                    src={category.imageSrc}
+                    color={color}
+                    className="h-full w-full drop-shadow-[0_8px_18px_rgba(43,41,39,0.16)]"
+                  />
+                </span>
+                <span className="display relative line-clamp-2 text-center text-[10px] font-semibold leading-tight sm:text-xs md:text-sm">
+                  {category.label}
+                </span>
+              </motion.button>
+            )
+          })}
         </div>
 
         {/* Espace réservé au panier flottant (moitié de l’ancienne taille). */}
@@ -100,6 +106,7 @@ export function ParticulierPageClient() {
       {dive && (
         <ParticulierDiveOverlay
           category={dive.category}
+          color={dive.color}
           from={dive.from}
           onComplete={() => {
             /* navigation déjà lancée */

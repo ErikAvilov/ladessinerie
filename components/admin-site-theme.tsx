@@ -2,10 +2,17 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { BoutonIcon } from '@/components/bouton-icon'
 import { PanierIcon } from '@/components/panier-icon'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { updateSiteTheme } from '@/lib/admin-actions'
-import type { SiteTheme } from '@/lib/site-theme'
+import { PARTICULIER_CATEGORIES } from '@/lib/particulier-categories'
+import {
+  BOUTON_BACKGROUND_FOND,
+  BOUTON_THEME_BY_SLUG,
+  type BoutonThemeKey,
+  type SiteTheme,
+} from '@/lib/site-theme'
 
 type AdminSiteThemePanelProps = {
   initialTheme: SiteTheme
@@ -48,18 +55,23 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
   const [theme, setTheme] = useState<SiteTheme>(initialTheme)
   const [savingPanier, setSavingPanier] = useState(false)
   const [savingBackground, setSavingBackground] = useState(false)
+  const [savingBoutons, setSavingBoutons] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  async function savePanier(event: FormEvent) {
+  async function saveTheme(
+    event: FormEvent,
+    setSaving: (value: boolean) => void,
+    successMessage: string,
+  ) {
     event.preventDefault()
-    setSavingPanier(true)
+    setSaving(true)
     setError(null)
     setSuccess(null)
 
     const result = await updateSiteTheme(theme)
 
-    setSavingPanier(false)
+    setSaving(false)
 
     if (result.error) {
       setError(result.error)
@@ -67,28 +79,12 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
     }
 
     if (result.theme) setTheme(result.theme)
-    setSuccess('Couleurs du panier enregistrées.')
+    setSuccess(successMessage)
     router.refresh()
   }
 
-  async function saveBackground(event: FormEvent) {
-    event.preventDefault()
-    setSavingBackground(true)
-    setError(null)
-    setSuccess(null)
-
-    const result = await updateSiteTheme(theme)
-
-    setSavingBackground(false)
-
-    if (result.error) {
-      setError(result.error)
-      return
-    }
-
-    if (result.theme) setTheme(result.theme)
-    setSuccess('Couleurs de l’arrière-plan enregistrées.')
-    router.refresh()
+  function setBoutonColor(key: BoutonThemeKey, value: string) {
+    setTheme((current) => ({ ...current, [key]: value }))
   }
 
   return (
@@ -110,7 +106,10 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
           Couleurs du SVG <code className="text-xs">panier.svg</code> (fond + traits).
         </p>
 
-        <form onSubmit={(event) => void savePanier(event)} className="mt-6">
+        <form
+          onSubmit={(event) => void saveTheme(event, setSavingPanier, 'Couleurs du panier enregistrées.')}
+          className="mt-6"
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <ThemeColorField
               label="Fond"
@@ -144,12 +143,77 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
       </section>
 
       <section className="rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
+        <h2 className="display text-xl font-semibold">Boutons Particulier</h2>
+        <p className="mt-1 text-sm text-foreground/55">
+          Couleur des traits sur <code className="text-xs">background.svg</code> (carrés blancs).
+        </p>
+
+        <form
+          onSubmit={(event) =>
+            void saveTheme(event, setSavingBoutons, 'Couleurs des boutons enregistrées.')
+          }
+          className="mt-6"
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            {PARTICULIER_CATEGORIES.map((category) => {
+              const key = BOUTON_THEME_BY_SLUG[category.slug]
+              const color = theme[key]
+              return (
+                <div
+                  key={category.slug}
+                  className="rounded-xl border border-foreground/10 p-4"
+                >
+                  <div className="mb-4 flex items-center gap-4">
+                    <div className="relative size-20 shrink-0 overflow-hidden rounded-lg border border-foreground/10">
+                      <SiteBackgroundLayer
+                        className="absolute inset-0"
+                        fond={color}
+                        traits={BOUTON_BACKGROUND_FOND}
+                      />
+                      <div className="relative z-[1] flex h-full w-full items-center justify-center p-2">
+                        <BoutonIcon
+                          src={category.imageSrc}
+                          color={color}
+                          className="h-full w-full drop-shadow-[0_4px_10px_rgba(43,41,39,0.2)]"
+                        />
+                      </div>
+                    </div>
+                    <p className="display text-base font-semibold">{category.label}</p>
+                  </div>
+                  <ThemeColorField
+                    label="Couleur"
+                    value={color}
+                    onChange={(value) => setBoutonColor(key, value)}
+                  />
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="mt-6">
+            <button
+              type="submit"
+              disabled={savingBoutons}
+              className="cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {savingBoutons ? 'Enregistrement…' : 'Enregistrer les boutons'}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
         <h2 className="display text-xl font-semibold">Arrière-plan</h2>
         <p className="mt-1 text-sm text-foreground/55">
           Couleurs du SVG <code className="text-xs">background.svg</code> (fond + texture).
         </p>
 
-        <form onSubmit={(event) => void saveBackground(event)} className="mt-6">
+        <form
+          onSubmit={(event) =>
+            void saveTheme(event, setSavingBackground, 'Couleurs de l’arrière-plan enregistrées.')
+          }
+          className="mt-6"
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <ThemeColorField
               label="Fond"

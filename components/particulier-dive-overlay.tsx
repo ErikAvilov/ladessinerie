@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
+import { BoutonIcon } from '@/components/bouton-icon'
+import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import type { ParticulierCategory } from '@/lib/particulier-categories'
+import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme'
 
 export const DIVE_DURATION_MS = 720
 
@@ -16,6 +19,7 @@ type Rect = {
 
 type ParticulierDiveOverlayProps = {
   category: ParticulierCategory
+  color: string
   from: Rect
   onComplete: () => void
 }
@@ -30,6 +34,7 @@ function coverScale(from: Rect) {
 
 export function ParticulierDiveOverlay({
   category,
+  color,
   from,
   onComplete,
 }: ParticulierDiveOverlayProps) {
@@ -60,11 +65,16 @@ export function ParticulierDiveOverlay({
     <div className="pointer-events-none fixed inset-0 z-[45]" aria-hidden>
       <motion.div
         className="absolute inset-0"
-        style={{ backgroundColor: category.color }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: reduce ? 0.15 : 0.45, ease: 'easeOut', delay: reduce ? 0 : 0.2 }}
-      />
+      >
+        <SiteBackgroundLayer
+          className="absolute inset-0"
+          fond={color}
+          traits={BOUTON_BACKGROUND_FOND}
+        />
+      </motion.div>
 
       <motion.div
         className="absolute overflow-hidden"
@@ -98,12 +108,10 @@ export function ParticulierDiveOverlay({
         }
         style={{ transformOrigin: '50% 50%' }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <BoutonIcon
           src={category.imageSrc}
-          alt=""
-          className="h-full w-full object-contain"
-          draggable={false}
+          color={color}
+          className="h-full w-full"
         />
       </motion.div>
     </div>,

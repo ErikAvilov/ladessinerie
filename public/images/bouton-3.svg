@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" fill="none" aria-hidden="true">
-  <g transform="translate(0.000000,800.000000) scale(0.100000,-0.100000)" fill="#F6E896" stroke="none">
+  <g transform="translate(0.000000,800.000000) scale(0.100000,-0.100000)" fill="var(--bouton-fill, #F6E896)" stroke="none">
 <path d="M1684 7836 c-30 -30 -34 -40 -34 -84 0 -86 52 -150 659 -806 177
 -191 320 -350 318 -353 -3 -2 -85 12 -183 31 -515 100 -724 106 -802 23 -34
 -36 -55 -96 -47 -136 17 -91 113 -215 289 -371 58 -52 101 -97 96 -98 -6 -2

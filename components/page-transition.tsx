@@ -1,17 +1,19 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { createContext, useEffect, type CSSProperties, type ReactNode } from 'react'
+import { createContext, useEffect, type ReactNode } from 'react'
 import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
 import { RouteSideGates } from '@/components/route-side-gates'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
+import { useSiteTheme } from '@/components/site-theme-context'
 import {
   getParticulierCategory,
   isParticulierCategorySlug,
 } from '@/lib/particulier-categories'
 import { isSitePanelPath, panelFromPathname } from '@/lib/site-panels'
+import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme'
 
 export const SLIDE_DURATION_MS = 580
 
@@ -20,6 +22,7 @@ export const PanelEnterContext = createContext(0)
 
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const theme = useSiteTheme()
   const isAdmin = pathname.startsWith('/admin')
   const isPanelRoute = isSitePanelPath(pathname)
   const isParticulierNested = pathname.startsWith('/particulier/')
@@ -32,6 +35,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
     isParticulierCategorySlug(categorySlug)
       ? getParticulierCategory(categorySlug)
       : undefined
+  const categoryColor = category ? theme.boutonColor(category.slug) : undefined
 
   useEffect(() => {
     if (isAdmin || isPanelRoute) return
@@ -56,15 +60,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   const chrome = (
     <PanelEnterContext.Provider value={0}>
-      <div
-        className="relative h-dvh overflow-hidden"
-        style={
-          category
-            ? ({ backgroundColor: category.color } as CSSProperties)
-            : undefined
-        }
-      >
-        {!category && <SiteBackgroundLayer className="absolute inset-0 z-0" />}
+      <div className="relative h-dvh overflow-hidden">
+        <SiteBackgroundLayer
+          className="absolute inset-0 z-0"
+          fond={categoryColor}
+          traits={categoryColor ? BOUTON_BACKGROUND_FOND : undefined}
+        />
         <div className="absolute inset-0 z-[1] flex h-dvh flex-col">
           <SiteHeader />
           <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />

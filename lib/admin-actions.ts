@@ -108,25 +108,38 @@ export async function updateSiteTheme(
       panier_traits: parsed.panier_traits,
       background_fond: parsed.background_fond,
       background_traits: parsed.background_traits,
+      bouton_petit_portraits: parsed.bouton_petit_portraits,
+      bouton_grand_portraits: parsed.bouton_grand_portraits,
+      bouton_stickers: parsed.bouton_stickers,
+      bouton_milklab: parsed.bouton_milklab,
       updated_at: new Date().toISOString(),
     })
     .eq('id', 1)
-    .select('panier_fond, panier_traits, background_fond, background_traits')
+    .select(
+      'panier_fond, panier_traits, background_fond, background_traits, bouton_petit_portraits, bouton_grand_portraits, bouton_stickers, bouton_milklab',
+    )
 
   if (error) {
-    return { error: error.message }
+    const missingColumn =
+      /bouton_|column|schema/i.test(error.message) || error.code === 'PGRST204'
+    return {
+      error: missingColumn
+        ? 'Colonnes boutons manquantes. Exécute supabase/site-theme-boutons.sql dans Supabase, puis reconnecte-toi.'
+        : error.message,
+    }
   }
 
   if (!data?.length) {
     return {
       error:
-        'Mise à jour impossible. Exécute supabase/site-theme.sql dans Supabase, puis reconnecte-toi.',
+        'Mise à jour impossible. Exécute supabase/site-theme-boutons.sql dans Supabase, puis reconnecte-toi.',
     }
   }
 
   revalidatePath('/')
   revalidatePath('/particulier')
   revalidatePath('/pro')
+  revalidatePath('/a-propos')
   revalidatePath('/admin')
 
   return { theme: parsed }

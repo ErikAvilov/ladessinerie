@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { IllustrationImage } from '@/components/illustration-image'
+import { useSiteTheme } from '@/components/site-theme-context'
 import { formatFromPrice, illustrationAlt } from '@/lib/illustration-utils'
 import type { ParticulierCategory } from '@/lib/particulier-categories'
 import { particulierArtPath } from '@/lib/particulier-routes'
@@ -17,10 +18,13 @@ export function ParticulierCategoryClient({
   category,
   illustrations,
 }: ParticulierCategoryClientProps) {
+  const theme = useSiteTheme()
+  const color = theme.boutonColor(category.slug)
+
   return (
     <div
       className="mx-auto flex min-h-full w-full max-w-5xl flex-col pb-24 md:pb-28"
-      style={{ ['--category-color' as string]: category.color }}
+      style={{ ['--category-color' as string]: color }}
     >
       <Link
         href="/particulier"

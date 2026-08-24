@@ -18,29 +18,30 @@ export const PARTICULIER_CATEGORIES: ParticulierCategory[] = [
   {
     slug: 'petit-portraits',
     label: 'Petit portraits',
-    color: '#CC633B',
-    imageSrc: '/images/bouton-1.svg',
+    /** Défaut ; la couleur active vient du thème site (admin). */
+    color: '#cc633b',
+    imageSrc: '/images/bouton-1.svg?v=2',
     subcategory: 'Petit portraits',
   },
   {
     slug: 'grand-portraits',
     label: 'Grand portraits',
-    color: '#E5B1B0',
-    imageSrc: '/images/bouton-2.svg',
+    color: '#e5b1b0',
+    imageSrc: '/images/bouton-2.svg?v=2',
     subcategory: 'Grand portraits',
   },
   {
     slug: 'stickers',
     label: 'Stickers',
-    color: '#F6E896',
-    imageSrc: '/images/bouton-3.svg',
+    color: '#f6e896',
+    imageSrc: '/images/bouton-3.svg?v=2',
     subcategory: 'Stickers',
   },
   {
     slug: 'milklab',
     label: 'Milklab',
-    color: '#C1D6D1',
-    imageSrc: '/images/bouton-4.svg',
+    color: '#c1d6d1',
+    imageSrc: '/images/bouton-4.svg?v=2',
     subcategory: 'Milklab',
   },
 ]

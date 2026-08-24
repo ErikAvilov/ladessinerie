@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { HomePageClient } from '@/components/home-page-client'
 import { AboutPageClient } from '@/components/about-page-client'
@@ -19,6 +20,7 @@ import {
 } from '@/lib/fetch-illustrations-client'
 import { pickHomeScatterIllustrations } from '@/lib/home-scatter-pick'
 import {
+  panelFromPathname,
   panelIndex,
   SITE_PANEL_PATH,
   SITE_PANEL_TITLE,
@@ -41,6 +43,8 @@ export function SiteSlider({
   initialParticulier = [],
   initialPro = [],
 }: SiteSliderProps) {
+  const router = useRouter()
+  const pathname = usePathname()
   const [panel, setPanel] = useState<SitePanel>(initialPanel)
   const [enterDelay, setEnterDelay] = useState(0)
   const [homeIllustrations, setHomeIllustrations] = useState(initialHome)
@@ -52,32 +56,25 @@ export function SiteSlider({
 
   panelRef.current = panel
 
-  const goTo = useCallback((next: SitePanel) => {
-    if (panelRef.current === next) return
-
-    setEnterDelay(next === 'home' ? SLIDE_DURATION_MS : 0)
-    setPanel(next)
-
-    // Différer pushState hors du cycle de rendu React / setState
-    queueMicrotask(() => {
-      window.history.pushState({ panel: next }, '', SITE_PANEL_PATH[next])
-      document.title = SITE_PANEL_TITLE[next]
-    })
-  }, [])
-
+  // Keep panel in sync with the real Next.js URL (back/forward included).
   useEffect(() => {
-    function onPopState() {
-      const path = window.location.pathname
-      if (path === '/particulier') setPanel('particulier')
-      else if (path === '/pro') setPanel('pro')
-      else if (path === '/a-propos') setPanel('about')
-      else setPanel('home')
-      setEnterDelay(0)
-    }
+    const fromPath = panelFromPathname(pathname)
+    if (!fromPath || fromPath === panelRef.current) return
+    setEnterDelay(0)
+    setPanel(fromPath)
+  }, [pathname])
 
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
+  const goTo = useCallback(
+    (next: SitePanel) => {
+      if (panelRef.current === next) return
+
+      setEnterDelay(next === 'home' ? SLIDE_DURATION_MS : 0)
+      setPanel(next)
+      document.title = SITE_PANEL_TITLE[next]
+      router.push(SITE_PANEL_PATH[next], { scroll: false })
+    },
+    [router],
+  )
 
   useEffect(() => {
     const lockScroll = panel === 'home' || panel === 'about'
@@ -147,42 +144,42 @@ export function SiteSlider({
           <div className="relative h-dvh overflow-hidden">
             <SiteBackgroundLayer className="absolute inset-0 z-0" />
             <div className="relative z-[1] h-dvh">
-            <SiteHeader />
-            <RouteSideGates panel={panel} onNavigate={goTo} />
+              <SiteHeader />
+              <RouteSideGates panel={panel} onNavigate={goTo} />
 
-            <motion.div
-              className="h-[200dvh] w-full will-change-transform"
-              initial={false}
-              animate={{ y: panel === 'about' ? '-100dvh' : '0dvh' }}
-              transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
-            >
-              <div className="h-dvh overflow-hidden">
-                <motion.div
-                  className="flex h-dvh w-[300vw] will-change-transform"
-                  initial={false}
-                  animate={{ x: `-${panelIndex(panel) * 100}vw` }}
-                  transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
-                >
-                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
-                    <ParticulierPageClient />
-                  </section>
+              <motion.div
+                className="h-[200dvh] w-full will-change-transform"
+                initial={false}
+                animate={{ y: panel === 'about' ? '-100dvh' : '0dvh' }}
+                transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
+              >
+                <div className="h-dvh overflow-hidden">
+                  <motion.div
+                    className="flex h-dvh w-[300vw] will-change-transform"
+                    initial={false}
+                    animate={{ x: `-${panelIndex(panel) * 100}vw` }}
+                    transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
+                  >
+                    <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
+                      <ParticulierPageClient />
+                    </section>
 
-                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
-                    <HomePageClient illustrations={homeIllustrations} />
-                  </section>
+                    <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
+                      <HomePageClient illustrations={homeIllustrations} />
+                    </section>
 
-                  <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
-                    <ProPageClient illustrations={proIllustrations} />
-                  </section>
-                </motion.div>
-              </div>
+                    <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
+                      <ProPageClient illustrations={proIllustrations} />
+                    </section>
+                  </motion.div>
+                </div>
 
-              <section className="relative h-dvh w-full overflow-hidden px-5 pb-8 pt-24 md:px-16 md:pb-10 md:pt-28">
-                <AboutPageClient />
-              </section>
-            </motion.div>
+                <section className="relative h-dvh w-full overflow-hidden px-5 pb-8 pt-24 md:px-16 md:pb-10 md:pt-28">
+                  <AboutPageClient />
+                </section>
+              </motion.div>
 
-            <SiteFooter />
+              <SiteFooter />
             </div>
           </div>
         </ParticulierCartProvider>

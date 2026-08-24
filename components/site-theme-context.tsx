@@ -6,16 +6,33 @@ import {
   useMemo,
   type ReactNode,
 } from 'react'
-import { DEFAULT_SITE_THEME, type SiteTheme } from '@/lib/site-theme'
+import {
+  BOUTON_THEME_BY_SLUG,
+  DEFAULT_SITE_THEME,
+  type SiteTheme,
+} from '@/lib/site-theme'
+import type { ParticulierCategorySlug } from '@/lib/particulier-categories'
 
 type SiteThemeContextValue = SiteTheme & {
   panierFond: string
   panierTraits: string
   backgroundFond: string
   backgroundTraits: string
+  boutonColor: (slug: ParticulierCategorySlug) => string
 }
 
 const SiteThemeContext = createContext<SiteThemeContextValue | null>(null)
+
+function toContextValue(theme: SiteTheme): SiteThemeContextValue {
+  return {
+    ...theme,
+    panierFond: theme.panier_fond,
+    panierTraits: theme.panier_traits,
+    backgroundFond: theme.background_fond,
+    backgroundTraits: theme.background_traits,
+    boutonColor: (slug) => theme[BOUTON_THEME_BY_SLUG[slug]],
+  }
+}
 
 export function SiteThemeProvider({
   theme,
@@ -24,16 +41,7 @@ export function SiteThemeProvider({
   theme: SiteTheme
   children: ReactNode
 }) {
-  const value = useMemo<SiteThemeContextValue>(
-    () => ({
-      ...theme,
-      panierFond: theme.panier_fond,
-      panierTraits: theme.panier_traits,
-      backgroundFond: theme.background_fond,
-      backgroundTraits: theme.background_traits,
-    }),
-    [theme],
-  )
+  const value = useMemo(() => toContextValue(theme), [theme])
 
   return <SiteThemeContext.Provider value={value}>{children}</SiteThemeContext.Provider>
 }
@@ -45,13 +53,7 @@ export function useSiteThemeOptional() {
 export function useSiteTheme() {
   const context = useContext(SiteThemeContext)
   if (!context) {
-    return {
-      ...DEFAULT_SITE_THEME,
-      panierFond: DEFAULT_SITE_THEME.panier_fond,
-      panierTraits: DEFAULT_SITE_THEME.panier_traits,
-      backgroundFond: DEFAULT_SITE_THEME.background_fond,
-      backgroundTraits: DEFAULT_SITE_THEME.background_traits,
-    }
+    return toContextValue(DEFAULT_SITE_THEME)
   }
   return context
 }
