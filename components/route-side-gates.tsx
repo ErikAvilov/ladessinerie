@@ -9,6 +9,18 @@ type RouteSideGatesProps = {
 }
 
 export function RouteSideGates({ panel, onNavigate }: RouteSideGatesProps) {
+  if (panel === 'about') {
+    return (
+      <SideGate
+        href="/"
+        side="top"
+        label="Accueil"
+        tone="grass"
+        onNavigate={onNavigate ? () => onNavigate('home') : undefined}
+      />
+    )
+  }
+
   if (panel === 'home') {
     return (
       <>

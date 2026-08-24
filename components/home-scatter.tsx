@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { IllustrationImage } from '@/components/illustration-image'
 import { PanelEnterContext } from '@/components/page-transition'
@@ -12,6 +12,8 @@ import type { Illustration } from '@/lib/supabase'
 const DESKTOP_CARD_SIZE = 108
 const MOBILE_CARD_SIZE = 72
 const MOBILE_MAX = 767
+/** Don't block the explosion forever if a remote image stalls. */
+const IMAGE_READY_TIMEOUT_MS = 5000
 
 /**
  * Fixed symmetric halo — 5 per side, no slot below the logo.
@@ -81,6 +83,11 @@ function layoutForWidth(width: number) {
   }
 }
 
+function cardsIdKey(cards: PlacedCard[] | null) {
+  if (!cards?.length) return ''
+  return cards.map((card) => card.illustration.id).join(',')
+}
+
 type HomeScatterProps = {
   illustrations: Illustration[]
 }
@@ -88,9 +95,14 @@ type HomeScatterProps = {
 export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
   const containerRef = useRef<HTMLDivElement>(null)
+  const loadedIdsRef = useRef(new Set<string>())
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
   const [cardSize, setCardSize] = useState(DESKTOP_CARD_SIZE)
+  const [imagesReady, setImagesReady] = useState(false)
   const [explode, setExplode] = useState(false)
+  const [loadEpoch, setLoadEpoch] = useState(0)
+
+  const idsKey = cardsIdKey(cards)
 
   useLayoutEffect(() => {
     const el = containerRef.current
@@ -104,12 +116,39 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
     }
   }, [illustrations])
 
+  // New set of illustrations → remount images and wait again before exploding.
   useEffect(() => {
-    if (!cards) return
+    if (!idsKey) return
+    loadedIdsRef.current = new Set()
+    setImagesReady(false)
+    setExplode(false)
+    setLoadEpoch((value) => value + 1)
+  }, [idsKey])
 
+  const markImageReady = useCallback(
+    (id: string) => {
+      if (!cards?.length) return
+      loadedIdsRef.current.add(id)
+      if (loadedIdsRef.current.size >= cards.length) {
+        setImagesReady(true)
+      }
+    },
+    [cards],
+  )
+
+  // Safety: never stall the home animation forever.
+  useEffect(() => {
+    if (!cards?.length || imagesReady) return
+    const timer = window.setTimeout(() => setImagesReady(true), IMAGE_READY_TIMEOUT_MS)
+    return () => window.clearTimeout(timer)
+  }, [cards, imagesReady, idsKey])
+
+  // Explosion only after images are ready (+ panel enter delay if any).
+  useEffect(() => {
+    if (!cards?.length || !imagesReady) return
     const timer = window.setTimeout(() => setExplode(true), enterDelay)
     return () => window.clearTimeout(timer)
-  }, [cards, enterDelay])
+  }, [cards, imagesReady, enterDelay])
 
   useEffect(() => {
     const el = containerRef.current
@@ -194,12 +233,15 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
               <span className="scatter-glow" aria-hidden />
               <div className="relative h-full w-full overflow-hidden rounded-full paper-shadow">
                 <IllustrationImage
+                  key={`${card.illustration.id}-${loadEpoch}`}
                   src={card.illustration.image_url}
                   alt={illustrationAlt(card.illustration)}
                   width={360}
                   height={360}
                   rounded="full"
-                  priority={i < 2}
+                  priority
+                  fade={false}
+                  onReady={() => markImageReady(card.illustration.id)}
                   className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
                   sizes="(max-width: 767px) 72px, 120px"
                 />

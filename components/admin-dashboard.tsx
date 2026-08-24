@@ -18,7 +18,15 @@ import type { Illustration } from '@/lib/supabase'
 import type { SiteTheme } from '@/lib/site-theme'
 
 const BUCKET = 'illustrations'
-const SUBCATEGORIES = ['Fleurs', 'Canapé', 'Autour de la nourriture'] as const
+const SUBCATEGORIES = [
+  'Petit portraits',
+  'Grand portraits',
+  'Stickers',
+  'Milklab',
+  'Fleurs',
+  'Canapé',
+  'Autour de la nourriture',
+] as const
 
 type SortOption = 'date-desc' | 'date-asc' | 'price-asc' | 'price-desc'
 

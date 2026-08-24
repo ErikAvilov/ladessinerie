@@ -11,7 +11,15 @@ import { supabase } from '@/lib/supabase-browser'
 import type { Illustration } from '@/lib/supabase'
 
 const BUCKET = 'illustrations'
-const SUBCATEGORIES = ['Fleurs', 'Canapé', 'Autour de la nourriture'] as const
+const SUBCATEGORIES = [
+  'Petit portraits',
+  'Grand portraits',
+  'Stickers',
+  'Milklab',
+  'Fleurs',
+  'Canapé',
+  'Autour de la nourriture',
+] as const
 
 function storagePathFromUrl(url: string) {
   const marker = `/${BUCKET}/`

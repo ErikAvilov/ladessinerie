@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { HomePageClient } from '@/components/home-page-client'
+import { AboutPageClient } from '@/components/about-page-client'
 import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
 import { ParticulierPageClient } from '@/components/particulier-page-client'
 import { PanelEnterContext, SLIDE_DURATION_MS } from '@/components/page-transition'
@@ -69,6 +70,7 @@ export function SiteSlider({
       const path = window.location.pathname
       if (path === '/particulier') setPanel('particulier')
       else if (path === '/pro') setPanel('pro')
+      else if (path === '/a-propos') setPanel('about')
       else setPanel('home')
       setEnterDelay(0)
     }
@@ -78,8 +80,9 @@ export function SiteSlider({
   }, [])
 
   useEffect(() => {
-    document.documentElement.classList.toggle('no-scroll', panel === 'home')
-    document.body.classList.toggle('no-scroll', panel === 'home')
+    const lockScroll = panel === 'home' || panel === 'about'
+    document.documentElement.classList.toggle('no-scroll', lockScroll)
+    document.body.classList.toggle('no-scroll', lockScroll)
     return () => {
       document.documentElement.classList.remove('no-scroll')
       document.body.classList.remove('no-scroll')
@@ -148,21 +151,34 @@ export function SiteSlider({
             <RouteSideGates panel={panel} onNavigate={goTo} />
 
             <motion.div
-              className="flex h-dvh w-[300vw] will-change-transform"
+              className="h-[200dvh] w-full will-change-transform"
               initial={false}
-              animate={{ x: `-${panelIndex(panel) * 100}vw` }}
+              animate={{ y: panel === 'about' ? '-100dvh' : '0dvh' }}
               transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
             >
-              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-72 pl-4 pr-14 md:pt-28 md:pb-96 md:pl-10 md:pr-20">
-                <ParticulierPageClient illustrations={particulierIllustrations} />
-              </section>
+              <div className="h-dvh overflow-hidden">
+                <motion.div
+                  className="flex h-dvh w-[300vw] will-change-transform"
+                  initial={false}
+                  animate={{ x: `-${panelIndex(panel) * 100}vw` }}
+                  transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
+                >
+                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
+                    <ParticulierPageClient />
+                  </section>
 
-              <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
-                <HomePageClient illustrations={homeIllustrations} />
-              </section>
+                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
+                    <HomePageClient illustrations={homeIllustrations} />
+                  </section>
 
-              <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
-                <ProPageClient illustrations={proIllustrations} />
+                  <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
+                    <ProPageClient illustrations={proIllustrations} />
+                  </section>
+                </motion.div>
+              </div>
+
+              <section className="relative h-dvh w-full overflow-hidden px-5 pb-8 pt-24 md:px-16 md:pb-10 md:pt-28">
+                <AboutPageClient />
               </section>
             </motion.div>
 

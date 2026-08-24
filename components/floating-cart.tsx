@@ -66,7 +66,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
 
   return createPortal(
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-2 z-20 flex justify-center md:bottom-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2">
         <button
           type="button"
           data-cart-target
@@ -77,7 +77,7 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               : 'Ouvrir le panier'
           }
           className={[
-            'cart-float pointer-events-auto relative flex size-[16.5rem] cursor-pointer items-center justify-center md:size-[27rem]',
+            'cart-float pointer-events-auto relative flex size-[8.25rem] cursor-pointer items-center justify-center md:size-[13.5rem]',
             entranceReady || reduceMotion ? 'cart-float--ready' : '',
             bumping ? 'cart-float--bump' : '',
           ]
@@ -105,20 +105,20 @@ export function FloatingCart({ items, open, bump, onOpen, onClose }: FloatingCar
               <motion.span
                 key={`bump-${bump}`}
                 aria-hidden
-                className="pointer-events-none absolute inset-[-28px] rounded-full border-[3px] border-[var(--terracotta)] md:inset-[-40px] md:border-4"
+                className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)] md:inset-[-20px] md:border-[3px]"
                 initial={{ opacity: 0.7, scale: 0.7 }}
                 animate={{ opacity: 0, scale: 1.85 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             )}
-            <PanierIcon className="block h-[14.25rem] w-[20rem] drop-shadow-[0_12px_28px_rgba(43,41,39,0.22)] md:h-[22.5rem] md:w-[32rem]" />
+            <PanierIcon className="block h-[7.125rem] w-[10rem] drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] md:h-[11.25rem] md:w-[16rem]" />
           </motion.span>
           {count > 0 && (
             <motion.span
               key={`count-${count}`}
               initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full bg-[var(--terracotta)] text-sm font-semibold text-white shadow-md md:right-5 md:top-5 md:size-14 md:text-lg"
+              className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-[var(--terracotta)] text-[10px] font-semibold text-white shadow-md md:right-2.5 md:top-2.5 md:size-8 md:text-sm"
             >
               {count}
             </motion.span>

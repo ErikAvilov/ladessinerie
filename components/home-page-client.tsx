@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { HomeScatter } from '@/components/home-scatter'
 import { PanelEnterContext } from '@/components/page-transition'
+import { useSitePanel } from '@/components/site-panel-context'
 import type { Illustration } from '@/lib/supabase'
 
 type HomePageClientProps = {
@@ -13,6 +14,7 @@ type HomePageClientProps = {
 
 export function HomePageClient({ illustrations }: HomePageClientProps) {
   const enterDelay = useContext(PanelEnterContext)
+  const sitePanel = useSitePanel()
   const [showLogo, setShowLogo] = useState(enterDelay === 0)
   const [showTagline, setShowTagline] = useState(enterDelay === 0)
 
@@ -37,22 +39,27 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
   return (
     <div className="relative flex h-full min-h-0 flex-col items-center justify-center overflow-hidden px-11 pb-28 pt-20 md:px-[clamp(10.5rem,20vw,16.5rem)] md:pb-[6.75rem] md:pt-[4.25rem]">
       <HomeScatter illustrations={illustrations} />
-      <motion.div
+      <motion.button
+        type="button"
+        aria-label="Découvrir Anna, l’illustratrice"
+        onClick={() => sitePanel?.goTo('about')}
         initial={{ scale: 0.85, opacity: 0 }}
         animate={showLogo ? { scale: 1, opacity: 1 } : { scale: 0.85, opacity: 0 }}
+        whileHover={{ scale: 1.08, rotate: -4, transition: { duration: 0.22 } }}
+        whileTap={{ scale: 0.96 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="relative z-10 size-24 shrink-0 md:size-40"
+        className="group relative z-10 size-24 shrink-0 cursor-pointer md:size-40"
       >
         <Image
           src="/images/logo.webp"
           alt="La Dessinerie"
           width={13244}
           height={9354}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain transition duration-300 group-hover:brightness-110"
           sizes="160px"
           priority
         />
-      </motion.div>
+      </motion.button>
 
       <motion.p
         aria-hidden={!showTagline}

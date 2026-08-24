@@ -5,6 +5,9 @@ import { useState, type SyntheticEvent } from 'react'
 
 type IllustrationImageProps = ImageProps & {
   rounded?: 'xl' | 'full' | 'none'
+  /** Soft fade-in when the bitmap is ready (default true). */
+  fade?: boolean
+  onReady?: () => void
 }
 
 export function IllustrationImage({
@@ -12,7 +15,10 @@ export function IllustrationImage({
   rounded = 'none',
   priority,
   fill,
+  fade = true,
   onLoad,
+  onError,
+  onReady,
   ...props
 }: IllustrationImageProps) {
   const [loaded, setLoaded] = useState(false)
@@ -21,9 +27,20 @@ export function IllustrationImage({
     rounded === 'xl' ? 'rounded-xl' : rounded === 'full' ? 'rounded-full' : ''
   const positionClass = fill ? 'absolute inset-0' : 'relative h-full w-full'
 
-  function handleLoad(event: SyntheticEvent<HTMLImageElement, Event>) {
+  function markReady() {
+    if (loaded) return
     setLoaded(true)
+    onReady?.()
+  }
+
+  function handleLoad(event: SyntheticEvent<HTMLImageElement, Event>) {
+    markReady()
     onLoad?.(event)
+  }
+
+  function handleError(event: SyntheticEvent<HTMLImageElement, Event>) {
+    markReady()
+    onError?.(event)
   }
 
   return (
@@ -40,9 +57,10 @@ export function IllustrationImage({
         fill={fill}
         priority={priority}
         onLoad={handleLoad}
+        onError={handleError}
         className={[
           className,
-          'transition-opacity duration-500 ease-out',
+          fade ? 'transition-opacity duration-500 ease-out' : '',
           loaded ? 'opacity-100' : 'opacity-0',
         ]
           .filter(Boolean)
