@@ -100,7 +100,7 @@ export function ParticulierPageClient() {
 
         {/* Espace réservé au panier flottant (moitié de l’ancienne taille). */}
         <div className="min-h-0 flex-1" aria-hidden />
-        <div className="h-[8.5rem] shrink-0 md:h-[14rem]" aria-hidden />
+        <div className="h-[12.75rem] shrink-0 md:h-[21rem]" aria-hidden />
       </div>
 
       {dive && (

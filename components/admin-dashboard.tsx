@@ -19,10 +19,11 @@ import type { SiteTheme } from '@/lib/site-theme'
 
 const BUCKET = 'illustrations'
 const SUBCATEGORIES = [
-  'Petit portraits',
-  'Grand portraits',
+  'Illustrations personnalisées',
   'Stickers',
   'Milklab',
+  'Petit portraits',
+  'Grand portraits',
   'Fleurs',
   'Canapé',
   'Autour de la nourriture',

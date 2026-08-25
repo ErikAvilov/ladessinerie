@@ -15,5 +15,19 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/particulier/petit-portraits',
+        destination: '/particulier/illustrations',
+        permanent: true,
+      },
+      {
+        source: '/particulier/grand-portraits',
+        destination: '/particulier/personnalisees',
+        permanent: true,
+      },
+    ]
+  },
 }
 export default nextConfig

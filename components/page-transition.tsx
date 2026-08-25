@@ -47,47 +47,57 @@ export function PageTransition({ children }: { children: ReactNode }) {
     return <div className="h-dvh overflow-x-hidden overflow-y-auto bg-background">{children}</div>
   }
 
-  // /, /particulier, /pro → SiteSlider (panier géré dedans, visible seulement sur particulier)
-  if (isPanelRoute) {
-    return children
-  }
+  const showFloatingCart =
+    pathname === '/particulier' || pathname.startsWith('/particulier/')
+  const isArtDetail = pathname.startsWith('/particulier/art/')
+  const cartSize = isArtDetail ? 'sm' : 'lg'
 
-  const panel = pathname.startsWith('/particulier')
-    ? 'particulier'
-    : pathname.startsWith('/pro')
-      ? 'pro'
-      : 'home'
+  const shell = (() => {
+    // /, /particulier, /pro, /a-propos → SiteSlider
+    if (isPanelRoute) {
+      return children
+    }
 
-  const chrome = (
-    <PanelEnterContext.Provider value={0}>
-      <div className="relative h-dvh overflow-hidden">
-        <SiteBackgroundLayer
-          className="absolute inset-0 z-0"
-          fond={categoryColor}
-          traits={categoryColor ? BOUTON_BACKGROUND_FOND : undefined}
-        />
-        <div className="absolute inset-0 z-[1] flex h-dvh flex-col">
-          <SiteHeader />
-          <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />
-          <div
-            className={
-              isParticulierNested
-                ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-40 pt-[4.75rem] md:px-10 md:pb-52 md:pt-28'
-                : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
-            }
-          >
-            {children}
+    const panel = pathname.startsWith('/particulier')
+      ? 'particulier'
+      : pathname.startsWith('/pro')
+        ? 'pro'
+        : 'home'
+
+    const hideSideGates =
+      pathname === '/succes' || pathname === '/panier' || isArtDetail
+
+    // Fiche art : padding léger, panier sm ; le contenu est déjà « dézoomé ».
+    const contentPad = isArtDetail
+      ? 'relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-20 pt-14 md:px-8 md:pb-24 md:pt-16'
+      : isParticulierNested || pathname === '/panier' || pathname === '/succes'
+        ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-44 pt-[4.75rem] md:px-10 md:pb-56 md:pt-28'
+        : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
+
+    return (
+      <PanelEnterContext.Provider value={0}>
+        <div className="relative h-dvh overflow-hidden">
+          <SiteBackgroundLayer
+            className="absolute inset-0 z-0"
+            fond={categoryColor}
+            traits={categoryColor ? BOUTON_BACKGROUND_FOND : undefined}
+          />
+          <div className="absolute inset-0 z-[1] flex h-dvh flex-col">
+            <SiteHeader />
+            {!hideSideGates && (
+              <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />
+            )}
+            <div className={contentPad}>{children}</div>
+            {!isArtDetail && <SiteFooter showTagline={false} />}
           </div>
-          <SiteFooter showTagline={false} />
         </div>
-      </div>
-    </PanelEnterContext.Provider>
+      </PanelEnterContext.Provider>
+    )
+  })()
+
+  return (
+    <ParticulierCartProvider visible={showFloatingCart} cartSize={cartSize}>
+      {shell}
+    </ParticulierCartProvider>
   )
-
-  // Fiches produit / collections : panier visible
-  if (isParticulierNested) {
-    return <ParticulierCartProvider visible>{chrome}</ParticulierCartProvider>
-  }
-
-  return chrome
 }

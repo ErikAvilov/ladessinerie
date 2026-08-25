@@ -6,6 +6,7 @@ import { useRef, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { useParticulierCart } from '@/components/particulier-cart-provider'
 import { formatEuro, illustrationAlt } from '@/lib/illustration-utils'
+import { startCheckout } from '@/lib/stripe-checkout-client'
 import type { Illustration } from '@/lib/supabase'
 
 type ParticulierArtDetailProps = {
@@ -17,6 +18,8 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
   const imageRef = useRef<HTMLDivElement>(null)
   const [sizeIndex, setSizeIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const selectedSize = illustration.sizes?.[sizeIndex]
 
@@ -25,130 +28,161 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
     addToCart(illustration, sizeIndex, quantity, imageRef.current)
   }
 
+  async function handleBuy() {
+    if (!selectedSize || checkoutLoading) return
+    setCheckoutError(null)
+    setCheckoutLoading(true)
+    try {
+      await startCheckout({
+        illustrationId: illustration.id,
+        size: selectedSize.size,
+        price: selectedSize.price,
+        quantity,
+      })
+    } catch (error) {
+      setCheckoutError(
+        error instanceof Error ? error.message : 'Impossible de démarrer le paiement.',
+      )
+      setCheckoutLoading(false)
+    }
+  }
+
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col md:h-auto md:pb-28">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col">
       <Link
-        href="/particulier"
-        className="inline-flex shrink-0 cursor-pointer items-center gap-1 text-xs text-foreground/60 transition hover:text-foreground md:text-sm"
+        href="/particulier/illustrations"
+        className="inline-flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-foreground/60 transition hover:text-foreground md:text-[11px]"
       >
-        ← Retour à la boutique
+        ← Retour
       </Link>
 
-      <div className="mt-2 flex min-h-0 flex-1 flex-col gap-3 md:mt-6 md:grid md:grid-cols-2 md:gap-14 lg:gap-16">
-        <div
-          ref={imageRef}
-          className="relative mx-auto h-[min(40dvh,20rem)] aspect-[3/4] shrink-0 overflow-hidden rounded-xl bg-foreground/5 paper-shadow md:mx-0 md:aspect-[3/4] md:h-auto md:w-full md:max-w-none md:rounded-2xl"
-        >
-          <Image
-            src={illustration.image_url}
-            alt={illustrationAlt(illustration)}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 768px) 55vw, 50vw"
-          />
-        </div>
-
-        <div className="flex shrink-0 flex-col md:py-4">
-          <div className="flex items-start justify-between gap-3 md:block">
-            <div className="min-w-0">
-              <p className="font-mono text-[9px] uppercase tracking-[.2em] text-[var(--sage)] md:text-[10px]">
-                La Dessinerie
-              </p>
-              <h1 className="display mt-0.5 text-xl font-semibold leading-tight md:mt-2 md:text-4xl lg:text-5xl">
-                {illustration.title}
-              </h1>
-            </div>
-            <div className="shrink-0 text-right md:mt-4 md:text-left">
-              {selectedSize ? (
-                <p className="text-lg font-semibold md:text-2xl">
-                  {formatEuro(selectedSize.price)}
-                  <span className="ml-1 text-xs font-normal text-foreground/50 md:text-sm">
-                    EUR
-                  </span>
-                </p>
-              ) : (
-                <p className="text-sm text-foreground/50">Prix sur demande</p>
-              )}
-              <p className="mt-0.5 text-[10px] text-foreground/45 md:text-xs">Taxes incluses.</p>
-            </div>
+      <div className="mt-1.5 flex min-h-0 flex-1 overflow-hidden rounded-2xl bg-white/92 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px]">
+        <div className="grid min-h-0 w-full flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)]">
+          {/* Conteneur haut : l’image entière tient dedans (contain = jamais coupée) */}
+          <div
+            ref={imageRef}
+            className="relative min-h-[42dvh] w-full bg-[#f3eee6] md:min-h-0 md:h-full"
+          >
+            <Image
+              src={illustration.image_url}
+              alt={illustrationAlt(illustration)}
+              fill
+              priority
+              className="object-contain object-center"
+              sizes="(max-width: 768px) 95vw, 60vw"
+            />
           </div>
 
-          {illustration.sizes && illustration.sizes.length > 0 ? (
-            <>
-              <div className="mt-3 md:mt-8">
-                <p className="text-xs font-medium md:text-sm">Format</p>
-                <div className="mt-1.5 flex flex-wrap gap-1.5 md:mt-3 md:gap-2">
-                  {illustration.sizes.map((entry, index) => {
-                    const active = index === sizeIndex
-                    return (
-                      <button
-                        key={`${entry.size}-${index}`}
-                        type="button"
-                        onClick={() => setSizeIndex(index)}
-                        className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-medium transition md:px-5 md:py-2.5 md:text-sm ${
-                          active
-                            ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
-                            : 'border-foreground/20 bg-transparent hover:border-foreground/40'
-                        }`}
-                      >
-                        {entry.size}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2.5 md:mt-8 md:flex-col md:items-start md:gap-0">
-                <div className="md:contents">
-                  <p className="mb-0 hidden text-sm font-medium md:mb-0 md:mt-0 md:block">
-                    Quantité
+          <div className="flex min-h-0 flex-col justify-center gap-2 border-t border-foreground/5 px-3.5 py-3 md:gap-2.5 md:border-l md:border-t-0 md:px-4 md:py-4 lg:px-5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[var(--sage)]">
+                  La Dessinerie
+                </p>
+                <h1 className="display mt-0.5 text-sm font-semibold leading-snug md:text-base lg:text-lg">
+                  {illustration.title}
+                </h1>
+                {illustration.subcategory ? (
+                  <p className="mt-0.5 text-[10px] text-foreground/50">
+                    Tirage {illustration.subcategory}
                   </p>
-                  <div className="inline-flex items-center rounded-full border border-foreground/15 md:mt-3">
+                ) : null}
+              </div>
+              <div className="shrink-0 text-right">
+                {selectedSize ? (
+                  <p className="text-sm font-semibold md:text-base">
+                    {formatEuro(selectedSize.price)}
+                    <span className="ml-0.5 text-[9px] font-normal text-foreground/50">EUR</span>
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-foreground/50">Prix sur demande</p>
+                )}
+                <p className="text-[9px] text-foreground/45">Taxes incluses.</p>
+              </div>
+            </div>
+
+            {illustration.sizes && illustration.sizes.length > 0 ? (
+              <>
+                <div>
+                  <p className="text-[10px] font-medium">Format</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {illustration.sizes.map((entry, index) => {
+                      const active = index === sizeIndex
+                      return (
+                        <button
+                          key={`${entry.size}-${index}`}
+                          type="button"
+                          onClick={() => setSizeIndex(index)}
+                          className={`cursor-pointer rounded-full border px-2.5 py-1 text-[10px] font-medium transition ${
+                            active
+                              ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
+                              : 'border-foreground/20 bg-transparent hover:border-foreground/40'
+                          }`}
+                        >
+                          {entry.size}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="inline-flex items-center rounded-full border border-foreground/15">
                     <button
                       type="button"
                       aria-label="Diminuer la quantité"
                       disabled={quantity <= 1}
                       onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                      className="flex size-9 cursor-pointer items-center justify-center rounded-l-full transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40 md:size-11"
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-l-full transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      <Minus size={15} />
+                      <Minus size={12} />
                     </button>
-                    <span className="min-w-[2rem] text-center text-sm font-semibold tabular-nums md:min-w-[2.5rem]">
+                    <span className="min-w-[1.5rem] text-center text-[11px] font-semibold tabular-nums">
                       {quantity}
                     </span>
                     <button
                       type="button"
                       aria-label="Augmenter la quantité"
-                      onClick={() => setQuantity((value) => value + 1)}
-                      className="flex size-9 cursor-pointer items-center justify-center rounded-r-full transition hover:bg-foreground/5 md:size-11"
+                      onClick={() => setQuantity((value) => Math.min(99, value + 1))}
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-r-full transition hover:bg-foreground/5"
                     >
-                      <Plus size={15} />
+                      <Plus size={12} />
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    disabled={!selectedSize}
+                    onClick={handleAddToCart}
+                    className="min-w-0 flex-1 cursor-pointer rounded-full border-2 border-[var(--terracotta)] bg-background px-2.5 py-1.5 text-[10px] font-semibold text-[var(--terracotta)] transition hover:bg-[var(--terracotta)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Ajouter au panier
+                  </button>
                 </div>
 
                 <button
                   type="button"
-                  disabled={!selectedSize}
-                  onClick={handleAddToCart}
-                  className="min-w-0 flex-1 cursor-pointer rounded-full border-2 border-[var(--terracotta)] bg-background px-4 py-2.5 text-sm font-semibold text-[var(--terracotta)] transition hover:bg-[var(--terracotta)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:mt-10 md:w-full md:max-w-md md:flex-none md:px-6 md:py-4 md:text-base"
+                  disabled={!selectedSize || checkoutLoading}
+                  onClick={() => void handleBuy()}
+                  className="w-full cursor-pointer rounded-full bg-[var(--terracotta)] px-3 py-2 text-[11px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Ajouter au panier
+                  {checkoutLoading ? 'Redirection…' : 'Acheter'}
                 </button>
-              </div>
-            </>
-          ) : (
-            <p className="mt-4 text-sm text-foreground/50 md:mt-8">
-              Aucun format disponible pour cette illustration.
-            </p>
-          )}
 
-          {illustration.subcategory && (
-            <p className="mt-2 hidden text-sm text-foreground/55 md:mt-8 md:block">
-              Tirage {illustration.subcategory}
-            </p>
-          )}
+                <p className="text-[9px] leading-snug text-foreground/45">
+                  Stripe · facture PDF · retrait atelier (gratuit).
+                </p>
+
+                {checkoutError ? (
+                  <p className="text-[11px] text-[var(--terracotta)]">{checkoutError}</p>
+                ) : null}
+              </>
+            ) : (
+              <p className="text-[11px] text-foreground/50">
+                Aucun format disponible pour cette illustration.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

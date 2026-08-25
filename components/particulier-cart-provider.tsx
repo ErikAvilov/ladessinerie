@@ -10,8 +10,17 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { FloatingCart, type CartItem } from '@/components/floating-cart'
+import { FloatingCart, type FloatingCartSize } from '@/components/floating-cart'
 import { FlyToCart, type FlyPayload } from '@/components/fly-to-cart'
+import {
+  cartCount,
+  cartItemKey,
+  cartTotal,
+  mergeCartItem,
+  readCartFromStorage,
+  writeCartToStorage,
+  type CartItem,
+} from '@/lib/cart'
 import type { Illustration } from '@/lib/supabase'
 
 type PendingAdd = {
@@ -20,45 +29,48 @@ type PendingAdd = {
 }
 
 type ParticulierCartContextValue = {
+  items: CartItem[]
+  ready: boolean
+  count: number
+  total: number
   addToCart: (
     illustration: Pick<Illustration, 'id' | 'title' | 'image_url' | 'sizes'>,
     sizeIndex: number,
     quantity: number,
     imageEl: HTMLElement | null,
   ) => void
+  setItemQuantity: (key: string, quantity: number) => void
+  removeItem: (key: string) => void
+  clearCart: () => void
 }
 
 const ParticulierCartContext = createContext<ParticulierCartContextValue | null>(null)
 
-function mergeCartItem(items: CartItem[], incoming: CartItem, quantity: number): CartItem[] {
-  const existing = items.find((entry) => entry.key === incoming.key)
-  if (existing) {
-    return items.map((entry) =>
-      entry.key === incoming.key
-        ? { ...entry, quantity: entry.quantity + quantity }
-        : entry,
-    )
-  }
-  return [...items, { ...incoming, quantity }]
-}
-
 export function ParticulierCartProvider({
   children,
   visible = true,
+  cartSize = 'lg',
 }: {
   children: ReactNode
   visible?: boolean
+  cartSize?: FloatingCartSize
 }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [cartOpen, setCartOpen] = useState(false)
+  const [ready, setReady] = useState(false)
   const [bump, setBump] = useState(0)
   const [flights, setFlights] = useState<FlyPayload[]>([])
   const flightId = useRef(0)
   const pendingAdds = useRef<Map<number, PendingAdd>>(new Map())
 
   useEffect(() => {
-    if (!visible) setCartOpen(false)
-  }, [visible])
+    setCartItems(readCartFromStorage())
+    setReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!ready) return
+    writeCartToStorage(cartItems)
+  }, [cartItems, ready])
 
   const addToCart = useCallback(
     (
@@ -71,7 +83,7 @@ export function ParticulierCartProvider({
       if (!sizeEntry || quantity < 1) return
 
       const cartItem: CartItem = {
-        key: `${illustration.id}-${sizeEntry.size}`,
+        key: cartItemKey(illustration.id, sizeEntry.size),
         illustrationId: illustration.id,
         title: illustration.title,
         size: sizeEntry.size,
@@ -103,14 +115,45 @@ export function ParticulierCartProvider({
     const pending = pendingAdds.current.get(id)
     pendingAdds.current.delete(id)
     if (pending) {
-      setCartItems((current) =>
-        mergeCartItem(current, pending.item, pending.quantity),
-      )
+      setCartItems((current) => mergeCartItem(current, pending.item, pending.quantity))
     }
     setBump((value) => value + 1)
   }, [])
 
-  const value = useMemo(() => ({ addToCart }), [addToCart])
+  const setItemQuantity = useCallback((key: string, quantity: number) => {
+    const next = Math.round(quantity)
+    if (next < 1) {
+      setCartItems((current) => current.filter((item) => item.key !== key))
+      return
+    }
+    setCartItems((current) =>
+      current.map((item) =>
+        item.key === key ? { ...item, quantity: Math.min(99, next) } : item,
+      ),
+    )
+  }, [])
+
+  const removeItem = useCallback((key: string) => {
+    setCartItems((current) => current.filter((item) => item.key !== key))
+  }, [])
+
+  const clearCart = useCallback(() => {
+    setCartItems([])
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      items: cartItems,
+      ready,
+      count: cartCount(cartItems),
+      total: cartTotal(cartItems),
+      addToCart,
+      setItemQuantity,
+      removeItem,
+      clearCart,
+    }),
+    [cartItems, ready, addToCart, setItemQuantity, removeItem, clearCart],
+  )
 
   return (
     <ParticulierCartContext.Provider value={value}>
@@ -121,9 +164,8 @@ export function ParticulierCartProvider({
           <FloatingCart
             items={cartItems}
             bump={bump}
-            open={cartOpen}
-            onOpen={() => setCartOpen(true)}
-            onClose={() => setCartOpen(false)}
+            count={cartCount(cartItems)}
+            size={cartSize}
           />
         </>
       )}
@@ -137,4 +179,8 @@ export function useParticulierCart() {
     throw new Error('useParticulierCart must be used within ParticulierCartProvider')
   }
   return context
+}
+
+export function useParticulierCartOptional() {
+  return useContext(ParticulierCartContext)
 }

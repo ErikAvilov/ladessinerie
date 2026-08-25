@@ -1,48 +1,50 @@
 export type ParticulierCategorySlug =
-  | 'petit-portraits'
-  | 'grand-portraits'
-  | 'stickers'
+  | 'illustrations'
   | 'milklab'
+  | 'stickers'
+  | 'personnalisees'
 
 export type ParticulierCategory = {
   slug: ParticulierCategorySlug
   label: string
-  /** Couleur de fond après la plongée (extrait du bouton). */
+  /** Couleur de secours ; la couleur active vient du thème admin. */
   color: string
   imageSrc: string
-  /** Valeur `subcategory` attendue dans Supabase. */
-  subcategory: string
+  /**
+   * `all` = toutes les illustrations particulier.
+   * sinon filtre exact sur `subcategory` Supabase.
+   */
+  filter: 'all' | { subcategory: string }
 }
 
 export const PARTICULIER_CATEGORIES: ParticulierCategory[] = [
   {
-    slug: 'petit-portraits',
-    label: 'Petit portraits',
-    /** Défaut ; la couleur active vient du thème site (admin). */
+    slug: 'illustrations',
+    label: 'Illustrations',
     color: '#cc633b',
     imageSrc: '/images/bouton-1.svg?v=2',
-    subcategory: 'Petit portraits',
-  },
-  {
-    slug: 'grand-portraits',
-    label: 'Grand portraits',
-    color: '#e5b1b0',
-    imageSrc: '/images/bouton-2.svg?v=2',
-    subcategory: 'Grand portraits',
-  },
-  {
-    slug: 'stickers',
-    label: 'Stickers',
-    color: '#f6e896',
-    imageSrc: '/images/bouton-3.svg?v=2',
-    subcategory: 'Stickers',
+    filter: 'all',
   },
   {
     slug: 'milklab',
     label: 'Milklab',
     color: '#c1d6d1',
     imageSrc: '/images/bouton-4.svg?v=2',
-    subcategory: 'Milklab',
+    filter: { subcategory: 'Milklab' },
+  },
+  {
+    slug: 'stickers',
+    label: 'Stickers',
+    color: '#f6e896',
+    imageSrc: '/images/bouton-3.svg?v=2',
+    filter: { subcategory: 'Stickers' },
+  },
+  {
+    slug: 'personnalisees',
+    label: 'Illustrations personnalisées',
+    color: '#e5b1b0',
+    imageSrc: '/images/bouton-2.svg?v=2',
+    filter: { subcategory: 'Illustrations personnalisées' },
   },
 ]
 
@@ -65,7 +67,9 @@ export function particulierCategoryPath(slug: ParticulierCategorySlug) {
 export function filterIllustrationsByCategory<
   T extends { subcategory?: string | null },
 >(illustrations: T[], category: ParticulierCategory): T[] {
-  const target = category.subcategory.trim().toLowerCase()
+  if (category.filter === 'all') return illustrations
+
+  const target = category.filter.subcategory.trim().toLowerCase()
   return illustrations.filter(
     (item) => item.subcategory?.trim().toLowerCase() === target,
   )

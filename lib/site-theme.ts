@@ -33,10 +33,10 @@ export const BOUTON_THEME_KEYS = [
 export type BoutonThemeKey = (typeof BOUTON_THEME_KEYS)[number]
 
 export const BOUTON_THEME_BY_SLUG: Record<ParticulierCategorySlug, BoutonThemeKey> = {
-  'petit-portraits': 'bouton_petit_portraits',
-  'grand-portraits': 'bouton_grand_portraits',
-  stickers: 'bouton_stickers',
+  illustrations: 'bouton_petit_portraits',
   milklab: 'bouton_milklab',
+  stickers: 'bouton_stickers',
+  personnalisees: 'bouton_grand_portraits',
 }
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
@@ -114,10 +114,10 @@ export function parseSiteThemeInput(input: Partial<SiteTheme>): SiteTheme | { er
     return { error: 'Couleur arrière-plan traits invalide (format #RRGGBB).' }
   }
   if (!bouton_petit_portraits) {
-    return { error: 'Couleur bouton Petit portraits invalide (format #RRGGBB).' }
+    return { error: 'Couleur bouton Illustrations invalide (format #RRGGBB).' }
   }
   if (!bouton_grand_portraits) {
-    return { error: 'Couleur bouton Grand portraits invalide (format #RRGGBB).' }
+    return { error: 'Couleur bouton Illustrations personnalisées invalide (format #RRGGBB).' }
   }
   if (!bouton_stickers) return { error: 'Couleur bouton Stickers invalide (format #RRGGBB).' }
   if (!bouton_milklab) return { error: 'Couleur bouton Milklab invalide (format #RRGGBB).' }
