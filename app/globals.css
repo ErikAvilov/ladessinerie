@@ -65,6 +65,147 @@ input[type='file']::file-selector-button {
   }
 }
 
+/* Apparition douce du contenu (skeleton → réel) */
+.content-reveal {
+  animation: content-reveal 0.42s ease-out both;
+}
+
+@keyframes content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-reveal {
+    animation: none;
+  }
+}
+
+/* ——— Feedback navigation immédiat ——— */
+.nav-progress {
+  pointer-events: none;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 80;
+  height: 2.5px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.nav-progress--active {
+  opacity: 1;
+}
+
+.nav-progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(
+    90deg,
+    var(--terracotta),
+    var(--mustard),
+    var(--terracotta)
+  );
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px rgba(217, 107, 67, 0.45);
+  transform-origin: left center;
+}
+
+.nav-progress--active .nav-progress__bar {
+  animation:
+    nav-progress-run 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    nav-progress-shine 1.1s linear infinite;
+}
+
+@keyframes nav-progress-run {
+  0% { width: 0%; }
+  35% { width: 42%; }
+  70% { width: 72%; }
+  100% { width: 88%; }
+}
+
+@keyframes nav-progress-shine {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.nav-veil {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(250, 246, 238, 0.28);
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.nav-veil--active {
+  opacity: 1;
+  /* Jamais pointer-events: auto — sinon le voile bloque le click du lien. */
+  cursor: wait;
+}
+
+.instant-link {
+  position: relative;
+}
+
+.link-pending-pulse {
+  pointer-events: none;
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  opacity: 0;
+  box-shadow: 0 0 0 0 rgba(217, 107, 67, 0.35);
+  transition: opacity 0.12s ease;
+}
+
+.link-pending-pulse--on {
+  opacity: 1;
+  animation: link-pending-ring 0.85s ease-out infinite;
+}
+
+@keyframes link-pending-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 107, 67, 0.4);
+    background: rgba(217, 107, 67, 0.06);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(217, 107, 67, 0);
+    background: rgba(217, 107, 67, 0);
+  }
+}
+
+.side-gate--pending {
+  transform: scale(0.96);
+  filter: brightness(1.08);
+}
+
+.side-gate--pending .side-gate__glow {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress--active .nav-progress__bar {
+    animation: none;
+    width: 70%;
+  }
+  .link-pending-pulse--on {
+    animation: none;
+    opacity: 0.7;
+    background: rgba(217, 107, 67, 0.12);
+  }
+  .nav-veil {
+    transition: none;
+  }
+}
+
 .scatter-card {
   z-index: 1;
 }
@@ -107,6 +248,41 @@ input[type='file']::file-selector-button {
   );
   filter: blur(2px);
   opacity: 0.85;
+}
+
+.meteor-glow--flight {
+  opacity: 1;
+  filter: blur(5px);
+  animation: meteor-glow-pulse 0.78s ease-in-out infinite;
+}
+
+.meteor-trail {
+  background: radial-gradient(
+    circle,
+    rgba(217, 107, 67, 0.2) 0%,
+    rgba(229, 178, 93, 0.12) 45%,
+    transparent 72%
+  );
+  filter: blur(8px);
+  opacity: 0.65;
+}
+
+@keyframes meteor-glow-pulse {
+  0%,
+  100% {
+    scale: 0.92;
+    opacity: 0.75;
+  }
+  50% {
+    scale: 1.08;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meteor-glow--flight {
+    animation: none;
+  }
 }
 
 @keyframes cart-swing-in {

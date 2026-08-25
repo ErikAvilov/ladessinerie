@@ -23,11 +23,6 @@ import {
 } from '@/lib/cart'
 import type { Illustration } from '@/lib/supabase'
 
-type PendingAdd = {
-  item: CartItem
-  quantity: number
-}
-
 type ParticulierCartContextValue = {
   items: CartItem[]
   ready: boolean
@@ -60,7 +55,6 @@ export function ParticulierCartProvider({
   const [bump, setBump] = useState(0)
   const [flights, setFlights] = useState<FlyPayload[]>([])
   const flightId = useRef(0)
-  const pendingAdds = useRef<Map<number, PendingAdd>>(new Map())
 
   useEffect(() => {
     setCartItems(readCartFromStorage())
@@ -92,9 +86,11 @@ export function ParticulierCartProvider({
         image_url: illustration.image_url,
       }
 
+      // Optimiste : badge + total tout de suite ; le bump panier arrive avec la météorite.
+      setCartItems((current) => mergeCartItem(current, cartItem, quantity))
+
       const cartEl = document.querySelector<HTMLElement>('[data-cart-target]')
       if (!imageEl || !cartEl) {
-        setCartItems((current) => mergeCartItem(current, cartItem, quantity))
         setBump((value) => value + 1)
         return
       }
@@ -103,8 +99,6 @@ export function ParticulierCartProvider({
       const to = cartEl.getBoundingClientRect()
       flightId.current += 1
       const id = flightId.current
-
-      pendingAdds.current.set(id, { item: cartItem, quantity })
       setFlights((current) => [...current, { id, src: illustration.image_url, from, to }])
     },
     [],
@@ -112,11 +106,6 @@ export function ParticulierCartProvider({
 
   const handleFlightComplete = useCallback((id: number) => {
     setFlights((current) => current.filter((flight) => flight.id !== id))
-    const pending = pendingAdds.current.get(id)
-    pendingAdds.current.delete(id)
-    if (pending) {
-      setCartItems((current) => mergeCartItem(current, pending.item, pending.quantity))
-    }
     setBump((value) => value + 1)
   }, [])
 

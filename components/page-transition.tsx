@@ -2,7 +2,9 @@
 
 import { usePathname } from 'next/navigation'
 import { createContext, useEffect, type ReactNode } from 'react'
+import { NavigationProgressProvider } from '@/components/navigation-progress'
 import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
+import { ShoppingReturnTracker } from '@/components/shopping-return-tracker'
 import { RouteSideGates } from '@/components/route-side-gates'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { SiteFooter } from '@/components/site-footer'
@@ -13,6 +15,7 @@ import {
   isParticulierCategorySlug,
 } from '@/lib/particulier-categories'
 import { isSitePanelPath, panelFromPathname } from '@/lib/site-panels'
+import { SCROLL_ROOT_ATTR } from '@/lib/scroll-pass-through'
 import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme'
 
 export const SLIDE_DURATION_MS = 580
@@ -74,6 +77,8 @@ export function PageTransition({ children }: { children: ReactNode }) {
         ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-44 pt-[4.75rem] md:px-10 md:pb-56 md:pt-28'
         : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
 
+    const isScrollableContent = !isArtDetail
+
     return (
       <PanelEnterContext.Provider value={0}>
         <div className="relative h-dvh overflow-hidden">
@@ -87,7 +92,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
             {!hideSideGates && (
               <RouteSideGates panel={panelFromPathname(pathname) ?? panel} />
             )}
-            <div className={contentPad}>{children}</div>
+            <div
+              className={contentPad}
+              {...(isScrollableContent ? { [SCROLL_ROOT_ATTR]: '' } : {})}
+            >
+              {children}
+            </div>
             {!isArtDetail && <SiteFooter showTagline={false} />}
           </div>
         </div>
@@ -96,8 +106,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
   })()
 
   return (
-    <ParticulierCartProvider visible={showFloatingCart} cartSize={cartSize}>
-      {shell}
-    </ParticulierCartProvider>
+    <NavigationProgressProvider>
+      <ParticulierCartProvider visible={showFloatingCart} cartSize={cartSize}>
+        {showFloatingCart ? <ShoppingReturnTracker /> : null}
+        {shell}
+      </ParticulierCartProvider>
+    </NavigationProgressProvider>
   )
 }

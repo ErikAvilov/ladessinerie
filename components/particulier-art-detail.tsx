@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
+import { IllustrationImage } from '@/components/illustration-image'
+import { InstantLink } from '@/components/instant-link'
 import { useParticulierCart } from '@/components/particulier-cart-provider'
 import { formatEuro, illustrationAlt } from '@/lib/illustration-utils'
 import { startCheckout } from '@/lib/stripe-checkout-client'
@@ -48,26 +48,26 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
   }
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col">
-      <Link
+    <div className="content-reveal mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col">
+      <InstantLink
         href="/particulier/illustrations"
-        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground md:text-[11px]"
+        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground active:scale-[0.98] md:text-[11px]"
       >
         ← Retour
-      </Link>
+      </InstantLink>
 
       <div className="mt-1.5 flex min-h-0 flex-1 overflow-hidden rounded-2xl bg-white/92 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px]">
         <div className="grid min-h-0 w-full flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)]">
-          {/* Conteneur haut : l’image entière tient dedans (contain = jamais coupée) */}
           <div
             ref={imageRef}
             className="relative min-h-[42dvh] w-full bg-[#f3eee6] md:min-h-0 md:h-full"
           >
-            <Image
+            <IllustrationImage
               src={illustration.image_url}
               alt={illustrationAlt(illustration)}
               fill
-              priority
+              preload
+              fade
               className="object-contain object-center"
               sizes="(max-width: 768px) 95vw, 60vw"
             />

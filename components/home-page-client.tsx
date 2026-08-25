@@ -22,6 +22,7 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
   const sitePanel = useSitePanel()
   const [showLogo, setShowLogo] = useState(enterDelay === 0)
   const [showTagline, setShowTagline] = useState(enterDelay === 0)
+  const [logoReady, setLogoReady] = useState(false)
 
   useEffect(() => {
     if (enterDelay === 0) {
@@ -55,15 +56,24 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
         transition={{ duration: 0.45, ease: 'easeOut' }}
         className="group relative z-10 size-24 shrink-0 cursor-pointer md:size-40"
       >
+        <span
+          aria-hidden
+          className={`image-load-shimmer pointer-events-none absolute inset-[12%] rounded-full transition-opacity duration-300 ${
+            logoReady ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
         <Image
           src="/images/logo.webp"
           alt="La Dessinerie"
           width={HOME_LOGO_WIDTH}
           height={HOME_LOGO_HEIGHT}
-          className="h-full w-full object-contain transition duration-300 group-hover:brightness-110"
+          className={`relative h-full w-full object-contain transition duration-300 group-hover:brightness-110 ${
+            logoReady ? 'opacity-100' : 'opacity-0'
+          }`}
           sizes={HOME_LOGO_SIZES}
           loading="eager"
           fetchPriority="high"
+          onLoad={() => setLogoReady(true)}
         />
       </motion.button>
 

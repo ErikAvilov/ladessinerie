@@ -49,10 +49,20 @@ export function BoutonIcon({ src, color, className }: BoutonIconProps) {
     }
   }, [src])
 
+  if (!svg) {
+    return (
+      <span
+        aria-hidden
+        className={`image-load-shimmer inline-block ${className ?? ''}`}
+        style={{ lineHeight: 0 }}
+      />
+    )
+  }
+
   return (
     <span
       aria-hidden
-      className={className}
+      className={`content-reveal ${className ?? ''}`}
       style={
         {
           display: 'inline-block',
@@ -60,7 +70,7 @@ export function BoutonIcon({ src, color, className }: BoutonIconProps) {
           '--bouton-fill': color,
         } as CSSProperties
       }
-      dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
+      dangerouslySetInnerHTML={{ __html: svg }}
     />
   )
 }

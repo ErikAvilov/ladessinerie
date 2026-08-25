@@ -2,11 +2,17 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Minus, Plus, Trash2 } from 'lucide-react'
+import { InstantLink } from '@/components/instant-link'
+import { PanierSkeleton } from '@/components/perf-skeleton'
 import { useParticulierCart } from '@/components/particulier-cart-provider'
 import { formatEuro } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
+import {
+  getShoppingReturn,
+  SHOPPING_RETURN_DEFAULT,
+} from '@/lib/shopping-return'
 import { startCheckout } from '@/lib/stripe-checkout-client'
 
 export function PanierPageClient() {
@@ -14,6 +20,11 @@ export function PanierPageClient() {
     useParticulierCart()
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [continueHref, setContinueHref] = useState(SHOPPING_RETURN_DEFAULT)
+
+  useEffect(() => {
+    setContinueHref(getShoppingReturn())
+  }, [])
 
   async function handleCheckout() {
     if (!items.length || checkoutLoading) return
@@ -37,15 +48,11 @@ export function PanierPageClient() {
   }
 
   if (!ready) {
-    return (
-      <div className="mx-auto flex min-h-full w-full max-w-3xl items-center justify-center py-24">
-        <p className="text-sm text-foreground/50">Chargement du panier…</p>
-      </div>
-    )
+    return <PanierSkeleton />
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col pb-10">
+    <div className="content-reveal mx-auto flex min-h-full w-full max-w-3xl flex-col pb-10">
       <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
         Boutique
       </p>
@@ -61,12 +68,12 @@ export function PanierPageClient() {
       {count === 0 ? (
         <div className="mt-12 rounded-2xl border border-dashed border-foreground/15 px-6 py-16 text-center">
           <p className="text-foreground/55">Votre panier est encore vide.</p>
-          <Link
+          <InstantLink
             href="/particulier/illustrations"
-            className="mt-6 inline-flex cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            className="mt-6 inline-flex cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
           >
             Voir les illustrations
-          </Link>
+          </InstantLink>
         </div>
       ) : (
         <>
@@ -181,12 +188,12 @@ export function PanierPageClient() {
         </>
       )}
 
-      <Link
-        href="/particulier"
-        className="mt-8 inline-flex cursor-pointer text-sm text-foreground/55 underline-offset-2 hover:text-foreground hover:underline"
+      <InstantLink
+        href={continueHref}
+        className="mt-8 inline-flex cursor-pointer text-sm text-foreground/55 underline-offset-2 hover:text-foreground hover:underline active:scale-[0.98]"
       >
         ← Continuer vos achats
-      </Link>
+      </InstantLink>
     </div>
   )
 }

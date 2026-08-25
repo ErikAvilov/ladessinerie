@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { IllustrationImage } from '@/components/illustration-image'
+import { InstantLink } from '@/components/instant-link'
 import { PanelEnterContext } from '@/components/page-transition'
 import {
   HOME_SCATTER_INTRINSIC_PX,
@@ -12,13 +12,12 @@ import {
 } from '@/lib/home-image'
 import { illustrationAlt } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
+import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
 import type { Illustration } from '@/lib/supabase'
 
 const DESKTOP_CARD_SIZE = 108
 const MOBILE_CARD_SIZE = 72
 const MOBILE_MAX = 767
-/** Don't block the explosion forever if a remote image stalls. */
-const IMAGE_READY_TIMEOUT_MS = 5000
 
 /**
  * Fixed symmetric halo — 5 per side, no slot below the logo.
@@ -82,15 +81,9 @@ function placeCards(
 function layoutForWidth(width: number) {
   const mobile = width <= MOBILE_MAX
   return {
-    mobile,
     layout: mobile ? MOBILE_LAYOUT : DESKTOP_LAYOUT,
     cardSize: mobile ? MOBILE_CARD_SIZE : DESKTOP_CARD_SIZE,
   }
-}
-
-function cardsIdKey(cards: PlacedCard[] | null) {
-  if (!cards?.length) return ''
-  return cards.map((card) => card.illustration.id).join(',')
 }
 
 type HomeScatterProps = {
@@ -100,14 +93,10 @@ type HomeScatterProps = {
 export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
   const containerRef = useRef<HTMLDivElement>(null)
-  const loadedIdsRef = useRef(new Set<string>())
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
   const [cardSize, setCardSize] = useState(DESKTOP_CARD_SIZE)
-  const [imagesReady, setImagesReady] = useState(false)
   const [explode, setExplode] = useState(false)
-  const [loadEpoch, setLoadEpoch] = useState(0)
-
-  const idsKey = cardsIdKey(cards)
+  const { onIntent, cancelIntent } = usePrefetchOnIntent()
 
   useLayoutEffect(() => {
     const el = containerRef.current
@@ -121,39 +110,13 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
     }
   }, [illustrations])
 
-  // New set of illustrations → remount images and wait again before exploding.
+  // Explosion dès que le layout est prêt (+ délai panel) — les images shimmer en place.
   useEffect(() => {
-    if (!idsKey) return
-    loadedIdsRef.current = new Set()
-    setImagesReady(false)
+    if (!cards?.length) return
     setExplode(false)
-    setLoadEpoch((value) => value + 1)
-  }, [idsKey])
-
-  const markImageReady = useCallback(
-    (id: string) => {
-      if (!cards?.length) return
-      loadedIdsRef.current.add(id)
-      if (loadedIdsRef.current.size >= cards.length) {
-        setImagesReady(true)
-      }
-    },
-    [cards],
-  )
-
-  // Safety: never stall the home animation forever.
-  useEffect(() => {
-    if (!cards?.length || imagesReady) return
-    const timer = window.setTimeout(() => setImagesReady(true), IMAGE_READY_TIMEOUT_MS)
+    const timer = window.setTimeout(() => setExplode(true), Math.max(enterDelay, 40))
     return () => window.clearTimeout(timer)
-  }, [cards, imagesReady, idsKey])
-
-  // Explosion only after images are ready (+ panel enter delay if any).
-  useEffect(() => {
-    if (!cards?.length || !imagesReady) return
-    const timer = window.setTimeout(() => setExplode(true), enterDelay)
-    return () => window.clearTimeout(timer)
-  }, [cards, imagesReady, enterDelay])
+  }, [cards, enterDelay])
 
   useEffect(() => {
     const el = containerRef.current
@@ -184,6 +147,25 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
   return (
     <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      {/* Halo fantôme immédiat : le site « vit » avant les bitmaps. */}
+      {!explode &&
+        cards?.map((card) => (
+          <div
+            key={`ghost-${card.illustration.id}`}
+            aria-hidden
+            className="absolute left-1/2 top-1/2 overflow-hidden rounded-full"
+            style={{
+              width: cardSize,
+              height: cardSize,
+              marginLeft: -cardSize / 2,
+              marginTop: -cardSize / 2,
+              transform: `translate(${card.x}px, ${card.y}px) rotate(${card.rotate}deg)`,
+            }}
+          >
+            <span className="image-load-shimmer block h-full w-full rounded-full" />
+          </div>
+        ))}
+
       {cards?.map((card, i) => {
         const href = particulierArtPath(card.illustration.id)
 
@@ -230,15 +212,17 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
               marginTop: -cardSize / 2,
             }}
           >
-            <Link
+            <InstantLink
               href={href}
               aria-label={card.illustration.title}
               className="block h-full w-full"
+              onPointerEnter={() => onIntent(href)}
+              onFocus={() => onIntent(href)}
+              onPointerLeave={cancelIntent}
             >
               <span className="scatter-glow" aria-hidden />
               <div className="relative h-full w-full overflow-hidden rounded-full paper-shadow">
                 <IllustrationImage
-                  key={`${card.illustration.id}-${loadEpoch}`}
                   src={card.illustration.image_url}
                   alt={illustrationAlt(card.illustration)}
                   width={HOME_SCATTER_INTRINSIC_PX}
@@ -246,13 +230,12 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                   rounded="full"
                   loading="eager"
                   fetchPriority={i < HOME_SCATTER_PRELOAD_COUNT ? 'high' : 'auto'}
-                  fade={false}
-                  onReady={() => markImageReady(card.illustration.id)}
+                  fade
                   className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
                   sizes={HOME_SCATTER_SIZES}
                 />
               </div>
-            </Link>
+            </InstantLink>
           </motion.div>
         )
       })}

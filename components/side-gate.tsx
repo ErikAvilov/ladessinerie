@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
+import { useLinkStatus } from 'next/link'
 
 type SideGateProps = {
   href: string
@@ -44,7 +46,19 @@ function ArchedArrow({ side }: { side: 'left' | 'right' | 'top' }) {
   )
 }
 
+function GatePendingPulse() {
+  const { pending } = useLinkStatus()
+  return (
+    <span
+      aria-hidden
+      className={`link-pending-pulse ${pending ? 'link-pending-pulse--on' : ''}`}
+    />
+  )
+}
+
 export function SideGate({ href, side, label, tone, onNavigate }: SideGateProps) {
+  const [pressed, setPressed] = useState(false)
+
   const content = (
     <>
       <span className="side-gate__glow" aria-hidden />
@@ -69,7 +83,12 @@ export function SideGate({ href, side, label, tone, onNavigate }: SideGateProps)
     </>
   )
 
-  const className = `side-gate side-gate--${side} side-gate--${tone}`
+  const className = [
+    `side-gate side-gate--${side} side-gate--${tone}`,
+    pressed ? 'side-gate--pending' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   if (onNavigate) {
     return (
@@ -77,7 +96,13 @@ export function SideGate({ href, side, label, tone, onNavigate }: SideGateProps)
         type="button"
         aria-label={label}
         className={className}
-        onClick={onNavigate}
+        onPointerDown={() => setPressed(true)}
+        onClick={() => {
+          setPressed(true)
+          onNavigate()
+          // Le slide est instantané ; relâche le feedback après l’anim.
+          window.setTimeout(() => setPressed(false), 420)
+        }}
       >
         {content}
       </button>
@@ -85,7 +110,13 @@ export function SideGate({ href, side, label, tone, onNavigate }: SideGateProps)
   }
 
   return (
-    <Link href={href} aria-label={label} className={className}>
+    <Link
+      href={href}
+      aria-label={label}
+      className={`instant-link ${className}`}
+      onPointerDown={() => setPressed(true)}
+    >
+      <GatePendingPulse />
       {content}
     </Link>
   )

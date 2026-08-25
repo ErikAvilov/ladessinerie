@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { Upload } from 'lucide-react'
+import { IllustrationImage } from '@/components/illustration-image'
 import { illustrationAlt } from '@/lib/illustration-utils'
 import type { Illustration } from '@/lib/supabase'
 
@@ -26,7 +26,7 @@ export function ProPageClient({ illustrations }: ProPageClientProps) {
       : illustrations.filter((item) => item.subcategory === tab)
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="content-reveal mx-auto max-w-6xl">
       <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-[.2em] text-[var(--cobalt)]">
           Pour les pros
@@ -70,10 +70,11 @@ export function ProPageClient({ illustrations }: ProPageClientProps) {
               key={item.id}
               className="group relative aspect-[16/10] overflow-hidden rounded-2xl"
             >
-              <Image
+              <IllustrationImage
                 src={item.image_url}
                 alt={illustrationAlt(item)}
                 fill
+                rounded="none"
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />

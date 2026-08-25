@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Camera } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { InstantLink } from '@/components/instant-link'
 import { useSitePanel } from '@/components/site-panel-context'
 
 export function SiteHeader() {
@@ -30,7 +31,7 @@ export function SiteHeader() {
   }, [])
 
   const brandClassName =
-    'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] md:text-xl'
+    'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] transition active:scale-[0.98] md:text-xl'
 
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between py-4">
@@ -45,9 +46,9 @@ export function SiteHeader() {
             La Dessinerie
           </button>
         ) : (
-          <Link href="/" aria-label="La Dessinerie, accueil" className={brandClassName}>
+          <InstantLink href="/" aria-label="La Dessinerie, accueil" className={brandClassName}>
             La Dessinerie
-          </Link>
+          </InstantLink>
         )}
       </div>
 
@@ -55,7 +56,7 @@ export function SiteHeader() {
         {isAuthenticated && (
           <Link
             href="/admin"
-            className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--forest)] backdrop-blur-sm transition hover:border-[var(--forest)] md:text-sm"
+            className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--forest)] backdrop-blur-sm transition hover:border-[var(--forest)] active:scale-[0.98] md:text-sm"
           >
             Admin
           </Link>
@@ -63,7 +64,7 @@ export function SiteHeader() {
         <a
           href="https://instagram.com"
           aria-label="Instagram"
-          className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 p-2 backdrop-blur-sm transition hover:bg-[var(--mustard)]"
+          className="pointer-events-auto cursor-pointer rounded-full border border-foreground/15 bg-background/70 p-2 backdrop-blur-sm transition hover:bg-[var(--mustard)] active:scale-[0.98]"
         >
           <Camera size={18} />
         </a>

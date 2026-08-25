@@ -9,11 +9,13 @@ import {
   ParticulierDiveOverlay,
 } from '@/components/particulier-dive-overlay'
 import { useSiteTheme } from '@/components/site-theme-context'
+import { useNavigationProgress } from '@/components/navigation-progress'
 import {
   PARTICULIER_CATEGORIES,
   particulierCategoryPath,
   type ParticulierCategory,
 } from '@/lib/particulier-categories'
+import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
 
 type DiveState = {
   category: ParticulierCategory
@@ -32,6 +34,8 @@ const ARC_LAYOUT = [
 export function ParticulierPageClient() {
   const router = useRouter()
   const theme = useSiteTheme()
+  const { prefetch, onIntent, cancelIntent } = usePrefetchOnIntent()
+  const { start: startNav } = useNavigationProgress()
   const [, startTransition] = useTransition()
   const [dive, setDive] = useState<DiveState | null>(null)
   const divingRef = useRef(false)
@@ -40,6 +44,10 @@ export function ParticulierPageClient() {
     (category: ParticulierCategory, button: HTMLButtonElement) => {
       if (divingRef.current) return
       divingRef.current = true
+
+      const href = particulierCategoryPath(category.slug)
+      startNav(href)
+      prefetch(href)
 
       const media = button.querySelector<HTMLElement>('[data-dive-target]')
       const rect = (media ?? button).getBoundingClientRect()
@@ -54,13 +62,14 @@ export function ParticulierPageClient() {
         },
       })
 
+      // Naviguer plus tôt : le skeleton loading couvre sous le dive.
       window.setTimeout(() => {
         startTransition(() => {
-          router.push(particulierCategoryPath(category.slug))
+          router.push(href)
         })
-      }, Math.round(DIVE_DURATION_MS * 0.88))
+      }, Math.round(DIVE_DURATION_MS * 0.55))
     },
-    [router, theme],
+    [prefetch, router, startNav, theme],
   )
 
   const diving = dive !== null
@@ -83,6 +92,7 @@ export function ParticulierPageClient() {
             const arc = ARC_LAYOUT[index] ?? ARC_LAYOUT[0]
             const isDiveTarget = dive?.category.slug === category.slug
             const hideChrome = diving && !isDiveTarget
+            const href = particulierCategoryPath(category.slug)
             return (
               <motion.button
                 key={category.slug}
@@ -102,6 +112,9 @@ export function ParticulierPageClient() {
                 whileHover={diving ? undefined : { scale: 1.08, y: arc.y - 6 }}
                 whileTap={diving ? undefined : { scale: 0.96 }}
                 onClick={(event) => handleSelect(category, event.currentTarget)}
+                onPointerEnter={() => onIntent(href)}
+                onFocus={() => onIntent(href)}
+                onPointerLeave={cancelIntent}
                 className="group relative flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-1 sm:gap-1.5 md:gap-2"
                 style={{ transformOrigin: '50% 100%' }}
                 aria-label={`Ouvrir ${category.label}`}

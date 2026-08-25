@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { motion, useReducedMotion } from 'framer-motion'
+import { InstantLink } from '@/components/instant-link'
 import { PanierIcon } from '@/components/panier-icon'
+import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
+import { saveShoppingReturn } from '@/lib/shopping-return'
 import type { CartItem } from '@/lib/cart'
 
 export type FloatingCartSize = 'sm' | 'lg'
@@ -56,7 +58,7 @@ export function FloatingCart({ count, bump, size = 'lg' }: FloatingCartProps) {
   useEffect(() => {
     if (bump <= 0) return
     setBumping(true)
-    const timer = window.setTimeout(() => setBumping(false), 560)
+    const timer = window.setTimeout(() => setBumping(false), 520)
     return () => window.clearTimeout(timer)
   }, [bump])
 
@@ -64,9 +66,11 @@ export function FloatingCart({ count, bump, size = 'lg' }: FloatingCartProps) {
 
   return createPortal(
     <div className="pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2">
-      <Link
+      <InstantLink
         href="/panier"
         data-cart-target
+        onWheel={forwardWheelToScroll}
+        onClick={() => saveShoppingReturn(window.location.pathname)}
         aria-label={
           count
             ? `Voir le panier, ${count} article${count > 1 ? 's' : ''}`
@@ -86,14 +90,14 @@ export function FloatingCart({ count, bump, size = 'lg' }: FloatingCartProps) {
           animate={
             bumping
               ? {
-                  rotate: [0, -14, 12, -8, 4, 0],
-                  scale: [1, 0.82, 1.22, 0.94, 1.06, 1],
+                  rotate: [0, -11, 9, -5, 0],
+                  scale: [1, 1.12, 0.94, 1.05, 1],
                 }
               : { rotate: 0, scale: 1 }
           }
           transition={
             bumping
-              ? { duration: 0.55, ease: [0.2, 0.9, 0.3, 1] }
+              ? { duration: 0.52, ease: [0.34, 1.25, 0.48, 1] }
               : { duration: 0 }
           }
           style={{ transformOrigin: '50% 12%' }}
@@ -103,9 +107,9 @@ export function FloatingCart({ count, bump, size = 'lg' }: FloatingCartProps) {
               key={`bump-${bump}`}
               aria-hidden
               className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)] md:inset-[-20px] md:border-[3px]"
-              initial={{ opacity: 0.7, scale: 0.7 }}
-              animate={{ opacity: 0, scale: 1.85 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              initial={{ opacity: 0.85, scale: 0.75 }}
+              animate={{ opacity: 0, scale: 1.75 }}
+              transition={{ duration: 0.48, ease: 'easeOut' }}
             />
           )}
           <PanierIcon
@@ -122,7 +126,7 @@ export function FloatingCart({ count, bump, size = 'lg' }: FloatingCartProps) {
             {count}
           </motion.span>
         )}
-      </Link>
+      </InstantLink>
     </div>,
     document.body,
   )
