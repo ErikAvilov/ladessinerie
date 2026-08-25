@@ -1,6 +1,5 @@
 import { PanelsShell } from '@/components/panels-shell'
-import { pickHomeScatterIllustrations } from '@/lib/home-scatter-pick'
-import { getIllustrations } from '@/lib/supabase'
+import { getPanelsIllustrations } from '@/lib/panels-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,14 +8,11 @@ export default async function PanelsLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [particulier, pro] = await Promise.all([
-    getIllustrations('particulier'),
-    getIllustrations('pro'),
-  ])
+  const { home, particulier, pro } = await getPanelsIllustrations()
 
   return (
     <PanelsShell
-      initialHome={pickHomeScatterIllustrations(particulier)}
+      initialHome={home}
       initialParticulier={particulier}
       initialPro={pro}
     >

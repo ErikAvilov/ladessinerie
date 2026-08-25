@@ -30,11 +30,15 @@ export function PanelsShell({
   const panel = panelFromPathname(pathname) ?? 'home'
 
   return (
-    <SiteSlider
-      initialPanel={panel}
-      initialHome={initialHome}
-      initialParticulier={initialParticulier}
-      initialPro={initialPro}
-    />
+    <>
+      <SiteSlider
+        initialPanel={panel}
+        initialHome={initialHome}
+        initialParticulier={initialParticulier}
+        initialPro={initialPro}
+      />
+      {/* Page RSC (ex. preloads `<link>` home) — hissés vers `<head>` par Next. */}
+      {children}
+    </>
   )
 }

@@ -14,11 +14,6 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { SitePanelContext } from '@/components/site-panel-context'
 import {
-  fetchIllustrationsClient,
-  preloadIllustrationImages,
-} from '@/lib/fetch-illustrations-client'
-import { pickHomeScatterIllustrations } from '@/lib/home-scatter-pick'
-import {
   panelFromPathname,
   panelIndex,
   SITE_PANEL_PATH,
@@ -39,19 +34,14 @@ type SiteSliderProps = {
 export function SiteSlider({
   initialPanel,
   initialHome = [],
-  initialParticulier = [],
+  initialParticulier: _initialParticulier = [],
   initialPro = [],
 }: SiteSliderProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [panel, setPanel] = useState<SitePanel>(initialPanel)
   const [enterDelay, setEnterDelay] = useState(0)
-  const [homeIllustrations, setHomeIllustrations] = useState(initialHome)
-  const [particulierIllustrations, setParticulierIllustrations] =
-    useState(initialParticulier)
-  const [proIllustrations, setProIllustrations] = useState(initialPro)
   const panelRef = useRef(panel)
-  const preloadStartedRef = useRef(false)
 
   panelRef.current = panel
 
@@ -85,52 +75,6 @@ export function SiteSlider({
     }
   }, [panel])
 
-  useEffect(() => {
-    if (preloadStartedRef.current) return
-    preloadStartedRef.current = true
-
-    let cancelled = false
-
-    async function preloadOthers() {
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-      })
-      if (cancelled) return
-
-      if (initialPanel === 'home' && homeIllustrations.length) {
-        preloadIllustrationImages(homeIllustrations)
-      }
-      if (initialPanel === 'particulier' && particulierIllustrations.length) {
-        preloadIllustrationImages(particulierIllustrations)
-      }
-      if (initialPanel === 'pro' && proIllustrations.length) {
-        preloadIllustrationImages(proIllustrations)
-      }
-
-      const [particulier, pro] = await Promise.all([
-        fetchIllustrationsClient('particulier'),
-        fetchIllustrationsClient('pro'),
-      ])
-      if (cancelled) return
-
-      const scatter = pickHomeScatterIllustrations(particulier)
-
-      setHomeIllustrations((current) => (current.length ? current : scatter))
-      setParticulierIllustrations((current) => (current.length ? current : particulier))
-      setProIllustrations((current) => (current.length ? current : pro))
-
-      preloadIllustrationImages(scatter)
-      preloadIllustrationImages(particulier)
-      preloadIllustrationImages(pro)
-    }
-
-    void preloadOthers()
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot preload
-  }, [])
-
   const contextValue = useMemo(
     () => ({ panel, goTo, isSlider: true as const }),
     [panel, goTo],
@@ -163,11 +107,11 @@ export function SiteSlider({
                   </section>
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
-                    <HomePageClient illustrations={homeIllustrations} />
+                    <HomePageClient illustrations={initialHome} />
                   </section>
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
-                    <ProPageClient illustrations={proIllustrations} />
+                    <ProPageClient illustrations={initialPro} />
                   </section>
                 </motion.div>
               </div>

@@ -21,6 +21,14 @@ type DiveState = {
   from: { top: number; left: number; width: number; height: number }
 }
 
+/** Arc ∩ : extrémités un peu plus bas, centre plus haut. */
+const ARC_LAYOUT = [
+  { y: 22, rotate: -16 },
+  { y: 0, rotate: -6 },
+  { y: 0, rotate: 6 },
+  { y: 22, rotate: 16 },
+] as const
+
 export function ParticulierPageClient() {
   const router = useRouter()
   const theme = useSiteTheme()
@@ -55,34 +63,54 @@ export function ParticulierPageClient() {
     [router, theme],
   )
 
+  const diving = dive !== null
+
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden">
-      <div className="shrink-0">
-        <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
+      <div
+        className={`shrink-0 transition-opacity duration-150 ${diving ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+        aria-hidden={diving}
+      >
+        <p className="inline-block rounded-lg bg-white/92 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)] shadow-[0_2px_8px_rgba(43,41,39,0.06)]">
           La boutique
         </p>
       </div>
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col md:mt-6">
-        <div className="grid shrink-0 grid-cols-4 items-start gap-1.5 sm:gap-3 md:gap-5">
+      <div className="mt-2 flex min-h-0 flex-1 flex-col justify-center pb-[12.75rem] md:mt-3 md:pb-[21rem]">
+        <div className="relative mx-auto mb-6 flex w-full max-w-3xl shrink-0 items-end justify-between gap-1 px-1 sm:mb-8 sm:gap-3 sm:px-4 md:mb-10 md:max-w-4xl md:gap-5 md:px-6">
           {PARTICULIER_CATEGORIES.map((category, index) => {
             const color = theme.boutonColor(category.slug)
+            const arc = ARC_LAYOUT[index] ?? ARC_LAYOUT[0]
+            const isDiveTarget = dive?.category.slug === category.slug
+            const hideChrome = diving && !isDiveTarget
             return (
               <motion.button
                 key={category.slug}
                 type="button"
-                initial={{ opacity: 0, y: 12, scale: 0.94 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: index * 0.05, duration: 0.3, ease: 'easeOut' }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.96 }}
+                initial={false}
+                animate={{
+                  opacity: hideChrome ? 0 : 1,
+                  y: arc.y,
+                  rotate: arc.rotate,
+                  scale: 1,
+                }}
+                transition={
+                  diving
+                    ? { duration: 0.12, ease: 'easeOut' }
+                    : { delay: index * 0.05, duration: 0.35, ease: 'easeOut' }
+                }
+                whileHover={diving ? undefined : { scale: 1.08, y: arc.y - 6 }}
+                whileTap={diving ? undefined : { scale: 0.96 }}
                 onClick={(event) => handleSelect(category, event.currentTarget)}
-                className="group relative flex min-w-0 cursor-pointer flex-col items-center gap-1.5 md:gap-2.5"
+                className="group relative flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-1 sm:gap-1.5 md:gap-2"
+                style={{ transformOrigin: '50% 100%' }}
                 aria-label={`Ouvrir ${category.label}`}
+                aria-hidden={hideChrome}
+                tabIndex={diving ? -1 : undefined}
               >
                 <span
                   data-dive-target
-                  className="relative flex aspect-square w-full max-w-[5.5rem] items-center justify-center sm:max-w-[7rem] md:max-w-[9.5rem]"
+                  className={`relative flex aspect-square w-full max-w-[4.75rem] items-center justify-center sm:max-w-[6.25rem] md:max-w-[8.5rem] ${isDiveTarget ? 'opacity-0' : ''}`}
                 >
                   <BoutonIcon
                     src={category.imageSrc}
@@ -90,17 +118,15 @@ export function ParticulierPageClient() {
                     className="h-full w-full drop-shadow-[0_8px_18px_rgba(43,41,39,0.16)]"
                   />
                 </span>
-                <span className="display relative line-clamp-2 text-center text-[10px] font-semibold leading-tight sm:text-xs md:text-sm">
+                <span
+                  className={`display relative line-clamp-2 max-w-[6.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[9px] font-semibold leading-tight shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 sm:max-w-[7.5rem] sm:text-[10px] md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
+                >
                   {category.label}
                 </span>
               </motion.button>
             )
           })}
         </div>
-
-        {/* Espace réservé au panier flottant (moitié de l’ancienne taille). */}
-        <div className="min-h-0 flex-1" aria-hidden />
-        <div className="h-[12.75rem] shrink-0 md:h-[21rem]" aria-hidden />
       </div>
 
       {dive && (

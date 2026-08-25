@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { BoutonIcon } from '@/components/bouton-icon'
@@ -38,11 +38,11 @@ export function ParticulierDiveOverlay({
   from,
   onComplete,
 }: ParticulierDiveOverlayProps) {
-  const [mounted, setMounted] = useState(false)
+  const [portalReady, setPortalReady] = useState(false)
   const [scale, setScale] = useState(1)
 
-  useEffect(() => {
-    setMounted(true)
+  useLayoutEffect(() => {
+    setPortalReady(true)
     setScale(coverScale(from))
   }, [from])
 
@@ -53,13 +53,11 @@ export function ParticulierDiveOverlay({
     return () => window.clearTimeout(timer)
   }, [onComplete])
 
-  if (!mounted) return null
+  if (!portalReady) return null
 
   const cx = from.left + from.width / 2
   const cy = from.top + from.height / 2
-  const reduce =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return createPortal(
     <div className="pointer-events-none fixed inset-0 z-[45]" aria-hidden>
@@ -67,7 +65,7 @@ export function ParticulierDiveOverlay({
         className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: reduce ? 0.15 : 0.45, ease: 'easeOut', delay: reduce ? 0 : 0.2 }}
+        transition={{ duration: reduce ? 0.12 : 0.28, ease: 'easeOut' }}
       >
         <SiteBackgroundLayer
           className="absolute inset-0"

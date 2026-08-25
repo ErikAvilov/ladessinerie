@@ -6,6 +6,11 @@ import { motion } from 'framer-motion'
 import { HomeScatter } from '@/components/home-scatter'
 import { PanelEnterContext } from '@/components/page-transition'
 import { useSitePanel } from '@/components/site-panel-context'
+import {
+  HOME_LOGO_HEIGHT,
+  HOME_LOGO_SIZES,
+  HOME_LOGO_WIDTH,
+} from '@/lib/home-image'
 import type { Illustration } from '@/lib/supabase'
 
 type HomePageClientProps = {
@@ -53,11 +58,12 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
         <Image
           src="/images/logo.webp"
           alt="La Dessinerie"
-          width={13244}
-          height={9354}
+          width={HOME_LOGO_WIDTH}
+          height={HOME_LOGO_HEIGHT}
           className="h-full w-full object-contain transition duration-300 group-hover:brightness-110"
-          sizes="160px"
-          priority
+          sizes={HOME_LOGO_SIZES}
+          loading="eager"
+          fetchPriority="high"
         />
       </motion.button>
 

@@ -51,7 +51,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
     <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col">
       <Link
         href="/particulier/illustrations"
-        className="inline-flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-foreground/60 transition hover:text-foreground md:text-[11px]"
+        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground md:text-[11px]"
       >
         ← Retour
       </Link>

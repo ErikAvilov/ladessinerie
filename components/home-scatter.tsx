@@ -5,6 +5,11 @@ import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState }
 import { motion } from 'framer-motion'
 import { IllustrationImage } from '@/components/illustration-image'
 import { PanelEnterContext } from '@/components/page-transition'
+import {
+  HOME_SCATTER_INTRINSIC_PX,
+  HOME_SCATTER_PRELOAD_COUNT,
+  HOME_SCATTER_SIZES,
+} from '@/lib/home-image'
 import { illustrationAlt } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
 import type { Illustration } from '@/lib/supabase'
@@ -236,14 +241,15 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                   key={`${card.illustration.id}-${loadEpoch}`}
                   src={card.illustration.image_url}
                   alt={illustrationAlt(card.illustration)}
-                  width={360}
-                  height={360}
+                  width={HOME_SCATTER_INTRINSIC_PX}
+                  height={HOME_SCATTER_INTRINSIC_PX}
                   rounded="full"
-                  priority
+                  loading="eager"
+                  fetchPriority={i < HOME_SCATTER_PRELOAD_COUNT ? 'high' : 'auto'}
                   fade={false}
                   onReady={() => markImageReady(card.illustration.id)}
                   className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
-                  sizes="(max-width: 767px) 72px, 120px"
+                  sizes={HOME_SCATTER_SIZES}
                 />
               </div>
             </Link>
