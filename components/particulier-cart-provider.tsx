@@ -151,7 +151,6 @@ export function ParticulierCartProvider({
         <>
           <FlyToCart flights={flights} onComplete={handleFlightComplete} />
           <FloatingCart
-            items={cartItems}
             bump={bump}
             count={cartCount(cartItems)}
             size={cartSize}

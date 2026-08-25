@@ -18,7 +18,7 @@ type FlyToCartProps = {
 }
 
 /** Durée du vol — le bump panier se déclenche à la fin. */
-export const METEOR_FLIGHT_MS = 780
+const METEOR_FLIGHT_MS = 780
 
 const METEOR_SIZE = 76
 const PATH_STEPS = 32

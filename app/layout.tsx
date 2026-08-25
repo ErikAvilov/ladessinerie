@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Fraunces } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PageTransition } from '@/components/page-transition'
 import { SiteThemeProvider } from '@/components/site-theme-context'
@@ -46,6 +47,7 @@ export default async function RootLayout({
             <PageTransition>{children}</PageTransition>
           </div>
         </SiteThemeProvider>
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>

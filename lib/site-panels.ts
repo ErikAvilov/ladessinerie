@@ -1,7 +1,5 @@
 export type SitePanel = 'particulier' | 'home' | 'pro' | 'about'
 
-export const SITE_PANELS: SitePanel[] = ['particulier', 'home', 'pro']
-
 export const HORIZONTAL_PANELS = ['particulier', 'home', 'pro'] as const
 export type HorizontalPanel = (typeof HORIZONTAL_PANELS)[number]
 

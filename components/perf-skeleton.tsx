@@ -22,10 +22,6 @@ export function Shimmer({ className = '', rounded = 'md' }: ShimmerProps) {
   )
 }
 
-export function SkeletonLine({ className = '' }: { className?: string }) {
-  return <Shimmer className={`h-2.5 w-full ${className}`} rounded="md" />
-}
-
 /** Grille collection — miroir du layout réel. */
 export function CategoryGridSkeleton({ count = 6 }: { count?: number }) {
   return (

@@ -8,14 +8,10 @@ export default async function PanelsLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { home, particulier, pro } = await getPanelsIllustrations()
+  const { home, pro } = await getPanelsIllustrations()
 
   return (
-    <PanelsShell
-      initialHome={home}
-      initialParticulier={particulier}
-      initialPro={pro}
-    >
+    <PanelsShell initialHome={home} initialPro={pro}>
       {children}
     </PanelsShell>
   )

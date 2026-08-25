@@ -234,11 +234,6 @@ input[type='file']::file-selector-button {
   opacity: 1;
 }
 
-.meteor-core {
-  -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 78%);
-  mask-image: radial-gradient(circle, #000 52%, transparent 78%);
-}
-
 .meteor-glow {
   background: radial-gradient(
     circle,

@@ -7,12 +7,10 @@ import { InstantLink } from '@/components/instant-link'
 import { PanierIcon } from '@/components/panier-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
 import { saveShoppingReturn } from '@/lib/shopping-return'
-import type { CartItem } from '@/lib/cart'
 
 export type FloatingCartSize = 'sm' | 'lg'
 
 type FloatingCartProps = {
-  items: CartItem[]
   count: number
   bump: number
   size?: FloatingCartSize

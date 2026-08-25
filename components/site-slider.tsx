@@ -27,14 +27,12 @@ const slideEase = [0.65, 0, 0.35, 1] as const
 type SiteSliderProps = {
   initialPanel: SitePanel
   initialHome?: Illustration[]
-  initialParticulier?: Illustration[]
   initialPro?: Illustration[]
 }
 
 export function SiteSlider({
   initialPanel,
   initialHome = [],
-  initialParticulier: _initialParticulier = [],
   initialPro = [],
 }: SiteSliderProps) {
   const router = useRouter()

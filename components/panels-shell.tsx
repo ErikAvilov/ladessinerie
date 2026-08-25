@@ -9,14 +9,12 @@ import type { Illustration } from '@/lib/supabase'
 type PanelsShellProps = {
   children: ReactNode
   initialHome: Illustration[]
-  initialParticulier: Illustration[]
   initialPro: Illustration[]
 }
 
 export function PanelsShell({
   children,
   initialHome,
-  initialParticulier,
   initialPro,
 }: PanelsShellProps) {
   const pathname = usePathname()
@@ -34,7 +32,6 @@ export function PanelsShell({
       <SiteSlider
         initialPanel={panel}
         initialHome={initialHome}
-        initialParticulier={initialParticulier}
         initialPro={initialPro}
       />
       {/* Page RSC (ex. preloads `<link>` home) — hissés vers `<head>` par Next. */}
