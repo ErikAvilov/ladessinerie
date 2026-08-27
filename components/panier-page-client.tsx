@@ -88,7 +88,7 @@ export function PanierPageClient() {
                   className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-foreground/5 md:size-24"
                 >
                   <Image
-                    src={item.image_url}
+                    src={item.image}
                     alt=""
                     fill
                     className="object-cover"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useSiteThemeOptional } from '@/components/site-theme-context'
-import { DEFAULT_SITE_THEME } from '@/lib/site-theme'
+import { DEFAULT_SITE_THEME } from '@/lib/site-theme-shared'
 
 type SiteBackgroundLayerProps = {
   className?: string

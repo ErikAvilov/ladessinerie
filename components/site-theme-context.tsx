@@ -10,7 +10,7 @@ import {
   BOUTON_THEME_BY_SLUG,
   DEFAULT_SITE_THEME,
   type SiteTheme,
-} from '@/lib/site-theme'
+} from '@/lib/site-theme-shared'
 import type { ParticulierCategorySlug } from '@/lib/particulier-categories'
 
 type SiteThemeContextValue = SiteTheme & {

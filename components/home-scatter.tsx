@@ -13,7 +13,7 @@ import {
 import { illustrationAlt } from '@/lib/illustration-utils'
 import { particulierArtPath } from '@/lib/particulier-routes'
 import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 const DESKTOP_CARD_SIZE = 108
 const MOBILE_CARD_SIZE = 72
@@ -223,8 +223,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
               <span className="scatter-glow" aria-hidden />
               <div className="relative h-full w-full overflow-hidden rounded-full paper-shadow">
                 <IllustrationImage
-                  src={card.illustration.image_url}
+                  src={card.illustration.image}
                   alt={illustrationAlt(card.illustration)}
+                  dominantColor={card.illustration.dominantColor}
                   width={HOME_SCATTER_INTRINSIC_PX}
                   height={HOME_SCATTER_INTRINSIC_PX}
                   rounded="full"

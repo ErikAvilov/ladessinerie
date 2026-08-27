@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { AdminEditIllustration } from '@/components/admin-edit-illustration'
-import { getIllustrationById } from '@/lib/supabase'
+import { getIllustrationById } from '@/lib/illustrations'
 
 export const dynamic = 'force-dynamic'
 

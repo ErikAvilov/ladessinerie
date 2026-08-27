@@ -6,18 +6,16 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSiteThemePanel } from '@/components/admin-site-theme'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
-import { deleteIllustration, insertIllustration, refreshIllustrations } from '@/lib/admin-actions'
+import { deleteIllustration, refreshIllustrations } from '@/lib/admin-actions'
 import {
   formatFromPrice,
   getMinPrice,
   illustrationAlt,
   parseSizeFields,
 } from '@/lib/illustration-utils'
-import { supabase } from '@/lib/supabase-browser'
-import type { Illustration } from '@/lib/supabase'
-import type { SiteTheme } from '@/lib/site-theme'
+import type { Illustration } from '@/lib/illustrations'
+import type { SiteTheme } from '@/lib/site-theme-shared'
 
-const BUCKET = 'illustrations'
 const SUBCATEGORIES = [
   'Illustrations personnalisées',
   'Stickers',
@@ -31,13 +29,6 @@ const SUBCATEGORIES = [
 
 type SortOption = 'date-desc' | 'date-asc' | 'price-asc' | 'price-desc'
 
-function storagePathFromUrl(url: string) {
-  const marker = `/${BUCKET}/`
-  const index = url.indexOf(marker)
-  if (index === -1) return null
-  return decodeURIComponent(url.slice(index + marker.length))
-}
-
 type AdminDashboardProps = {
   initialIllustrations: Illustration[]
   initialTheme: SiteTheme
@@ -45,9 +36,8 @@ type AdminDashboardProps = {
 
 export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDashboardProps) {
   const router = useRouter()
-  const [checkingSession, setCheckingSession] = useState(true)
   const [illustrations, setIllustrations] = useState<Illustration[]>(initialIllustrations)
-  const [loadingList, setLoadingList] = useState(initialIllustrations.length === 0)
+  const [loadingList, setLoadingList] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Illustration | null>(null)
@@ -77,27 +67,10 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
   }, [])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.replace('/admin/login')
-        return
-      }
-      setCheckingSession(false)
-    })
-  }, [router])
-
-  useEffect(() => {
-    if (checkingSession) return
-    void loadIllustrations()
-  }, [checkingSession, loadIllustrations])
-
-  useEffect(() => {
     if (!pendingDelete) return
-
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') setPendingDelete(null)
     }
-
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [pendingDelete])
@@ -111,20 +84,17 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
 
   const filteredIllustrations = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
-
     const filtered = illustrations.filter((item) => {
       const matchesSearch =
         !query ||
         item.title.toLowerCase().includes(query) ||
         (item.alt_text?.toLowerCase().includes(query) ?? false) ||
         (item.subcategory?.toLowerCase().includes(query) ?? false)
-
       const matchesSubcategory =
         filterSubcategory === 'all' ||
         (filterSubcategory === 'none'
           ? !item.subcategory
           : item.subcategory === filterSubcategory)
-
       return matchesSearch && matchesSubcategory
     })
 
@@ -134,7 +104,6 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
         const bTime = new Date(b.created_at).getTime()
         return sortBy === 'date-desc' ? bTime - aTime : aTime - bTime
       }
-
       const aPrice = getMinPrice(a.sizes) ?? Number.POSITIVE_INFINITY
       const bPrice = getMinPrice(b.sizes) ?? Number.POSITIVE_INFINITY
       return sortBy === 'price-asc' ? aPrice - bPrice : bPrice - aPrice
@@ -145,8 +114,9 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
     searchQuery.trim() !== '' || filterSubcategory !== 'all' || sortBy !== 'date-desc'
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    await fetch('/api/admin/auth', { method: 'DELETE' })
     router.replace('/admin/login')
+    router.refresh()
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -160,43 +130,32 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
     }
 
     const sizes = parseSizeFields(sizeFields)
-    if (sizes.length === 0) {
+    if (category === 'particulier' && sizes.length === 0) {
       setError('Ajoutez au moins un format avec son prix.')
       return
     }
 
     setSubmitting(true)
+    const formData = new FormData()
+    formData.set('file', file)
+    formData.set('title', title)
+    formData.set('category', category)
+    formData.set('subcategory', subcategory)
+    formData.set('alt_text', altText)
+    formData.set('sizes', JSON.stringify(sizes))
 
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-    const filePath = `${Date.now()}-${crypto.randomUUID()}.${extension}`
-
-    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false,
+    const response = await fetch('/api/admin/illustrations', {
+      method: 'POST',
+      body: formData,
     })
-
-    if (uploadError) {
-      setSubmitting(false)
-      setError(`Upload impossible : ${uploadError.message}`)
-      return
-    }
-
-    const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(filePath)
-
-    const result = await insertIllustration({
-      title,
-      altText,
-      category,
-      subcategory,
-      sizes,
-      image_url: publicData.publicUrl,
-    })
+    const payload = (await response.json().catch(() => null)) as
+      | { error?: string; illustration?: Illustration }
+      | null
 
     setSubmitting(false)
 
-    if (result.error) {
-      await supabase.storage.from(BUCKET).remove([filePath])
-      setError(`Enregistrement impossible : ${result.error}`)
+    if (!response.ok) {
+      setError(payload?.error ?? 'Enregistrement impossible.')
       return
     }
 
@@ -206,27 +165,20 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
     setSubcategory('')
     setSizeFields([{ size: '', price: '' }])
     setFile(null)
-    setSuccess('Illustration ajoutée.')
+    setSuccess('Illustration ajoutée (WebP + couleur dominante).')
     await loadIllustrations()
     router.refresh()
   }
 
   async function confirmDelete() {
     if (!pendingDelete) return
-
     const illustration = pendingDelete
     setPendingDelete(null)
     setDeletingId(illustration.id)
     setError(null)
     setSuccess(null)
 
-    const storagePath = storagePathFromUrl(illustration.image_url)
-    if (storagePath) {
-      await supabase.storage.from(BUCKET).remove([storagePath])
-    }
-
     const result = await deleteIllustration(illustration.id)
-
     setDeletingId(null)
 
     if (result.error) {
@@ -237,14 +189,6 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
     setSuccess('Illustration supprimée.')
     await loadIllustrations()
     router.refresh()
-  }
-
-  if (checkingSession) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center px-5">
-        <p className="text-sm text-foreground/50">Vérification de la session…</p>
-      </div>
-    )
   }
 
   return (
@@ -362,10 +306,13 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
             <input
               type="file"
               required
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               className="sr-only"
             />
+            <span className="mt-1.5 block text-xs text-foreground/50">
+              PNG/JPG → WebP (qualité 80). Un fichier déjà WebP est conservé tel quel.
+            </span>
           </label>
 
           <div className="md:col-span-2">
@@ -476,9 +423,14 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
                   href={`/admin/${illustration.id}/edit`}
                   className="block cursor-pointer transition hover:bg-foreground/[0.02]"
                 >
-                  <div className="relative mx-auto h-36 w-24 bg-foreground/5 sm:h-40 sm:w-28">
+                  <div
+                    className="relative mx-auto h-36 w-24 sm:h-40 sm:w-28"
+                    style={{
+                      backgroundColor: illustration.dominantColor || 'rgba(43,41,39,0.05)',
+                    }}
+                  >
                     <Image
-                      src={illustration.image_url}
+                      src={illustration.image}
                       alt={illustrationAlt(illustration)}
                       fill
                       className="object-cover"

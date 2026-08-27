@@ -5,7 +5,7 @@ export type CartItem = {
   size: string
   price: number
   quantity: number
-  image_url: string
+  image: string
 }
 
 export const CART_STORAGE_KEY = 'ladessinerie.cart.v1'
@@ -57,7 +57,7 @@ export function readCartFromStorage(): CartItem[] {
           typeof item.price === 'number' &&
           typeof item.quantity === 'number' &&
           item.quantity > 0 &&
-          typeof item.image_url === 'string'
+          typeof item.image === 'string'
         )
       })
       .map((item) => ({

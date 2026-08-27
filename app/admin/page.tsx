@@ -1,5 +1,5 @@
 import { AdminDashboard } from '@/components/admin-dashboard'
-import { getIllustrations } from '@/lib/supabase'
+import { getIllustrations } from '@/lib/illustrations'
 import { getSiteTheme } from '@/lib/site-theme'
 
 export const dynamic = 'force-dynamic'

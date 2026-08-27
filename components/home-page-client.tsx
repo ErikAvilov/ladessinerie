@@ -11,7 +11,7 @@ import {
   HOME_LOGO_SIZES,
   HOME_LOGO_WIDTH,
 } from '@/lib/home-image'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type HomePageClientProps = {
   illustrations: Illustration[]

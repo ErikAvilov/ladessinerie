@@ -1,4 +1,4 @@
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 const HOME_SCATTER_QUOTAS = [
   { subcategory: 'Fleurs', count: 4 },
@@ -15,7 +15,7 @@ function shuffle<T>(items: T[]): T[] {
   return next
 }
 
-/** Tire 4 Fleurs + 4 Canapé + 2 Autour de la nourriture, puis mélange le halo. */
+/** Tire un halo home (quotas sous-catégories + complément). */
 export function pickHomeScatterIllustrations(illustrations: Illustration[]): Illustration[] {
   const pool = illustrations.filter((item) => item.category === 'particulier')
   const usedIds = new Set<string>()
@@ -23,7 +23,9 @@ export function pickHomeScatterIllustrations(illustrations: Illustration[]): Ill
 
   for (const { subcategory, count } of HOME_SCATTER_QUOTAS) {
     const candidates = shuffle(
-      pool.filter((item) => item.subcategory === subcategory && !usedIds.has(item.id)),
+      pool.filter(
+        (item) => item.subcategory === subcategory && !usedIds.has(item.id),
+      ),
     )
     for (const item of candidates.slice(0, count)) {
       usedIds.add(item.id)
@@ -31,7 +33,6 @@ export function pickHomeScatterIllustrations(illustrations: Illustration[]): Ill
     }
   }
 
-  // Complète si une sous-catégorie manque d'items
   if (picked.length < 10) {
     const fillers = shuffle(pool.filter((item) => !usedIds.has(item.id)))
     for (const item of fillers.slice(0, 10 - picked.length)) {

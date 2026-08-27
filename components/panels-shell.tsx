@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { SiteSlider } from '@/components/site-slider'
 import { panelFromPathname } from '@/lib/site-panels'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type PanelsShellProps = {
   children: ReactNode

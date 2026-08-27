@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { Upload } from 'lucide-react'
 import { IllustrationImage } from '@/components/illustration-image'
 import { illustrationAlt } from '@/lib/illustration-utils'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type ProPageClientProps = {
   illustrations: Illustration[]
@@ -71,8 +71,9 @@ export function ProPageClient({ illustrations }: ProPageClientProps) {
               className="group relative aspect-[16/10] overflow-hidden rounded-2xl"
             >
               <IllustrationImage
-                src={item.image_url}
+                src={item.image}
                 alt={illustrationAlt(item)}
+                dominantColor={item.dominantColor}
                 fill
                 rounded="none"
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"

@@ -43,7 +43,7 @@ export default async function RootLayout({
     <html lang="fr" className="bg-background" suppressHydrationWarning>
       <body className={`${body.variable} ${display.variable}`} suppressHydrationWarning>
         <SiteThemeProvider theme={theme}>
-          <div className="h-dvh overflow-hidden bg-background">
+          <div className="min-h-dvh bg-background">
             <PageTransition>{children}</PageTransition>
           </div>
         </SiteThemeProvider>

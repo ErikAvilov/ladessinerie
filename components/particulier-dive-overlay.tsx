@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { BoutonIcon } from '@/components/bouton-icon'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import type { ParticulierCategory } from '@/lib/particulier-categories'
-import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme'
+import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme-shared'
 
 export const DIVE_DURATION_MS = 720
 

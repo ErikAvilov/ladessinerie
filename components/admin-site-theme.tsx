@@ -12,7 +12,7 @@ import {
   BOUTON_THEME_BY_SLUG,
   type BoutonThemeKey,
   type SiteTheme,
-} from '@/lib/site-theme'
+} from '@/lib/site-theme-shared'
 
 type AdminSiteThemePanelProps = {
   initialTheme: SiteTheme

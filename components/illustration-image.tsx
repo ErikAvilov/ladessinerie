@@ -7,6 +7,8 @@ type IllustrationImageProps = ImageProps & {
   rounded?: 'xl' | 'lg' | 'full' | 'none'
   /** Soft fade-in when the bitmap is ready (default true). */
   fade?: boolean
+  /** Couleur dominante HEX — placeholder pendant le chargement. */
+  dominantColor?: string
   onReady?: () => void
 }
 
@@ -17,6 +19,7 @@ export function IllustrationImage({
   preload,
   fill,
   fade = true,
+  dominantColor,
   onLoad,
   onError,
   onReady,
@@ -33,6 +36,7 @@ export function IllustrationImage({
           ? 'rounded-full'
           : ''
   const positionClass = fill ? 'absolute inset-0' : 'relative h-full w-full'
+  const placeholderBg = dominantColor || undefined
 
   function markReady() {
     if (loaded) return
@@ -51,7 +55,12 @@ export function IllustrationImage({
   }
 
   return (
-    <div className={`${positionClass} overflow-hidden bg-foreground/[0.06] ${roundedClass}`}>
+    <div
+      className={`${positionClass} overflow-hidden ${roundedClass} ${
+        placeholderBg ? '' : 'bg-foreground/[0.06]'
+      }`}
+      style={placeholderBg ? { backgroundColor: placeholderBg } : undefined}
+    >
       <span
         aria-hidden
         className={[

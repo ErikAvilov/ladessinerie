@@ -16,7 +16,7 @@ import {
 } from '@/lib/particulier-categories'
 import { isSitePanelPath, panelFromPathname } from '@/lib/site-panels'
 import { SCROLL_ROOT_ATTR } from '@/lib/scroll-pass-through'
-import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme'
+import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme-shared'
 
 export const SLIDE_DURATION_MS = 580
 
@@ -41,13 +41,18 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const categoryColor = category ? theme.boutonColor(category.slug) : undefined
 
   useEffect(() => {
-    if (isAdmin || isPanelRoute) return
+    if (isAdmin) {
+      document.documentElement.classList.remove('no-scroll')
+      document.body.classList.remove('no-scroll')
+      return
+    }
+    if (isPanelRoute) return
     document.documentElement.classList.remove('no-scroll')
     document.body.classList.remove('no-scroll')
   }, [isAdmin, isPanelRoute])
 
   if (isAdmin) {
-    return <div className="h-dvh overflow-x-hidden overflow-y-auto bg-background">{children}</div>
+    return children
   }
 
   const showFloatingCart =

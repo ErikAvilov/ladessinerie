@@ -2,15 +2,18 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
-import { updateIllustration } from '@/lib/admin-actions'
-import { formatFromPrice, illustrationAlt, parseSizeFields, sizesToFields } from '@/lib/illustration-utils'
-import { supabase } from '@/lib/supabase-browser'
-import type { Illustration } from '@/lib/supabase'
+import { updateIllustration, updateIllustrationImage } from '@/lib/admin-actions'
+import {
+  formatFromPrice,
+  illustrationAlt,
+  parseSizeFields,
+  sizesToFields,
+} from '@/lib/illustration-utils'
+import type { Illustration } from '@/lib/illustrations'
 
-const BUCKET = 'illustrations'
 const SUBCATEGORIES = [
   'Petit portraits',
   'Grand portraits',
@@ -21,20 +24,12 @@ const SUBCATEGORIES = [
   'Autour de la nourriture',
 ] as const
 
-function storagePathFromUrl(url: string) {
-  const marker = `/${BUCKET}/`
-  const index = url.indexOf(marker)
-  if (index === -1) return null
-  return decodeURIComponent(url.slice(index + marker.length))
-}
-
 type AdminEditIllustrationProps = {
   illustration: Illustration
 }
 
 export function AdminEditIllustration({ illustration }: AdminEditIllustrationProps) {
   const router = useRouter()
-  const [checkingSession, setCheckingSession] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -44,15 +39,9 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
   const [category, setCategory] = useState<'particulier' | 'pro'>(illustration.category)
   const [subcategory, setSubcategory] = useState(illustration.subcategory ?? '')
   const [sizeFields, setSizeFields] = useState<SizeField[]>(sizesToFields(illustration.sizes))
-  const [imageUrl, setImageUrl] = useState(illustration.image_url)
+  const [imageUrl, setImageUrl] = useState(illustration.image)
+  const [dominantColor, setDominantColor] = useState(illustration.dominantColor)
   const [file, setFile] = useState<File | null>(null)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.replace('/admin/login')
-      else setCheckingSession(false)
-    })
-  }, [router])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -60,34 +49,27 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
     setSuccess(null)
 
     const sizes = parseSizeFields(sizeFields)
-    if (sizes.length === 0) {
+    if (category === 'particulier' && sizes.length === 0) {
       setError('Ajoutez au moins un format avec son prix.')
       return
     }
 
     setSubmitting(true)
 
-    let nextImageUrl = imageUrl
+    let nextImage = imageUrl
+    let nextDominant = dominantColor
 
     if (file) {
-      const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-      const filePath = `${Date.now()}-${crypto.randomUUID()}.${extension}`
-
-      const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
-
-      if (uploadError) {
+      const formData = new FormData()
+      formData.set('file', file)
+      const imageResult = await updateIllustrationImage(illustration.id, formData)
+      if (imageResult.error) {
         setSubmitting(false)
-        setError(`Upload impossible : ${uploadError.message}`)
+        setError(`Upload image impossible : ${imageResult.error}`)
         return
       }
-
-      const oldPath = storagePathFromUrl(illustration.image_url)
-      if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath])
-
-      nextImageUrl = supabase.storage.from(BUCKET).getPublicUrl(filePath).data.publicUrl
+      if (imageResult.image) nextImage = imageResult.image
+      if (imageResult.dominantColor) nextDominant = imageResult.dominantColor
     }
 
     const result = await updateIllustration(illustration.id, {
@@ -96,7 +78,8 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
       category,
       subcategory,
       sizes,
-      image_url: nextImageUrl,
+      image: nextImage,
+      dominantColor: nextDominant,
     })
 
     setSubmitting(false)
@@ -108,11 +91,9 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
 
     setTitle(title.trim())
     setAltText(altText.trim())
-    setCategory(category)
-    setSubcategory(subcategory)
     setSizeFields(sizesToFields(sizes))
-    setImageUrl(nextImageUrl)
-
+    setImageUrl(nextImage)
+    setDominantColor(nextDominant)
     setFile(null)
     setSuccess('Illustration mise à jour.')
     router.refresh()
@@ -122,19 +103,12 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
     }, 900)
   }
 
-  if (checkingSession) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center px-5">
-        <p className="text-sm text-foreground/50">Vérification de la session…</p>
-      </div>
-    )
-  }
-
   const previewIllustration: Illustration = {
     ...illustration,
     title,
     alt_text: altText,
-    image_url: imageUrl,
+    image: imageUrl,
+    dominantColor,
   }
   const priceLabel = formatFromPrice(parseSizeFields(sizeFields))
 
@@ -160,40 +134,9 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
       </header>
 
       {error && (
-        <div className="mb-6 space-y-3 rounded-xl bg-[var(--terracotta)]/10 px-4 py-3 text-sm text-[var(--terracotta)]">
-          <p>{error}</p>
-          {error.includes('droits Supabase') && (
-            <div className="rounded-lg bg-background/80 p-3 text-foreground/80">
-              <p className="mb-2 font-medium text-foreground">SQL à exécuter dans Supabase → SQL Editor :</p>
-              <pre className="overflow-x-auto whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/70">{`GRANT SELECT ON TABLE illustrations TO anon, authenticated;
-GRANT INSERT, UPDATE, DELETE ON TABLE illustrations TO authenticated;
-
-DO $$
-DECLARE pol RECORD;
-BEGIN
-  FOR pol IN
-    SELECT policyname FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'illustrations'
-  LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON public.illustrations', pol.policyname);
-  END LOOP;
-END $$;
-
-ALTER TABLE public.illustrations ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "illustrations_select_public"
-  ON public.illustrations FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "illustrations_insert_authenticated"
-  ON public.illustrations FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "illustrations_update_authenticated"
-  ON public.illustrations FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "illustrations_delete_authenticated"
-  ON public.illustrations FOR DELETE TO authenticated USING (true);
-
-ALTER TABLE public.illustrations ADD COLUMN IF NOT EXISTS alt_text text;`}</pre>
-            </div>
-          )}
-        </div>
+        <p className="mb-6 rounded-xl bg-[var(--terracotta)]/10 px-4 py-3 text-sm text-[var(--terracotta)]">
+          {error}
+        </p>
       )}
       {success && (
         <p className="mb-6 rounded-xl bg-[var(--grass)]/10 px-4 py-3 text-sm text-[var(--forest)]">
@@ -260,7 +203,10 @@ ALTER TABLE public.illustrations ADD COLUMN IF NOT EXISTS alt_text text;`}</pre>
 
           <div className="md:col-span-2">
             <p className="mb-2 text-sm font-medium">Image actuelle</p>
-            <div className="relative mx-auto mb-4 h-56 w-40 overflow-hidden rounded-xl bg-foreground/5">
+            <div
+              className="relative mx-auto mb-4 h-56 w-40 overflow-hidden rounded-xl"
+              style={{ backgroundColor: dominantColor || 'rgba(43,41,39,0.05)' }}
+            >
               <Image
                 src={imageUrl}
                 alt={illustrationAlt(previewIllustration)}
@@ -283,10 +229,13 @@ ALTER TABLE public.illustrations ADD COLUMN IF NOT EXISTS alt_text text;`}</pre>
             </div>
             <input
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               className="sr-only"
             />
+            <span className="mt-1.5 block text-xs text-foreground/50">
+              PNG/JPG → WebP (qualité 80). Un fichier déjà WebP est conservé tel quel.
+            </span>
           </label>
 
           <div className="flex flex-wrap gap-3 md:col-span-2">

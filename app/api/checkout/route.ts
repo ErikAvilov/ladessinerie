@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { getIllustrationById } from '@/lib/supabase'
+import { getIllustrationById } from '@/lib/illustrations'
 
 export const runtime = 'nodejs'
 
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
           product_data: {
             name: `${illustration.title} — Format ${sizeEntry.size}`,
             description: `Tirage d’art · dimension ${sizeEntry.size} · La Dessinerie · Retrait atelier`,
-            images: illustration.image_url ? [illustration.image_url] : undefined,
+            images: illustration.image ? [illustration.image] : undefined,
             metadata: {
               illustration_id: illustration.id,
               size: sizeEntry.size,

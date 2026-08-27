@@ -63,10 +63,10 @@ export default async function HomePage() {
         fetchPriority="high"
       />
       {criticalScatter.map((item) =>
-        item.image_url ? (
+        item.image ? (
           <PreloadImage
             key={item.id}
-            src={item.image_url}
+            src={item.image}
             width={HOME_SCATTER_INTRINSIC_PX}
             height={HOME_SCATTER_INTRINSIC_PX}
             sizes={HOME_SCATTER_SIZES}

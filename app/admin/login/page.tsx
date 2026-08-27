@@ -1,51 +1,35 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase-browser'
 
 export default function AdminLoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [checkingSession, setCheckingSession] = useState(true)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/admin')
-      else setCheckingSession(false)
-    })
-  }, [router])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
     setLoading(true)
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const response = await fetch('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
     })
 
     setLoading(false)
 
-    if (signInError) {
-      setError('Email ou mot de passe incorrect.')
+    if (!response.ok) {
+      const data = (await response.json().catch(() => null)) as { error?: string } | null
+      setError(data?.error ?? 'Mot de passe incorrect.')
       return
     }
 
     router.replace('/admin')
     router.refresh()
-  }
-
-  if (checkingSession) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center px-5">
-        <p className="text-sm text-foreground/50">Chargement…</p>
-      </div>
-    )
   }
 
   return (
@@ -62,18 +46,6 @@ export default function AdminLoginPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">Email</span>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 outline-none transition focus:border-[var(--terracotta)]"
-            />
-          </label>
-
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Mot de passe</span>
             <input
@@ -95,7 +67,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-[var(--terracotta)] px-5 py-3.5 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+            className="w-full cursor-pointer rounded-full bg-[var(--terracotta)] px-5 py-3.5 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
           >
             {loading ? 'Connexion…' : 'Se connecter'}
           </button>

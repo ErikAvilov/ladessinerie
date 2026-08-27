@@ -1,0 +1,527 @@
+[
+  {
+    "id": "6130a136-36b4-4af6-a18d-13bf601c8ebb",
+    "title": "Boule d'été",
+    "slug": "boule-dete",
+    "image": "/illustrations/print-boule-dete.webp",
+    "dominantColor": "#e6dfdc",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Boule d'été »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-01T10:00:00.000Z"
+  },
+  {
+    "id": "958b2aed-7c8e-4b5f-9c0c-499299e9c8b1",
+    "title": "Bulldream",
+    "slug": "bulldream",
+    "image": "/illustrations/print-bulldream.webp",
+    "dominantColor": "#e4dce1",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « Bulldream »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-02T10:00:00.000Z"
+  },
+  {
+    "id": "4c0f09c6-2c1d-4fe1-8ed0-8cf1a240d2cd",
+    "title": "Coffee coffee coffee",
+    "slug": "coffee-coffee-coffee",
+    "image": "/illustrations/print-coffee-coffee-coffee.webp",
+    "dominantColor": "#f2decd",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Coffee coffee coffee »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-03T10:00:00.000Z"
+  },
+  {
+    "id": "3e887c0e-ee95-4e14-9066-339fc6037ec8",
+    "title": "Coffee dream",
+    "slug": "coffee-dream",
+    "image": "/illustrations/print-coffee-dream.webp",
+    "dominantColor": "#d8d3d0",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Coffee dream »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-04T10:00:00.000Z"
+  },
+  {
+    "id": "c529c8e1-8206-496c-94be-d6c5dd5e1968",
+    "title": "Coquelico co",
+    "slug": "coquelico-co",
+    "image": "/illustrations/print-coquelico-co.webp",
+    "dominantColor": "#e6c07e",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Coquelico co »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-05T10:00:00.000Z"
+  },
+  {
+    "id": "7cdc7306-9e0e-4432-a11a-ba5e6a256200",
+    "title": "Dance with me",
+    "slug": "dance-with-me",
+    "image": "/illustrations/print-dance-with-me.webp",
+    "dominantColor": "#e9e4c5",
+    "category": "particulier",
+    "subcategory": "Petit portraits",
+    "alt_text": "Illustration « Dance with me »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-06T10:00:00.000Z"
+  },
+  {
+    "id": "ba379aa3-9089-4446-a350-f6a6818ffd73",
+    "title": "Famille",
+    "slug": "famille",
+    "image": "/illustrations/print-famille.webp",
+    "dominantColor": "#ceaa7f",
+    "category": "particulier",
+    "subcategory": "Petit portraits",
+    "alt_text": "Illustration « Famille »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-07T10:00:00.000Z"
+  },
+  {
+    "id": "1a10c0c4-2410-4818-8833-189b93c518c1",
+    "title": "Fuck allergies",
+    "slug": "fuck-allergies",
+    "image": "/illustrations/print-fuck-allergies.webp",
+    "dominantColor": "#e2c8ba",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Fuck allergies »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "cabeaa92-ea74-4142-89a2-cb9b203238db",
+    "title": "Illu Teuil",
+    "slug": "illu-teuil",
+    "image": "/illustrations/print-illu-teuil.webp",
+    "dominantColor": "#d7dbda",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « Illu Teuil »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-09T10:00:00.000Z"
+  },
+  {
+    "id": "b9a4e7db-5a1a-47da-9699-ba23dba99a6a",
+    "title": "Kavepoulpe",
+    "slug": "kavepoulpe",
+    "image": "/illustrations/print-kavepoulpe.webp",
+    "dominantColor": "#dadfd6",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Kavepoulpe »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-10T10:00:00.000Z"
+  },
+  {
+    "id": "a647c11d-76e0-447b-aba2-b2e24a7d8d69",
+    "title": "Marguerites au plat",
+    "slug": "marguerites-au-plat",
+    "image": "/illustrations/print-marguerites-au-plat.webp",
+    "dominantColor": "#69765d",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Marguerites au plat »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-11T10:00:00.000Z"
+  },
+  {
+    "id": "f43832b9-0ad1-48be-b819-4ca948946d66",
+    "title": "Mon idéal",
+    "slug": "mon-ideal",
+    "image": "/illustrations/print-mon-ideal.webp",
+    "dominantColor": "#d5d5ce",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « Mon idéal »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-12T10:00:00.000Z"
+  },
+  {
+    "id": "8ed9df17-84b5-45fc-9fbd-4bce5909637d",
+    "title": "My dream",
+    "slug": "my-dream",
+    "image": "/illustrations/print-my-dream.webp",
+    "dominantColor": "#c7c0b2",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « My dream »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-13T10:00:00.000Z"
+  },
+  {
+    "id": "b1e0ccf1-4cc7-4aa7-924a-c42e2e52964b",
+    "title": "Papier pétales",
+    "slug": "papier-petales",
+    "image": "/illustrations/print-papier-petales.webp",
+    "dominantColor": "#ebdbb9",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Papier pétales »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "5662712a-c7e8-4aac-a788-bee8fd304c74",
+    "title": "Papo illu",
+    "slug": "papo-illu",
+    "image": "/illustrations/print-papo-illu.webp",
+    "dominantColor": "#e8ebe9",
+    "category": "particulier",
+    "subcategory": "Petit portraits",
+    "alt_text": "Illustration « Papo illu »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "40f334a8-139e-4a12-a9ff-d69c13620670",
+    "title": "Pik nik",
+    "slug": "pik-nik",
+    "image": "/illustrations/print-pik-nik.webp",
+    "dominantColor": "#eee1c9",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Pik nik »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-16T10:00:00.000Z"
+  },
+  {
+    "id": "674f9169-97e1-496c-987f-e70cca946312",
+    "title": "Retro flower",
+    "slug": "retro-flower",
+    "image": "/illustrations/print-retro-flower.webp",
+    "dominantColor": "#e0c691",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Retro flower »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-17T10:00:00.000Z"
+  },
+  {
+    "id": "955e17b8-818f-4c05-baf7-d831f0c262a6",
+    "title": "Rockillu",
+    "slug": "rockillu",
+    "image": "/illustrations/print-rockillu.webp",
+    "dominantColor": "#eedbce",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « Rockillu »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-18T10:00:00.000Z"
+  },
+  {
+    "id": "1344b602-aa21-4a8e-80f8-617cd21fd47b",
+    "title": "Slow coffee",
+    "slug": "slow-coffee",
+    "image": "/illustrations/print-slow-coffee.webp",
+    "dominantColor": "#92b381",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Slow coffee »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-19T10:00:00.000Z"
+  },
+  {
+    "id": "2a9f9001-9ef6-4c76-bf2e-94d3ff0c0a52",
+    "title": "Superchair",
+    "slug": "superchair",
+    "image": "/illustrations/print-superchair.webp",
+    "dominantColor": "#d9d9d4",
+    "category": "particulier",
+    "subcategory": "Canapé",
+    "alt_text": "Illustration « Superchair »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-20T10:00:00.000Z"
+  },
+  {
+    "id": "91d9fa76-75d6-4e3b-b9d6-55403ff62876",
+    "title": "Swimming coffee",
+    "slug": "swimming-coffee",
+    "image": "/illustrations/print-swimming-coffee.webp",
+    "dominantColor": "#94532a",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Swimming coffee »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-21T10:00:00.000Z"
+  },
+  {
+    "id": "c8fdde06-4df7-46c5-afcd-79ae0aa9fde5",
+    "title": "Table d'automne",
+    "slug": "table-dautomne",
+    "image": "/illustrations/print-table-dautomne.webp",
+    "dominantColor": "#cc9e8b",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Table d'automne »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-22T10:00:00.000Z"
+  },
+  {
+    "id": "5c6e7f9c-4858-4d2d-8cc9-08f2bf2c992a",
+    "title": "Table d'été",
+    "slug": "table-dete",
+    "image": "/illustrations/print-table-dete.webp",
+    "dominantColor": "#e5c18b",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "alt_text": "Illustration « Table d'été »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-23T10:00:00.000Z"
+  },
+  {
+    "id": "de69cd5a-5c12-4702-992f-7ee32e412389",
+    "title": "Tabou fleur",
+    "slug": "tabou-fleur",
+    "image": "/illustrations/print-tabou-fleur.webp",
+    "dominantColor": "#c5c177",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Tabou fleur »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-24T10:00:00.000Z"
+  },
+  {
+    "id": "ea3eed12-7237-4c95-ab4d-954eb9ce164b",
+    "title": "Wavy blue",
+    "slug": "wavy-blue",
+    "image": "/illustrations/print-wavy-blue.webp",
+    "dominantColor": "#e2e5e7",
+    "category": "particulier",
+    "subcategory": "Fleurs",
+    "alt_text": "Illustration « Wavy blue »",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 8
+      },
+      {
+        "size": "A5",
+        "price": 12
+      }
+    ],
+    "created_at": "2026-01-25T10:00:00.000Z"
+  }
+]

@@ -1,5 +1,5 @@
 import { ParticulierArtDetail } from '@/components/particulier-art-detail'
-import { getIllustrationById } from '@/lib/supabase'
+import { getIllustrationById } from '@/lib/illustrations'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -35,9 +35,9 @@ export async function generateMetadata({ params }: ArtPageProps): Promise<Metada
       type: 'website',
       images: [
         {
-          url: illustration.image_url.startsWith('/')
-            ? `${siteUrl}${illustration.image_url}`
-            : illustration.image_url,
+          url: illustration.image.startsWith('/')
+            ? `${siteUrl}${illustration.image}`
+            : illustration.image,
           alt: illustration.alt_text || illustration.title,
         },
       ],

@@ -11,7 +11,7 @@ import { formatEuro, formatFromPrice, illustrationAlt } from '@/lib/illustration
 import type { ParticulierCategory } from '@/lib/particulier-categories'
 import { particulierArtPath } from '@/lib/particulier-routes'
 import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type ParticulierCategoryClientProps = {
   category: ParticulierCategory
@@ -52,11 +52,13 @@ function IllustrationCard({
       >
         <div
           ref={imageRef}
-          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg bg-[#f3eee6]"
+          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg"
+          style={{ backgroundColor: item.dominantColor || '#f3eee6' }}
         >
           <IllustrationImage
-            src={item.image_url}
+            src={item.image}
             alt={illustrationAlt(item)}
+            dominantColor={item.dominantColor}
             fill
             rounded="lg"
             priority={index < 3}

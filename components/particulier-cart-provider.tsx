@@ -21,7 +21,7 @@ import {
   writeCartToStorage,
   type CartItem,
 } from '@/lib/cart'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type ParticulierCartContextValue = {
   items: CartItem[]
@@ -29,7 +29,7 @@ type ParticulierCartContextValue = {
   count: number
   total: number
   addToCart: (
-    illustration: Pick<Illustration, 'id' | 'title' | 'image_url' | 'sizes'>,
+    illustration: Pick<Illustration, 'id' | 'title' | 'image' | 'sizes'>,
     sizeIndex: number,
     quantity: number,
     imageEl: HTMLElement | null,
@@ -68,7 +68,7 @@ export function ParticulierCartProvider({
 
   const addToCart = useCallback(
     (
-      illustration: Pick<Illustration, 'id' | 'title' | 'image_url' | 'sizes'>,
+      illustration: Pick<Illustration, 'id' | 'title' | 'image' | 'sizes'>,
       sizeIndex: number,
       quantity: number,
       imageEl: HTMLElement | null,
@@ -83,7 +83,7 @@ export function ParticulierCartProvider({
         size: sizeEntry.size,
         price: sizeEntry.price,
         quantity,
-        image_url: illustration.image_url,
+        image: illustration.image,
       }
 
       // Optimiste : badge + total tout de suite ; le bump panier arrive avec la météorite.
@@ -99,7 +99,7 @@ export function ParticulierCartProvider({
       const to = cartEl.getBoundingClientRect()
       flightId.current += 1
       const id = flightId.current
-      setFlights((current) => [...current, { id, src: illustration.image_url, from, to }])
+      setFlights((current) => [...current, { id, src: illustration.image, from, to }])
     },
     [],
   )

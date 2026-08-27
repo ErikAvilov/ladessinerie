@@ -1,40 +1,48 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { isAdminAuthenticated } from '@/lib/admin-auth'
 import {
-  buildIllustrationRecord,
-  formatIllustrationSaveError,
-  type IllustrationFormValues,
-} from '@/lib/illustration-record'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { getIllustrations, type Illustration } from '@/lib/supabase'
-import { parseSiteThemeInput, type SiteTheme } from '@/lib/site-theme'
+  deleteIllustrationFile,
+  processIllustrationUpload,
+} from '@/lib/illustration-image-process'
+import {
+  getIllustrationById,
+  getIllustrations,
+  removeIllustration,
+  type Illustration,
+  type IllustrationSize,
+  uniqueSlug,
+  upsertIllustration,
+} from '@/lib/illustrations'
+import { parseSiteThemeInput, writeSiteTheme, type SiteTheme } from '@/lib/site-theme'
 
-const RLS_FIX_HINT =
-  'Les droits Supabase bloquent l’écriture. Exécute le SQL affiché ci-dessous (ou le fichier supabase/rls-illustrations.sql), puis déconnecte/reconnecte-toi sur /admin.'
-
-async function requireAdminSupabase() {
-  const supabase = await createSupabaseServerClient()
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error || !user) {
-    return { supabase: null, error: 'Session expirée. Reconnectez-vous sur /admin/login.' as const }
-  }
-
-  return { supabase, error: null }
+export type IllustrationFormValues = {
+  title: string
+  altText: string
+  category: 'particulier' | 'pro'
+  subcategory: string
+  sizes: IllustrationSize[]
+  image?: string
+  dominantColor?: string
 }
 
 function revalidateIllustrationPaths(id?: string) {
   revalidatePath('/admin')
   revalidatePath('/particulier')
+  revalidatePath('/pro')
   revalidatePath('/')
   if (id) {
     revalidatePath(`/admin/${id}/edit`)
     revalidatePath(`/particulier/art/${id}`)
   }
+}
+
+async function requireAdmin() {
+  if (!(await isAdminAuthenticated())) {
+    return 'Session expirée. Reconnectez-vous sur /admin/login.'
+  }
+  return null
 }
 
 export async function refreshIllustrations(): Promise<Illustration[]> {
@@ -45,124 +53,94 @@ export async function updateIllustration(
   id: string,
   values: IllustrationFormValues,
 ): Promise<{ error?: string }> {
-  const { supabase, error: authError } = await requireAdminSupabase()
-  if (!supabase) return { error: authError ?? 'Non authentifié.' }
+  const authError = await requireAdmin()
+  if (authError) return { error: authError }
 
-  const payload = buildIllustrationRecord(values)
+  const current = await getIllustrationById(id)
+  if (!current) return { error: 'Illustration introuvable.' }
 
-  // select('id') force PostgREST à renvoyer les lignes réellement mises à jour
-  // (0 ligne = RLS / droits, même sans message d'erreur)
-  const { data, error } = await supabase
-    .from('illustrations')
-    .update(payload)
-    .eq('id', id)
-    .select('id')
+  const title = values.title.trim()
+  if (!title) return { error: 'Titre requis.' }
 
-  if (error) {
-    return { error: formatIllustrationSaveError(error.message) }
+  const all = await getIllustrations()
+  const next: Illustration = {
+    ...current,
+    title,
+    slug: uniqueSlug(title, all, id),
+    alt_text: values.altText.trim() || undefined,
+    category: values.category,
+    subcategory: values.subcategory.trim() || undefined,
+    sizes: values.sizes,
+    image: values.image?.trim() || current.image,
+    dominantColor: values.dominantColor?.trim() || current.dominantColor,
   }
 
-  if (!data?.length) {
-    return { error: RLS_FIX_HINT }
-  }
-
+  await upsertIllustration(next)
   revalidateIllustrationPaths(id)
   return {}
 }
 
-export async function insertIllustration(
-  values: IllustrationFormValues,
-): Promise<{ error?: string }> {
-  const { supabase, error: authError } = await requireAdminSupabase()
-  if (!supabase) return { error: authError ?? 'Non authentifié.' }
+export async function updateIllustrationImage(
+  id: string,
+  formData: FormData,
+): Promise<{ error?: string; image?: string; dominantColor?: string }> {
+  const authError = await requireAdmin()
+  if (authError) return { error: authError }
 
-  const payload = buildIllustrationRecord(values)
+  const current = await getIllustrationById(id)
+  if (!current) return { error: 'Illustration introuvable.' }
 
-  const { data, error } = await supabase.from('illustrations').insert(payload).select('id')
-
-  if (error) {
-    return { error: formatIllustrationSaveError(error.message) }
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: 'Image manquante.' }
   }
 
-  if (!data?.length) {
-    return { error: RLS_FIX_HINT }
+  try {
+    const processed = await processIllustrationUpload(file, current.title)
+    await deleteIllustrationFile(current.image)
+    await upsertIllustration({
+      ...current,
+      image: processed.publicPath,
+      dominantColor: processed.dominantColor,
+    })
+    revalidateIllustrationPaths(id)
+    return {
+      image: processed.publicPath,
+      dominantColor: processed.dominantColor,
+    }
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Traitement image impossible.',
+    }
   }
-
-  revalidateIllustrationPaths()
-  return {}
 }
 
 export async function updateSiteTheme(
   input: SiteTheme,
 ): Promise<{ error?: string; theme?: SiteTheme }> {
-  const { supabase, error: authError } = await requireAdminSupabase()
-  if (!supabase) return { error: authError ?? 'Non authentifié.' }
+  const authError = await requireAdmin()
+  if (authError) return { error: authError }
 
   const parsed = parseSiteThemeInput(input)
   if ('error' in parsed) return { error: parsed.error }
 
-  const { data, error } = await supabase
-    .from('site_theme')
-    .update({
-      panier_fond: parsed.panier_fond,
-      panier_traits: parsed.panier_traits,
-      background_fond: parsed.background_fond,
-      background_traits: parsed.background_traits,
-      bouton_petit_portraits: parsed.bouton_petit_portraits,
-      bouton_grand_portraits: parsed.bouton_grand_portraits,
-      bouton_stickers: parsed.bouton_stickers,
-      bouton_milklab: parsed.bouton_milklab,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', 1)
-    .select(
-      'panier_fond, panier_traits, background_fond, background_traits, bouton_petit_portraits, bouton_grand_portraits, bouton_stickers, bouton_milklab',
-    )
-
-  if (error) {
-    const missingColumn =
-      /bouton_|column|schema/i.test(error.message) || error.code === 'PGRST204'
-    return {
-      error: missingColumn
-        ? 'Colonnes boutons manquantes. Exécute supabase/site-theme-boutons.sql dans Supabase, puis reconnecte-toi.'
-        : error.message,
-    }
-  }
-
-  if (!data?.length) {
-    return {
-      error:
-        'Mise à jour impossible. Exécute supabase/site-theme-boutons.sql dans Supabase, puis reconnecte-toi.',
-    }
-  }
-
+  await writeSiteTheme(parsed)
   revalidatePath('/')
   revalidatePath('/particulier')
   revalidatePath('/pro')
   revalidatePath('/a-propos')
   revalidatePath('/admin')
-
   return { theme: parsed }
 }
 
 export async function deleteIllustration(id: string): Promise<{ error?: string }> {
-  const { supabase, error: authError } = await requireAdminSupabase()
-  if (!supabase) return { error: authError ?? 'Non authentifié.' }
+  const authError = await requireAdmin()
+  if (authError) return { error: authError }
 
-  const { data, error } = await supabase
-    .from('illustrations')
-    .delete()
-    .eq('id', id)
-    .select('id')
+  const removed = await removeIllustration(id)
+  if (!removed) return { error: 'Illustration introuvable.' }
 
-  if (error) {
-    return { error: error.message }
-  }
-
-  if (!data?.length) {
-    return { error: RLS_FIX_HINT }
-  }
-
+  await deleteIllustrationFile(removed.image)
   revalidateIllustrationPaths(id)
   return {}
 }

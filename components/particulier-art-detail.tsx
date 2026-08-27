@@ -7,7 +7,7 @@ import { InstantLink } from '@/components/instant-link'
 import { useParticulierCart } from '@/components/particulier-cart-provider'
 import { formatEuro, illustrationAlt } from '@/lib/illustration-utils'
 import { startCheckout } from '@/lib/stripe-checkout-client'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 type ParticulierArtDetailProps = {
   illustration: Illustration
@@ -60,11 +60,13 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
         <div className="grid min-h-0 w-full flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)]">
           <div
             ref={imageRef}
-            className="relative min-h-[42dvh] w-full bg-[#f3eee6] md:min-h-0 md:h-full"
+            className="relative min-h-[42dvh] w-full md:min-h-0 md:h-full"
+            style={{ backgroundColor: illustration.dominantColor || '#f3eee6' }}
           >
             <IllustrationImage
-              src={illustration.image_url}
+              src={illustration.image}
               alt={illustrationAlt(illustration)}
+              dominantColor={illustration.dominantColor}
               fill
               preload
               fade

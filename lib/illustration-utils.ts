@@ -1,4 +1,4 @@
-import type { Illustration, IllustrationSize } from '@/lib/supabase'
+import type { Illustration, IllustrationSize } from '@/lib/illustrations'
 
 export function illustrationAlt(item: Pick<Illustration, 'alt_text' | 'title'>) {
   return item.alt_text?.trim() || item.title
@@ -39,7 +39,5 @@ export function sizesToFields(sizes?: IllustrationSize[]) {
 }
 
 export function illustrationPriceLabel(illustration: Illustration) {
-  const min = getMinPrice(illustration.sizes)
-  if (min == null) return ''
   return formatFromPrice(illustration.sizes)
 }

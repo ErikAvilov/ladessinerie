@@ -7,13 +7,6 @@ const nextConfig = {
     // Cap utile pour bulles home (~120px CSS) et miniatures — évite les 2560px+.
     imageSizes: [32, 48, 64, 72, 96, 128, 256, 360, 600],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-    ],
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],

@@ -20,7 +20,7 @@ import {
   SITE_PANEL_TITLE,
   type SitePanel,
 } from '@/lib/site-panels'
-import type { Illustration } from '@/lib/supabase'
+import type { Illustration } from '@/lib/illustrations'
 
 const slideEase = [0.65, 0, 0.35, 1] as const
 

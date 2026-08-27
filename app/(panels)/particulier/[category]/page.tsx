@@ -7,7 +7,7 @@ import {
   isParticulierCategorySlug,
   PARTICULIER_CATEGORIES,
 } from '@/lib/particulier-categories'
-import { getIllustrations } from '@/lib/supabase'
+import { getIllustrations } from '@/lib/illustrations'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
