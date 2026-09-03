@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Comico';
+  src: url('/typo/Comico-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --cream: #faf6ee;
   --ink: #2b2927;
@@ -11,7 +19,8 @@
   --navy: #3d5c74;
   --forest: #3a4f3c;
 }
-@theme inline { --color-background: var(--cream); --color-foreground: var(--ink); --font-sans: var(--font-body); --font-serif: var(--font-display); }
+@theme inline { --color-background: var(--cream); --color-foreground: var(--ink); --font-sans: var(--font-body); --font-serif: 'Comico', serif; }
+:root { --font-display: 'Comico', serif; }
 * { box-sizing: border-box; }
 html { background: var(--cream); scroll-behavior: smooth; }
 body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--font-body), sans-serif; }

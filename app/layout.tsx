@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Fraunces } from 'next/font/google'
+import { DM_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PageTransition } from '@/components/page-transition'
@@ -13,13 +13,6 @@ const body = DM_Sans({
   subsets: ['latin'],
   variable: '--font-body',
   weight: ['400', '500', '600'],
-  display: 'swap',
-})
-const display = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['400', '600'],
-  style: ['normal', 'italic'],
   display: 'swap',
 })
 
@@ -41,7 +34,7 @@ export default async function RootLayout({
 
   return (
     <html lang="fr" className="bg-background" suppressHydrationWarning>
-      <body className={`${body.variable} ${display.variable}`} suppressHydrationWarning>
+      <body className={`${body.variable}`} suppressHydrationWarning>
         <SiteThemeProvider theme={theme}>
           <div className="min-h-dvh bg-background">
             <PageTransition>{children}</PageTransition>

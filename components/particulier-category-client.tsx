@@ -174,11 +174,11 @@ export function ParticulierCategoryClient({
           ← Retour à la boutique
         </InstantLink>
 
-        <div className="mt-2 md:mt-2.5">
-          <p className="font-mono text-[9px] uppercase tracking-[.2em] text-foreground/45">
-            Collection
-          </p>
-          <h1 className="display mt-1 text-xl font-semibold leading-tight md:text-2xl lg:text-[1.75rem]">
+        <div className="mt-2 text-center md:mt-2.5">
+          <h1
+            className="display text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl"
+            style={{ color: color }}
+          >
             {category.label}
           </h1>
         </div>
