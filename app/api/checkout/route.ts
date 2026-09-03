@@ -21,6 +21,14 @@ type CheckoutBody = {
   quantity?: number
 }
 
+function toStripeImages(image: string | undefined, origin: string): string[] | undefined {
+  if (!image) return undefined
+  const url = image.startsWith('http') ? image : `${origin}${image}`
+  // Stripe ne peut pas atteindre localhost — on omet l'image plutôt que de planter
+  if (url.includes('localhost') || url.includes('127.0.0.1')) return undefined
+  return [url]
+}
+
 function siteOrigin(request: Request) {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
   if (configured) return configured
@@ -65,6 +73,8 @@ export async function POST(request: Request) {
     if (lines.length > 30) {
       return NextResponse.json({ error: 'Trop d’articles dans le panier.' }, { status: 400 })
     }
+
+    const origin = siteOrigin(request)
 
     const lineItems: {
       quantity: number
@@ -135,7 +145,7 @@ export async function POST(request: Request) {
           product_data: {
             name: `${illustration.title} — Format ${sizeEntry.size}`,
             description: `Tirage d’art · dimension ${sizeEntry.size} · La Dessinerie · Retrait atelier`,
-            images: illustration.image ? [illustration.image] : undefined,
+            images: toStripeImages(illustration.image, origin),
             metadata: {
               illustration_id: illustration.id,
               size: sizeEntry.size,
@@ -145,8 +155,6 @@ export async function POST(request: Request) {
         },
       })
     }
-
-    const origin = siteOrigin(request)
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
