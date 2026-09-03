@@ -2,9 +2,16 @@ import sharp from 'sharp'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import {
+  assertPersistentStorageConfigured,
+  deleteBlobIfPresent,
+  putPublicWebpBlob,
+  shouldUseBlobStorage,
+} from '@/lib/blob-storage'
 import { slugify } from '@/lib/illustrations'
 
 const ILLUSTRATIONS_DIR = path.join(process.cwd(), 'public', 'illustrations')
+const ILLUSTRATIONS_BLOB_PREFIX = 'illustrations'
 
 function toHex(channel: number) {
   return Math.max(0, Math.min(255, Math.round(channel)))
@@ -42,12 +49,21 @@ export async function processIllustrationUpload(
   const output = isAlreadyWebp
     ? bytes
     : await sharp(bytes).webp({ quality: 80 }).toBuffer()
-
-  await fs.mkdir(ILLUSTRATIONS_DIR, { recursive: true })
-
   const base =
     slugify(titleHint || file.name.replace(/\.[^.]+$/, '')) || 'illustration'
   const fileName = `${base}-${randomUUID().slice(0, 8)}.webp`
+
+  if (shouldUseBlobStorage()) {
+    const url = await putPublicWebpBlob(`${ILLUSTRATIONS_BLOB_PREFIX}/${fileName}`, output)
+    return {
+      publicPath: url,
+      fileName,
+      dominantColor,
+    }
+  }
+
+  assertPersistentStorageConfigured()
+  await fs.mkdir(ILLUSTRATIONS_DIR, { recursive: true })
   await fs.writeFile(path.join(ILLUSTRATIONS_DIR, fileName), output)
 
   return {
@@ -58,6 +74,11 @@ export async function processIllustrationUpload(
 }
 
 export async function deleteIllustrationFile(publicPath: string) {
+  if (publicPath.startsWith('http://') || publicPath.startsWith('https://')) {
+    await deleteBlobIfPresent(publicPath)
+    return
+  }
+
   if (!publicPath.startsWith('/illustrations/')) return
   const fileName = publicPath.replace('/illustrations/', '')
   if (!fileName || fileName.includes('..') || fileName.includes('/')) return

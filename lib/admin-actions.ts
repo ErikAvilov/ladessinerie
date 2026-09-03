@@ -75,9 +75,15 @@ export async function updateIllustration(
     dominantColor: values.dominantColor?.trim() || current.dominantColor,
   }
 
-  await upsertIllustration(next)
-  revalidateIllustrationPaths(id)
-  return {}
+  try {
+    await upsertIllustration(next)
+    revalidateIllustrationPaths(id)
+    return {}
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Enregistrement impossible.',
+    }
+  }
 }
 
 export async function updateIllustrationImage(
@@ -124,23 +130,39 @@ export async function updateSiteTheme(
   const parsed = parseSiteThemeInput(input)
   if ('error' in parsed) return { error: parsed.error }
 
-  await writeSiteTheme(parsed)
-  revalidatePath('/')
-  revalidatePath('/particulier')
-  revalidatePath('/pro')
-  revalidatePath('/a-propos')
-  revalidatePath('/admin')
-  return { theme: parsed }
+  try {
+    await writeSiteTheme(parsed)
+    revalidatePath('/', 'layout')
+    revalidatePath('/')
+    revalidatePath('/particulier')
+    revalidatePath('/pro')
+    revalidatePath('/a-propos')
+    revalidatePath('/contact')
+    revalidatePath('/panier')
+    revalidatePath('/succes')
+    revalidatePath('/admin')
+    return { theme: parsed }
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Enregistrement du theme impossible.',
+    }
+  }
 }
 
 export async function deleteIllustration(id: string): Promise<{ error?: string }> {
   const authError = await requireAdmin()
   if (authError) return { error: authError }
 
-  const removed = await removeIllustration(id)
-  if (!removed) return { error: 'Illustration introuvable.' }
+  try {
+    const removed = await removeIllustration(id)
+    if (!removed) return { error: 'Illustration introuvable.' }
 
-  await deleteIllustrationFile(removed.image)
-  revalidateIllustrationPaths(id)
-  return {}
+    await deleteIllustrationFile(removed.image)
+    revalidateIllustrationPaths(id)
+    return {}
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Suppression impossible.',
+    }
+  }
 }

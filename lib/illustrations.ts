@@ -1,6 +1,11 @@
-import { cache } from 'react'
 import { promises as fs } from 'fs'
 import path from 'path'
+import {
+  assertPersistentStorageConfigured,
+  readPublicJsonBlob,
+  shouldUseBlobStorage,
+  writePublicJsonBlob,
+} from '@/lib/blob-storage'
 
 export type IllustrationSize = {
   size: string
@@ -23,6 +28,7 @@ export type Illustration = {
 }
 
 const DATA_PATH = path.join(process.cwd(), 'data', 'illustrations.json')
+const ILLUSTRATIONS_BLOB_PATH = 'site-data/illustrations.json'
 
 export function slugify(value: string): string {
   return (
@@ -58,6 +64,11 @@ export function illustrationPrice(illustration: Illustration): number | null {
 
 async function readAll(): Promise<Illustration[]> {
   try {
+    if (shouldUseBlobStorage()) {
+      const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
+      return Array.isArray(remote) ? remote : []
+    }
+
     const raw = await fs.readFile(DATA_PATH, 'utf8')
     const parsed = JSON.parse(raw) as Illustration[]
     return Array.isArray(parsed) ? parsed : []
@@ -68,10 +79,16 @@ async function readAll(): Promise<Illustration[]> {
 }
 
 export async function writeIllustrations(illustrations: Illustration[]): Promise<void> {
+  if (shouldUseBlobStorage()) {
+    await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, illustrations)
+    return
+  }
+
+  assertPersistentStorageConfigured()
   await fs.writeFile(DATA_PATH, `${JSON.stringify(illustrations, null, 2)}\n`, 'utf8')
 }
 
-export const getIllustrations = cache(async function getIllustrations(
+export async function getIllustrations(
   category?: 'particulier' | 'pro',
 ): Promise<Illustration[]> {
   const all = await readAll()
@@ -80,14 +97,14 @@ export const getIllustrations = cache(async function getIllustrations(
   )
   if (!category) return sorted
   return sorted.filter((item) => item.category === category)
-})
+}
 
-export const getIllustrationById = cache(async function getIllustrationById(
+export async function getIllustrationById(
   id: string,
 ): Promise<Illustration | null> {
   const all = await readAll()
   return all.find((item) => item.id === id) ?? null
-})
+}
 
 export async function upsertIllustration(illustration: Illustration): Promise<void> {
   const all = await readAll()
