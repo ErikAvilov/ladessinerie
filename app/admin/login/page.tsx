@@ -1,10 +1,16 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+
+function safeNextPath(value: string | null) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/admin'
+  if (!value.startsWith('/admin')) return '/admin'
+  return value
+}
 
 export default function AdminLoginPage() {
-  const router = useRouter()
+  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -14,22 +20,28 @@ export default function AdminLoginPage() {
     setError(null)
     setLoading(true)
 
-    const response = await fetch('/api/admin/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    })
+    try {
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password }),
+      })
 
-    setLoading(false)
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null
+        setError(data?.error ?? 'Mot de passe incorrect.')
+        setLoading(false)
+        return
+      }
 
-    if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null
-      setError(data?.error ?? 'Mot de passe incorrect.')
-      return
+      // Redirection hard : le cookie de session est pris en compte immédiatement
+      // (router.replace soft-nav échoue souvent juste après Set-Cookie).
+      window.location.assign(safeNextPath(searchParams.get('next')))
+    } catch {
+      setError('Impossible de se connecter. Réessayez.')
+      setLoading(false)
     }
-
-    router.replace('/admin')
-    router.refresh()
   }
 
   return (
