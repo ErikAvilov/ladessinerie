@@ -1,7 +1,6 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 function safeNextPath(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/admin'
@@ -9,8 +8,12 @@ function safeNextPath(value: string | null) {
   return value
 }
 
+function nextPathFromLocation() {
+  const next = new URLSearchParams(window.location.search).get('next')
+  return safeNextPath(next)
+}
+
 export default function AdminLoginPage() {
-  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -37,7 +40,7 @@ export default function AdminLoginPage() {
 
       // Redirection hard : le cookie de session est pris en compte immédiatement
       // (router.replace soft-nav échoue souvent juste après Set-Cookie).
-      window.location.assign(safeNextPath(searchParams.get('next')))
+      window.location.assign(nextPathFromLocation())
     } catch {
       setError('Impossible de se connecter. Réessayez.')
       setLoading(false)
