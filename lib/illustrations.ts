@@ -62,16 +62,29 @@ export function illustrationPrice(illustration: Illustration): number | null {
   return Math.min(...illustration.sizes.map((entry) => entry.price))
 }
 
+async function readLocalFile(): Promise<Illustration[]> {
+  const raw = await fs.readFile(DATA_PATH, 'utf8')
+  const parsed = JSON.parse(raw) as Illustration[]
+  return Array.isArray(parsed) ? parsed : []
+}
+
 async function readAll(): Promise<Illustration[]> {
   try {
     if (shouldUseBlobStorage()) {
       const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
-      return Array.isArray(remote) ? remote : []
+      // Fichier déjà présent dans Blob (même vide volontairement).
+      if (remote !== null && Array.isArray(remote)) return remote
+
+      // Premier démarrage : seed depuis le JSON embarqué au build.
+      const local = await readLocalFile().catch(() => [] as Illustration[])
+      if (local.length > 0) {
+        await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, local)
+        return local
+      }
+      return []
     }
 
-    const raw = await fs.readFile(DATA_PATH, 'utf8')
-    const parsed = JSON.parse(raw) as Illustration[]
-    return Array.isArray(parsed) ? parsed : []
+    return await readLocalFile()
   } catch (error) {
     console.error('Lecture data/illustrations.json:', error)
     return []

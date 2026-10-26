@@ -17,15 +17,28 @@ export * from '@/lib/site-theme-shared'
 const THEME_PATH = path.join(process.cwd(), 'data', 'site-theme.json')
 const THEME_BLOB_PATH = 'site-data/site-theme.json'
 
+async function readLocalTheme(): Promise<Partial<SiteTheme> | null> {
+  const raw = await fs.readFile(THEME_PATH, 'utf8')
+  return JSON.parse(raw) as Partial<SiteTheme>
+}
+
 export async function getSiteTheme(): Promise<SiteTheme> {
   try {
     if (shouldUseBlobStorage()) {
       const remote = await readPublicJsonBlob<Partial<SiteTheme>>(THEME_BLOB_PATH)
-      return coalesceSiteTheme(remote)
+      if (remote !== null) return coalesceSiteTheme(remote)
+
+      // Premier démarrage : seed depuis le thème embarqué au build.
+      const local = await readLocalTheme().catch(() => null)
+      if (local) {
+        const theme = coalesceSiteTheme(local)
+        await writePublicJsonBlob(THEME_BLOB_PATH, theme)
+        return theme
+      }
+      return coalesceSiteTheme(null)
     }
 
-    const raw = await fs.readFile(THEME_PATH, 'utf8')
-    return coalesceSiteTheme(JSON.parse(raw) as Partial<SiteTheme>)
+    return coalesceSiteTheme(await readLocalTheme())
   } catch (error) {
     console.error('getSiteTheme:', error)
     return coalesceSiteTheme(null)
