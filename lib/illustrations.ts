@@ -68,20 +68,32 @@ async function readLocalFile(): Promise<Illustration[]> {
   return Array.isArray(parsed) ? parsed : []
 }
 
+async function seedFromLocalIfNeeded(
+  remote: Illustration[] | null,
+): Promise<Illustration[]> {
+  const local = await readLocalFile().catch(() => [] as Illustration[])
+
+  // Blob manquant ou vide + catalogue repo non vide → (re)seed.
+  const remoteEmpty = remote === null || (Array.isArray(remote) && remote.length === 0)
+  if (remoteEmpty && local.length > 0) {
+    await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, local)
+    return local
+  }
+
+  if (Array.isArray(remote)) return remote
+  return local
+}
+
 async function readAll(): Promise<Illustration[]> {
   try {
     if (shouldUseBlobStorage()) {
-      const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
-      // Fichier déjà présent dans Blob (même vide volontairement).
-      if (remote !== null && Array.isArray(remote)) return remote
-
-      // Premier démarrage : seed depuis le JSON embarqué au build.
-      const local = await readLocalFile().catch(() => [] as Illustration[])
-      if (local.length > 0) {
-        await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, local)
-        return local
+      try {
+        const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
+        return await seedFromLocalIfNeeded(remote)
+      } catch (error) {
+        console.error('Lecture Blob illustrations — fallback local:', error)
+        return await readLocalFile().catch(() => [])
       }
-      return []
     }
 
     return await readLocalFile()

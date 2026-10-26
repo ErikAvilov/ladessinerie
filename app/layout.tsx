@@ -9,7 +9,7 @@ import './globals.css'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-/** Thème admin (couleurs fond, etc.) doit être relu à chaque requête. */
+/** Thème admin doit être relu à chaque requête. */
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
@@ -33,8 +33,7 @@ export default async function RootLayout({
     '--text-portes': theme.texte_portes,
     '--text-a-propos': theme.texte_a_propos,
     '--text-titre-a-propos': theme.texte_titre_a_propos,
-    /* Aligne html/body/bg-background sur le fond admin */
-    '--cream': theme.background_fond,
+    /* SVG boutique uniquement — ne pas écraser --cream (chrome / admin). */
     '--background-fond': theme.background_fond,
     '--background-traits': theme.background_traits,
   } as CSSProperties
@@ -42,10 +41,7 @@ export default async function RootLayout({
   return (
     <html lang="fr" className="bg-background" style={themeVars} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <SiteThemeProvider
-          key={`${theme.background_fond}-${theme.background_traits}-${theme.panier_traits}`}
-          theme={theme}
-        >
+        <SiteThemeProvider theme={theme}>
           <div className="min-h-dvh bg-background">
             <PageTransition>{children}</PageTransition>
           </div>

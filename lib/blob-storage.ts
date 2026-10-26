@@ -45,7 +45,7 @@ export async function readPublicJsonBlob<T>(pathname: string): Promise<T | null>
 export async function writePublicJsonBlob(pathname: string, value: unknown): Promise<void> {
   if (!shouldUseBlobStorage()) {
     assertPersistentStorageConfigured()
-    return
+    throw missingBlobConfigError()
   }
 
   await put(pathname, `${JSON.stringify(value, null, 2)}\n`, {

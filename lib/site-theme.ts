@@ -9,6 +9,7 @@ import {
 } from '@/lib/blob-storage'
 import {
   coalesceSiteTheme,
+  DEFAULT_SITE_THEME,
   type SiteTheme,
 } from '@/lib/site-theme-shared'
 
@@ -22,20 +23,40 @@ async function readLocalTheme(): Promise<Partial<SiteTheme> | null> {
   return JSON.parse(raw) as Partial<SiteTheme>
 }
 
+/** Thème Blob trop pauvre / ancien schéma → à merger + réécrire. */
+function themeLooksIncomplete(row: Partial<SiteTheme> | null): boolean {
+  if (!row || Object.keys(row).length === 0) return true
+  return (
+    !row.background_fond ||
+    !row.background_traits ||
+    !row.bouton_petit_portraits ||
+    !row.fond_petit_portraits
+  )
+}
+
 export async function getSiteTheme(): Promise<SiteTheme> {
   try {
     if (shouldUseBlobStorage()) {
-      const remote = await readPublicJsonBlob<Partial<SiteTheme>>(THEME_BLOB_PATH)
-      if (remote !== null) return coalesceSiteTheme(remote)
+      try {
+        const remote = await readPublicJsonBlob<Partial<SiteTheme>>(THEME_BLOB_PATH)
+        const local = await readLocalTheme().catch(() => null)
 
-      // Premier démarrage : seed depuis le thème embarqué au build.
-      const local = await readLocalTheme().catch(() => null)
-      if (local) {
-        const theme = coalesceSiteTheme(local)
-        await writePublicJsonBlob(THEME_BLOB_PATH, theme)
-        return theme
+        if (!themeLooksIncomplete(remote)) {
+          return coalesceSiteTheme(remote)
+        }
+
+        // Merge remote partiel + local + defaults, puis persiste le schéma complet.
+        const merged = coalesceSiteTheme({
+          ...DEFAULT_SITE_THEME,
+          ...(local ?? {}),
+          ...(remote ?? {}),
+        })
+        await writePublicJsonBlob(THEME_BLOB_PATH, merged)
+        return merged
+      } catch (error) {
+        console.error('Lecture Blob thème — fallback local:', error)
+        return coalesceSiteTheme(await readLocalTheme().catch(() => null))
       }
-      return coalesceSiteTheme(null)
     }
 
     return coalesceSiteTheme(await readLocalTheme())
