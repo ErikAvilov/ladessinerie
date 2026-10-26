@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
+import { AdminSuccessBanner } from '@/components/admin-success-banner'
 import { updateIllustration, updateIllustrationImage } from '@/lib/admin-actions'
 import {
   formatFromPrice,
@@ -139,9 +140,10 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
         </p>
       )}
       {success && (
-        <p className="mb-6 rounded-xl bg-[var(--grass)]/10 px-4 py-3 text-sm text-[var(--forest)]">
-          {success}
-        </p>
+        <AdminSuccessBanner
+          message={success}
+          onHide={() => setSuccess(null)}
+        />
       )}
 
       <section className="rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">

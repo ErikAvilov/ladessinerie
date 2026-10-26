@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useSiteThemeOptional } from '@/components/site-theme-context'
 import { DEFAULT_SITE_THEME } from '@/lib/site-theme-shared'
 
@@ -33,6 +33,12 @@ function loadBackgroundSvg() {
   return loadingSvg
 }
 
+function applyBackgroundColors(markup: string, fond: string, traits: string) {
+  return markup
+    .replace(/var\(--background-fond(?:,\s*[^)]+)?\)/gi, fond)
+    .replace(/var\(--background-traits(?:,\s*[^)]+)?\)/gi, traits)
+}
+
 export function SiteBackgroundLayer({ className, fond, traits }: SiteBackgroundLayerProps) {
   const theme = useSiteThemeOptional()
   const resolvedFond = fond ?? theme?.backgroundFond ?? DEFAULT_SITE_THEME.background_fond
@@ -49,6 +55,11 @@ export function SiteBackgroundLayer({ className, fond, traits }: SiteBackgroundL
     }
   }, [])
 
+  const coloredSvg = useMemo(() => {
+    if (!svg) return null
+    return applyBackgroundColors(svg, resolvedFond, resolvedTraits)
+  }, [svg, resolvedFond, resolvedTraits])
+
   return (
     <div
       aria-hidden
@@ -57,17 +68,18 @@ export function SiteBackgroundLayer({ className, fond, traits }: SiteBackgroundL
         {
           '--background-fond': resolvedFond,
           '--background-traits': resolvedTraits,
+          backgroundColor: resolvedFond,
         } as CSSProperties
       }
     >
-      {svg ? (
+      {coloredSvg ? (
         <span
           className="block h-full w-full"
           style={{ display: 'block', lineHeight: 0 }}
-          dangerouslySetInnerHTML={{ __html: svg }}
+          dangerouslySetInnerHTML={{ __html: coloredSvg }}
         />
       ) : (
-        <span className="block h-full w-full bg-[var(--background-fond)]" />
+        <span className="block h-full w-full" style={{ backgroundColor: resolvedFond }} />
       )}
     </div>
   )

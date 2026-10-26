@@ -133,14 +133,14 @@ export async function updateSiteTheme(
   try {
     await writeSiteTheme(parsed)
     revalidatePath('/', 'layout')
-    revalidatePath('/')
-    revalidatePath('/particulier')
-    revalidatePath('/pro')
+    revalidatePath('/', 'page')
+    revalidatePath('/particulier', 'layout')
+    revalidatePath('/pro', 'layout')
     revalidatePath('/a-propos')
     revalidatePath('/contact')
     revalidatePath('/panier')
     revalidatePath('/succes')
-    revalidatePath('/admin')
+    revalidatePath('/admin', 'layout')
     return { theme: parsed }
   } catch (error) {
     return {

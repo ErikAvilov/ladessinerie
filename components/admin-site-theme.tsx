@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AdminSuccessBanner } from '@/components/admin-success-banner'
 import { BoutonIcon } from '@/components/bouton-icon'
 import { PanierIcon } from '@/components/panier-icon'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
@@ -149,9 +150,11 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
         </p>
       )}
       {success && (
-        <p className="mb-4 rounded-xl bg-[var(--grass)]/10 px-4 py-3 text-sm text-[var(--forest)]">
-          {success}
-        </p>
+        <AdminSuccessBanner
+          message={success}
+          className="mb-4"
+          onHide={() => setSuccess(null)}
+        />
       )}
 
       {tab === 'textes' && (

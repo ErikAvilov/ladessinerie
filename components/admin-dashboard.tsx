@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSiteThemePanel } from '@/components/admin-site-theme'
 import { AdminSizeFields, type SizeField } from '@/components/admin-size-fields'
+import { AdminSuccessBanner } from '@/components/admin-success-banner'
 import { deleteIllustration, refreshIllustrations } from '@/lib/admin-actions'
 import {
   formatFromPrice,
@@ -225,9 +226,10 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
         </p>
       )}
       {success && (
-        <p className="mb-6 rounded-xl bg-[var(--grass)]/10 px-4 py-3 text-sm text-[var(--forest)]">
-          {success}
-        </p>
+        <AdminSuccessBanner
+          message={success}
+          onHide={() => setSuccess(null)}
+        />
       )}
 
       <AdminSiteThemePanel initialTheme={initialTheme} />
