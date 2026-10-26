@@ -21,13 +21,29 @@ export async function isAdminAuthenticated() {
 }
 
 export function adminCookieOptions(token: string) {
+  const secure =
+    process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+
   return {
     name: ADMIN_COOKIE_NAME,
     value: token,
     httpOnly: true,
-    sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict' as const,
+    secure,
     path: '/',
     maxAge: ADMIN_MAX_AGE_SEC,
+  }
+}
+
+export function clearAdminCookieOptions() {
+  const secure =
+    process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+
+  return {
+    httpOnly: true,
+    sameSite: 'strict' as const,
+    secure,
+    path: '/',
+    maxAge: 0,
   }
 }

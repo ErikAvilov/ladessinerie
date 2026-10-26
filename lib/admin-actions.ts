@@ -46,6 +46,7 @@ async function requireAdmin() {
 }
 
 export async function refreshIllustrations(): Promise<Illustration[]> {
+  if (!(await isAdminAuthenticated())) return []
   return getIllustrations()
 }
 

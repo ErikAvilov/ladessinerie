@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Upload } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { ContactForm } from '@/components/contact-form'
 import { IllustrationImage } from '@/components/illustration-image'
 import { InstantLink } from '@/components/instant-link'
 import { useSiteTheme } from '@/components/site-theme-context'
@@ -75,76 +74,6 @@ function ProjectCard({
   )
 }
 
-function ContactForm() {
-  const [sent, setSent] = useState(false)
-
-  return (
-    <div className="mt-5 grid gap-8 md:mt-6 md:grid-cols-2 md:gap-10">
-      <div className="rounded-xl bg-white/92 px-4 py-5 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:px-5 md:py-6">
-        <h2 className="display text-2xl font-semibold md:text-3xl">
-          On imagine quelque chose ?
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-foreground/60 md:text-base md:leading-7">
-          Parlez-moi de votre projet, même s&apos;il n&apos;est pas encore très précis.
-        </p>
-      </div>
-
-      {sent ? (
-        <p className="rounded-xl bg-white/92 px-4 py-12 text-center text-sm text-foreground/60 shadow-[0_3px_12px_rgba(43,41,39,0.07)]">
-          Merci — votre message est prêt à partir (formulaire démo).
-        </p>
-      ) : (
-        <form
-          className="flex flex-col gap-3 rounded-xl bg-white/92 p-4 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:gap-4 md:p-5"
-          onSubmit={(event) => {
-            event.preventDefault()
-            setSent(true)
-          }}
-        >
-          <input
-            required
-            name="name"
-            placeholder="Votre nom"
-            className="rounded-xl border border-foreground/15 bg-transparent p-3.5 text-sm outline-none focus:border-[var(--terracotta)] md:p-4"
-          />
-          <input
-            name="company"
-            placeholder="Entreprise"
-            className="rounded-xl border border-foreground/15 bg-transparent p-3.5 text-sm outline-none focus:border-[var(--terracotta)] md:p-4"
-          />
-          <select
-            name="type"
-            className="rounded-xl border border-foreground/15 bg-transparent p-3.5 text-sm md:p-4"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Type de projet
-            </option>
-            <option>Branding</option>
-            <option>Fresque</option>
-            <option>Evenementiel</option>
-          </select>
-          <textarea
-            name="message"
-            placeholder="Quelques mots sur votre idée..."
-            rows={4}
-            className="rounded-xl border border-foreground/15 bg-transparent p-3.5 text-sm outline-none focus:border-[var(--terracotta)] md:p-4"
-          />
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground/60">
-            <Upload size={16} /> Joindre un brief <input type="file" className="sr-only" />
-          </label>
-          <button
-            type="submit"
-            className="cursor-pointer rounded-full bg-[var(--terracotta)] px-5 py-3.5 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            Envoyer le message
-          </button>
-        </form>
-      )}
-    </div>
-  )
-}
-
 export function ProCategoryClient({
   category,
   illustrations,
@@ -177,7 +106,7 @@ export function ProCategoryClient({
       </header>
 
       {isContact ? (
-        <ContactForm />
+        <ContactForm variant="pro" source="pro/contact" />
       ) : (
         <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:mt-6 md:gap-x-5 md:gap-y-6 lg:gap-x-6 lg:gap-y-7">
           {illustrations.length === 0 ? (
