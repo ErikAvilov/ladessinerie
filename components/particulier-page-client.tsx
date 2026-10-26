@@ -20,6 +20,7 @@ import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
 type DiveState = {
   category: ParticulierCategory
   color: string
+  fondColor: string
   from: { top: number; left: number; width: number; height: number }
 }
 
@@ -54,6 +55,7 @@ export function ParticulierPageClient() {
       setDive({
         category,
         color: theme.boutonColor(category.slug),
+        fondColor: theme.fondColor(category.slug),
         from: {
           top: rect.top,
           left: rect.left,
@@ -128,11 +130,11 @@ export function ParticulierPageClient() {
                   <BoutonIcon
                     src={category.imageSrc}
                     color={color}
-                    className="h-full w-full drop-shadow-[0_8px_18px_rgba(43,41,39,0.16)]"
+                    className="h-full w-full"
                   />
                 </span>
                 <span
-                  className={`display relative line-clamp-2 max-w-[6.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[9px] font-semibold leading-tight shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 sm:max-w-[7.5rem] sm:text-[10px] md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
+                  className={`display relative line-clamp-2 max-w-[6.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[9px] font-semibold leading-tight text-[var(--text-noms-boutons)] shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 sm:max-w-[7.5rem] sm:text-[10px] md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
                 >
                   {category.label}
                 </span>
@@ -146,6 +148,7 @@ export function ParticulierPageClient() {
         <ParticulierDiveOverlay
           category={dive.category}
           color={dive.color}
+          fondColor={dive.fondColor}
           from={dive.from}
           onComplete={() => {
             /* navigation déjà lancée */

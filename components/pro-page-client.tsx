@@ -1,134 +1,156 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Upload } from 'lucide-react'
-import { IllustrationImage } from '@/components/illustration-image'
-import { illustrationAlt } from '@/lib/illustration-utils'
-import type { Illustration } from '@/lib/illustrations'
+import { useCallback, useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { BoutonIcon } from '@/components/bouton-icon'
+import { DIVE_DURATION_MS, ProDiveOverlay } from '@/components/pro-dive-overlay'
+import { useSiteTheme } from '@/components/site-theme-context'
+import { useNavigationProgress } from '@/components/navigation-progress'
+import {
+  PRO_CATEGORIES,
+  proCategoryPath,
+  type ProCategory,
+} from '@/lib/pro-categories'
+import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
 
-type ProPageClientProps = {
-  illustrations: Illustration[]
+type DiveState = {
+  category: ProCategory
+  color: string
+  fondColor: string
+  from: { top: number; left: number; width: number; height: number }
 }
 
-export function ProPageClient({ illustrations }: ProPageClientProps) {
-  const tabs = useMemo(() => {
-    const subs = [
-      ...new Set(illustrations.map((item) => item.subcategory).filter(Boolean)),
-    ] as string[]
-    return subs.length > 0 ? subs : ['Projets']
-  }, [illustrations])
+/** Arc ∩ : extrémités un peu plus bas, centre plus haut. */
+const ARC_LAYOUT = [
+  { y: 22, rotate: -16 },
+  { y: 0, rotate: -6 },
+  { y: 0, rotate: 6 },
+  { y: 22, rotate: 16 },
+] as const
 
-  const [tab, setTab] = useState(tabs[0])
+export function ProPageClient() {
+  const router = useRouter()
+  const theme = useSiteTheme()
+  const { prefetch, onIntent, cancelIntent } = usePrefetchOnIntent()
+  const { start: startNav } = useNavigationProgress()
+  const [, startTransition] = useTransition()
+  const [dive, setDive] = useState<DiveState | null>(null)
+  const divingRef = useRef(false)
 
-  const shown =
-    tabs.length === 1 && tabs[0] === 'Projets'
-      ? illustrations
-      : illustrations.filter((item) => item.subcategory === tab)
+  const handleSelect = useCallback(
+    (category: ProCategory, button: HTMLButtonElement) => {
+      if (divingRef.current) return
+      divingRef.current = true
+
+      const href = proCategoryPath(category.slug)
+      startNav(href)
+      prefetch(href)
+
+      const media = button.querySelector<HTMLElement>('[data-dive-target]')
+      const rect = (media ?? button).getBoundingClientRect()
+      setDive({
+        category,
+        color: theme.boutonColor(category.slug),
+        fondColor: theme.fondColor(category.slug),
+        from: {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        },
+      })
+
+      window.setTimeout(() => {
+        startTransition(() => {
+          router.push(href)
+        })
+      }, Math.round(DIVE_DURATION_MS * 0.55))
+    },
+    [prefetch, router, startNav, theme],
+  )
+
+  const diving = dive !== null
 
   return (
-    <div className="content-reveal mx-auto max-w-6xl">
-      <div className="max-w-3xl">
-        <p className="font-mono text-xs uppercase tracking-[.2em] text-[var(--cobalt)]">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden">
+      <div
+        className={`shrink-0 transition-opacity duration-150 ${diving ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+        aria-hidden={diving}
+      >
+        <p className="inline-block rounded-lg bg-white/92 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[.2em] text-[var(--cobalt)] shadow-[0_2px_8px_rgba(43,41,39,0.06)]">
           Pour les pros
         </p>
-        <h1 className="display mt-2 text-4xl font-semibold leading-tight md:text-7xl">
-          Des projets qui
-          <br />
-          <em className="text-[var(--terracotta)]">font sourire.</em>
-        </h1>
-        <p className="mt-5 max-w-xl text-base leading-7 text-foreground/65 md:mt-6 md:text-lg md:leading-8">
-          Fresques murales, identités visuelles ou illustrations sur mesure : je mets de la couleur
-          dans vos histoires de marque.
-        </p>
       </div>
 
-      {tabs.length > 1 && (
-        <div className="mt-16 flex flex-wrap gap-2 border-b border-foreground/10 pb-3">
-          {tabs.map((name) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => setTab(name)}
-              className={`rounded-t-2xl px-5 py-3 font-semibold ${
-                tab === name ? 'bg-[var(--mustard)]' : 'bg-foreground/5'
-              }`}
-            >
-              {name}
-            </button>
-          ))}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col justify-center pb-[12.75rem] md:mt-3 md:pb-[21rem]">
+        <div className="relative mx-auto mb-6 flex w-full max-w-3xl shrink-0 items-end justify-between gap-1 px-1 sm:mb-8 sm:gap-3 sm:px-4 md:mb-10 md:max-w-4xl md:gap-5 md:px-6">
+          {PRO_CATEGORIES.map((category, index) => {
+            const color = theme.boutonColor(category.slug)
+            const arc = ARC_LAYOUT[index] ?? ARC_LAYOUT[0]
+            const isDiveTarget = dive?.category.slug === category.slug
+            const hideChrome = diving && !isDiveTarget
+            const href = proCategoryPath(category.slug)
+            return (
+              <motion.button
+                key={category.slug}
+                type="button"
+                initial={false}
+                animate={{
+                  opacity: hideChrome ? 0 : 1,
+                  y: arc.y,
+                  rotate: arc.rotate,
+                  scale: 1,
+                }}
+                transition={
+                  diving
+                    ? { duration: 0.12, ease: 'easeOut' }
+                    : { delay: index * 0.05, duration: 0.35, ease: 'easeOut' }
+                }
+                whileHover={diving ? undefined : { scale: 1.08, y: arc.y - 6 }}
+                whileTap={diving ? undefined : { scale: 0.96 }}
+                onClick={(event) => handleSelect(category, event.currentTarget)}
+                onPointerEnter={() => onIntent(href)}
+                onFocus={() => onIntent(href)}
+                onPointerLeave={cancelIntent}
+                className="group relative flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-1 sm:gap-1.5 md:gap-2"
+                style={{ transformOrigin: '50% 100%' }}
+                aria-label={`Ouvrir ${category.label}`}
+                aria-hidden={hideChrome}
+                tabIndex={diving ? -1 : undefined}
+              >
+                <span
+                  data-dive-target
+                  className={`relative flex aspect-square w-full max-w-[4.75rem] items-center justify-center sm:max-w-[6.25rem] md:max-w-[8.5rem] ${isDiveTarget ? 'opacity-0' : ''}`}
+                >
+                  <BoutonIcon
+                    src={category.imageSrc}
+                    color={color}
+                    className="h-full w-full"
+                  />
+                </span>
+                <span
+                  className={`display relative line-clamp-2 max-w-[6.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[9px] font-semibold leading-tight text-[var(--text-noms-boutons)] shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 sm:max-w-[7.5rem] sm:text-[10px] md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
+                >
+                  {category.label}
+                </span>
+              </motion.button>
+            )
+          })}
         </div>
+      </div>
+
+      {dive && (
+        <ProDiveOverlay
+          category={dive.category}
+          color={dive.color}
+          fondColor={dive.fondColor}
+          from={dive.from}
+          onComplete={() => {
+            /* navigation déjà lancée */
+          }}
+        />
       )}
-
-      <div className="grid gap-5 py-8 md:grid-cols-2">
-        {shown.length === 0 ? (
-          <p className="col-span-full py-12 text-center text-sm text-foreground/50">
-            Aucun projet disponible pour le moment.
-          </p>
-        ) : (
-          shown.map((item) => (
-            <article
-              key={item.id}
-              className="group relative aspect-[16/10] overflow-hidden rounded-2xl"
-            >
-              <IllustrationImage
-                src={item.image}
-                alt={illustrationAlt(item)}
-                dominantColor={item.dominantColor}
-                fill
-                rounded="none"
-                className="object-cover transition duration-300 group-hover:scale-[1.03]"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--ink)]/70 via-[var(--ink)]/20 to-transparent" />
-              <h2 className="absolute inset-x-0 bottom-0 p-6 text-2xl font-semibold text-[var(--cream)]">
-                {item.title}
-              </h2>
-            </article>
-          ))
-        )}
-      </div>
-
-      <div className="my-14 h-12 overflow-hidden">
-        <svg viewBox="0 0 1200 80" preserveAspectRatio="none" className="h-full w-full fill-[var(--mustard)]">
-          <path d="M0 35 Q150 80 300 35 T600 35 T900 35 T1200 35 V80 H0Z" />
-        </svg>
-      </div>
-      <div className="grid gap-10 pb-12 md:grid-cols-2">
-        <div>
-          <h2 className="display text-4xl">On imagine quelque chose ?</h2>
-          <p className="mt-4 leading-7 text-foreground/60">
-            Parlez-moi de votre projet, même s&apos;il n&apos;est pas encore très précis.
-          </p>
-        </div>
-        <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
-          <input
-            required
-            placeholder="Votre nom"
-            className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"
-          />
-          <input
-            placeholder="Entreprise"
-            className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"
-          />
-          <select className="rounded-xl border border-foreground/15 bg-transparent p-4">
-            <option>Type de projet</option>
-            <option>Fresque</option>
-            <option>Illustration</option>
-            <option>Branding</option>
-          </select>
-          <textarea
-            placeholder="Quelques mots sur votre idée..."
-            rows={4}
-            className="rounded-xl border border-foreground/15 bg-transparent p-4 outline-none focus:border-[var(--terracotta)]"
-          />
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground/60">
-            <Upload size={16} /> Joindre un brief <input type="file" className="sr-only" />
-          </label>
-          <button className="rounded-full bg-[var(--terracotta)] px-5 py-4 font-semibold text-white">
-            Envoyer le message
-          </button>
-        </form>
-      </div>
     </div>
   )
 }

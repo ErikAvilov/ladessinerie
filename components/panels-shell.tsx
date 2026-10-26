@@ -9,32 +9,33 @@ import type { Illustration } from '@/lib/illustrations'
 type PanelsShellProps = {
   children: ReactNode
   initialHome: Illustration[]
-  initialPro: Illustration[]
 }
 
+/**
+ * Le slider reste monté (juste masqué) sur /particulier/* et /pro/* pour :
+ * - garder la position du panneau
+ * - éviter un remount qui « rejoue » le slide
+ * - que le retour arrière retombe au bon panneau
+ */
 export function PanelsShell({
   children,
   initialHome,
-  initialPro,
 }: PanelsShellProps) {
   const pathname = usePathname()
-  const isNestedParticulier =
-    pathname.startsWith('/particulier/') && pathname !== '/particulier'
-
-  if (isNestedParticulier) {
-    return children
-  }
-
+  const isNestedPanel =
+    (pathname.startsWith('/particulier/') && pathname !== '/particulier') ||
+    (pathname.startsWith('/pro/') && pathname !== '/pro')
   const panel = panelFromPathname(pathname) ?? 'home'
 
   return (
     <>
-      <SiteSlider
-        initialPanel={panel}
-        initialHome={initialHome}
-        initialPro={initialPro}
-      />
-      {/* Page RSC (ex. preloads `<link>` home) — hissés vers `<head>` par Next. */}
+      <div
+        className={isNestedPanel ? 'hidden' : undefined}
+        aria-hidden={isNestedPanel}
+        {...(isNestedPanel ? ({ inert: true } as Record<string, boolean>) : {})}
+      >
+        <SiteSlider initialPanel={panel} initialHome={initialHome} />
+      </div>
       {children}
     </>
   )

@@ -11,6 +11,19 @@ type BoutonIconProps = {
 const svgCache = new Map<string, string>()
 const loadingCache = new Map<string, Promise<string>>()
 
+/** Contour blanc ~2px qui suit la silhouette + ombre douce. */
+const BOUTON_FILTER = [
+  'drop-shadow(2px 0 0 #fff)',
+  'drop-shadow(-2px 0 0 #fff)',
+  'drop-shadow(0 2px 0 #fff)',
+  'drop-shadow(0 -2px 0 #fff)',
+  'drop-shadow(1.5px 1.5px 0 #fff)',
+  'drop-shadow(-1.5px 1.5px 0 #fff)',
+  'drop-shadow(1.5px -1.5px 0 #fff)',
+  'drop-shadow(-1.5px -1.5px 0 #fff)',
+  'drop-shadow(0 8px 18px rgba(43,41,39,0.16))',
+].join(' ')
+
 function loadBoutonSvg(src: string) {
   const cached = svgCache.get(src)
   if (cached) return Promise.resolve(cached)
@@ -68,6 +81,7 @@ export function BoutonIcon({ src, color, className }: BoutonIconProps) {
           display: 'inline-block',
           lineHeight: 0,
           '--bouton-fill': color,
+          filter: BOUTON_FILTER,
         } as CSSProperties
       }
       dangerouslySetInnerHTML={{ __html: svg }}

@@ -21,24 +21,19 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
   const enterDelay = useContext(PanelEnterContext)
   const sitePanel = useSitePanel()
   const [showLogo, setShowLogo] = useState(enterDelay === 0)
-  const [showTagline, setShowTagline] = useState(enterDelay === 0)
   const [logoReady, setLogoReady] = useState(false)
 
   useEffect(() => {
     if (enterDelay === 0) {
       setShowLogo(true)
-      setShowTagline(true)
       return
     }
 
     setShowLogo(false)
-    setShowTagline(false)
 
     const logoTimer = window.setTimeout(() => setShowLogo(true), enterDelay)
-    const taglineTimer = window.setTimeout(() => setShowTagline(true), enterDelay)
     return () => {
       window.clearTimeout(logoTimer)
-      window.clearTimeout(taglineTimer)
     }
   }, [enterDelay])
 
@@ -76,16 +71,6 @@ export function HomePageClient({ illustrations }: HomePageClientProps) {
           onLoad={() => setLogoReady(true)}
         />
       </motion.button>
-
-      <motion.p
-        aria-hidden={!showTagline}
-        initial={false}
-        animate={{ opacity: showTagline ? 1 : 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="pointer-events-none absolute inset-x-12 bottom-16 z-10 text-center text-[11px] leading-relaxed text-foreground/50 md:inset-x-10 md:bottom-16 md:text-sm"
-      >
-        Illustrations uniques &amp; branding créatif pour marques et particuliers
-      </motion.p>
     </div>
   )
 }

@@ -7,18 +7,20 @@ import {
   type ReactNode,
 } from 'react'
 import {
-  BOUTON_THEME_BY_SLUG,
+  boutonColorFromTheme,
   DEFAULT_SITE_THEME,
+  fondColorFromTheme,
+  type BoutonCategorySlug,
   type SiteTheme,
 } from '@/lib/site-theme-shared'
-import type { ParticulierCategorySlug } from '@/lib/particulier-categories'
 
 type SiteThemeContextValue = SiteTheme & {
   panierFond: string
   panierTraits: string
   backgroundFond: string
   backgroundTraits: string
-  boutonColor: (slug: ParticulierCategorySlug) => string
+  boutonColor: (slug: BoutonCategorySlug) => string
+  fondColor: (slug: BoutonCategorySlug) => string
 }
 
 const SiteThemeContext = createContext<SiteThemeContextValue | null>(null)
@@ -30,7 +32,8 @@ function toContextValue(theme: SiteTheme): SiteThemeContextValue {
     panierTraits: theme.panier_traits,
     backgroundFond: theme.background_fond,
     backgroundTraits: theme.background_traits,
-    boutonColor: (slug) => theme[BOUTON_THEME_BY_SLUG[slug]],
+    boutonColor: (slug) => boutonColorFromTheme(theme, slug),
+    fondColor: (slug) => fondColorFromTheme(theme, slug),
   }
 }
 

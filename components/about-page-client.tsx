@@ -3,18 +3,14 @@
 export function AboutPageClient() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden">
-      <p className="shrink-0 font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
-        L’illustratrice
-      </p>
-
-      <div className="mt-3 grid min-h-0 flex-1 grid-cols-[1.15fr_0.85fr] items-center gap-4 md:mt-5 md:grid-cols-[1.2fr_0.8fr] md:gap-10 lg:gap-14">
+      <div className="grid min-h-0 flex-1 grid-cols-[1.15fr_0.85fr] items-center gap-4 md:grid-cols-[1.2fr_0.8fr] md:gap-10 lg:gap-14">
         <div className="min-h-0 overflow-hidden">
-          <h1 className="display text-2xl font-semibold leading-tight md:text-4xl lg:text-5xl">
+          <h1 className="display text-2xl font-semibold leading-tight text-[var(--text-titre-a-propos)] md:text-4xl lg:text-5xl">
             Salut, moi c’est{' '}
             <em className="text-[var(--terracotta)]">Anna.</em>
           </h1>
 
-          <div className="mt-3 space-y-3 text-[11px] leading-relaxed text-foreground/70 sm:text-xs md:mt-6 md:space-y-4 md:text-sm md:leading-7 lg:text-base lg:leading-8">
+          <div className="mt-3 space-y-3 text-[11px] leading-relaxed text-[var(--text-a-propos)] opacity-70 sm:text-xs md:mt-6 md:space-y-4 md:text-sm md:leading-7 lg:text-base lg:leading-8">
             <p>
               Entrer dans mon univers, c’est mettre les pieds dans des fleurs par
               centaines, mes petites obsessions du quotidien que j’essaie

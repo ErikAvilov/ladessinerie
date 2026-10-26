@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { BoutonIcon } from '@/components/bouton-icon'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import type { ParticulierCategory } from '@/lib/particulier-categories'
-import { BOUTON_BACKGROUND_FOND } from '@/lib/site-theme-shared'
+import { CATEGORY_BACKGROUND_TRAITS } from '@/lib/site-theme-shared'
 
 export const DIVE_DURATION_MS = 720
 
@@ -19,7 +19,10 @@ type Rect = {
 
 type ParticulierDiveOverlayProps = {
   category: ParticulierCategory
+  /** Couleur du SVG bouton (zoom) */
   color: string
+  /** Couleur du fond de page catégorie */
+  fondColor: string
   from: Rect
   onComplete: () => void
 }
@@ -35,6 +38,7 @@ function coverScale(from: Rect) {
 export function ParticulierDiveOverlay({
   category,
   color,
+  fondColor,
   from,
   onComplete,
 }: ParticulierDiveOverlayProps) {
@@ -69,8 +73,8 @@ export function ParticulierDiveOverlay({
       >
         <SiteBackgroundLayer
           className="absolute inset-0"
-          fond={color}
-          traits={BOUTON_BACKGROUND_FOND}
+          fond={fondColor}
+          traits={CATEGORY_BACKGROUND_TRAITS}
         />
       </motion.div>
 

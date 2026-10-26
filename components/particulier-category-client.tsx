@@ -52,13 +52,12 @@ function IllustrationCard({
       >
         <div
           ref={imageRef}
-          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg"
-          style={{ backgroundColor: item.dominantColor || '#f3eee6' }}
+          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg bg-white"
         >
           <IllustrationImage
             src={item.image}
             alt={illustrationAlt(item)}
-            dominantColor={item.dominantColor}
+            dominantColor="#ffffff"
             fill
             rounded="lg"
             priority={index < 3}

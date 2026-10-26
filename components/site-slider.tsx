@@ -7,6 +7,7 @@ import { HomePageClient } from '@/components/home-page-client'
 import { AboutPageClient } from '@/components/about-page-client'
 import { ParticulierPageClient } from '@/components/particulier-page-client'
 import { PanelEnterContext, SLIDE_DURATION_MS } from '@/components/page-transition'
+import { useNavigationProgress } from '@/components/navigation-progress'
 import { ProPageClient } from '@/components/pro-page-client'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { RouteSideGates } from '@/components/route-side-gates'
@@ -27,40 +28,69 @@ const slideEase = [0.65, 0, 0.35, 1] as const
 type SiteSliderProps = {
   initialPanel: SitePanel
   initialHome?: Illustration[]
-  initialPro?: Illustration[]
 }
 
 export function SiteSlider({
   initialPanel,
   initialHome = [],
-  initialPro = [],
 }: SiteSliderProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [panel, setPanel] = useState<SitePanel>(initialPanel)
-  const [enterDelay, setEnterDelay] = useState(0)
-  const panelRef = useRef(panel)
+  const { start: startNav } = useNavigationProgress()
+  const urlPanel = panelFromPathname(pathname)
 
+  /** Panel affiché : optimiste pendant un goTo, sinon = URL. */
+  const [panel, setPanel] = useState<SitePanel>(urlPanel ?? initialPanel)
+  const [enterDelay, setEnterDelay] = useState(0)
+
+  const panelRef = useRef(panel)
+  const pendingRef = useRef<SitePanel | null>(null)
   panelRef.current = panel
 
-  // Keep panel in sync with the real Next.js URL (back/forward included).
+  // URL = source de vérité (back/forward, liens, goTo terminé).
   useEffect(() => {
-    const fromPath = panelFromPathname(pathname)
-    if (!fromPath || fromPath === panelRef.current) return
-    setEnterDelay(0)
-    setPanel(fromPath)
-  }, [pathname])
+    if (!urlPanel) return
+
+    const pending = pendingRef.current
+    if (pending && pending !== urlPanel) {
+      // Retour arrière / navigation externe pendant un goTo en cours.
+      pendingRef.current = null
+      setEnterDelay(0)
+      setPanel(urlPanel)
+      document.title = SITE_PANEL_TITLE[urlPanel]
+      return
+    }
+
+    if (pending === urlPanel) {
+      pendingRef.current = null
+      setPanel(urlPanel)
+      document.title = SITE_PANEL_TITLE[urlPanel]
+      return
+    }
+
+    // Navigation pure URL (back/forward, Link) — pas d’anim d’entrée home.
+    if (urlPanel !== panelRef.current) {
+      setEnterDelay(0)
+      setPanel(urlPanel)
+    }
+    document.title = SITE_PANEL_TITLE[urlPanel]
+  }, [urlPanel])
 
   const goTo = useCallback(
     (next: SitePanel) => {
-      if (panelRef.current === next) return
+      const current = pendingRef.current ?? panelRef.current
+      if (current === next) return
+      if (urlPanel === next && !pendingRef.current) return
 
+      const href = SITE_PANEL_PATH[next]
+      pendingRef.current = next
       setEnterDelay(next === 'home' ? SLIDE_DURATION_MS : 0)
       setPanel(next)
       document.title = SITE_PANEL_TITLE[next]
-      router.push(SITE_PANEL_PATH[next], { scroll: false })
+      startNav(href)
+      router.push(href, { scroll: false })
     },
-    [router],
+    [router, urlPanel, startNav],
   )
 
   useEffect(() => {
@@ -108,8 +138,8 @@ export function SiteSlider({
                     <HomePageClient illustrations={initialHome} />
                   </section>
 
-                  <section className="relative h-dvh w-screen shrink-0 overflow-y-auto pt-24 pb-24 pl-14 pr-4 md:pt-28 md:pl-20 md:pr-10">
-                    <ProPageClient illustrations={initialPro} />
+                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-14 pr-4 md:pt-24 md:pl-20 md:pr-10">
+                    <ProPageClient />
                   </section>
                 </motion.div>
               </div>

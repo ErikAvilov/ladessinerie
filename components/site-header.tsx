@@ -9,7 +9,7 @@ export function SiteHeader() {
   const sitePanel = useSitePanel()
 
   const brandClassName =
-    'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--forest)] transition active:scale-[0.98] md:text-xl'
+    'pointer-events-auto display text-lg font-semibold uppercase tracking-[0.04em] text-[var(--text-marque)] transition active:scale-[0.98] md:text-xl'
 
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between py-4">

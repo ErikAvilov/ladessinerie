@@ -15,8 +15,8 @@ import { particulierArtPath } from '@/lib/particulier-routes'
 import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
 import type { Illustration } from '@/lib/illustrations'
 
-const DESKTOP_CARD_SIZE = 108
-const MOBILE_CARD_SIZE = 72
+const DESKTOP_CARD_SIZE = 130
+const MOBILE_CARD_SIZE = 86
 const MOBILE_MAX = 767
 
 /**

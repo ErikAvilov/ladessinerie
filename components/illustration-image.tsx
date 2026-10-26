@@ -35,7 +35,9 @@ export function IllustrationImage({
         : rounded === 'full'
           ? 'rounded-full'
           : ''
-  const positionClass = fill ? 'absolute inset-0' : 'relative h-full w-full'
+  const positionClass = fill
+    ? 'absolute inset-0'
+    : 'relative mx-auto block w-fit max-h-full max-w-full'
   const placeholderBg = dominantColor || undefined
 
   function markReady() {
@@ -56,8 +58,8 @@ export function IllustrationImage({
 
   return (
     <div
-      className={`${positionClass} overflow-hidden ${roundedClass} ${
-        placeholderBg ? '' : 'bg-foreground/[0.06]'
+      className={`${positionClass} ${fill ? 'overflow-hidden' : ''} ${roundedClass} ${
+        placeholderBg ? '' : fill ? 'bg-foreground/[0.06]' : ''
       }`}
       style={placeholderBg ? { backgroundColor: placeholderBg } : undefined}
     >
