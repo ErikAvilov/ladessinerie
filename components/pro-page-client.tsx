@@ -65,7 +65,7 @@ export function ProPageClient() {
         startTransition(() => {
           router.push(href)
         })
-      }, Math.round(DIVE_DURATION_MS * 0.55))
+      }, Math.round(DIVE_DURATION_MS * 0.62))
     },
     [prefetch, router, startNav, theme],
   )

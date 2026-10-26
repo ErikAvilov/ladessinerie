@@ -9,8 +9,8 @@ import './globals.css'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-/** Thème admin doit être relu à chaque requête. */
-export const dynamic = 'force-dynamic'
+/** Thème admin : ISR + revalidatePath côté admin. */
+export const revalidate = 60
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

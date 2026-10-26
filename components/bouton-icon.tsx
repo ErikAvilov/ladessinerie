@@ -6,6 +6,8 @@ type BoutonIconProps = {
   src: string
   color: string
   className?: string
+  /** Sans contour / ombre — utile pour les anims de zoom (perf GPU). */
+  plain?: boolean
 }
 
 const svgCache = new Map<string, string>()
@@ -49,7 +51,7 @@ function loadBoutonSvg(src: string) {
   return request
 }
 
-export function BoutonIcon({ src, color, className }: BoutonIconProps) {
+export function BoutonIcon({ src, color, className, plain = false }: BoutonIconProps) {
   const [svg, setSvg] = useState<string | null>(() => svgCache.get(src) ?? null)
 
   useEffect(() => {
@@ -75,13 +77,13 @@ export function BoutonIcon({ src, color, className }: BoutonIconProps) {
   return (
     <span
       aria-hidden
-      className={`content-reveal ${className ?? ''}`}
+      className={`${plain ? '' : 'content-reveal '} ${className ?? ''}`.trim()}
       style={
         {
           display: 'inline-block',
           lineHeight: 0,
           '--bouton-fill': color,
-          filter: BOUTON_FILTER,
+          filter: plain ? undefined : BOUTON_FILTER,
         } as CSSProperties
       }
       dangerouslySetInnerHTML={{ __html: svg }}

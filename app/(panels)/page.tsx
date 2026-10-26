@@ -9,7 +9,7 @@ import {
 } from '@/lib/home-image'
 import { getPanelsIllustrations } from '@/lib/panels-data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 function PreloadImage({
   src,
@@ -45,7 +45,7 @@ function PreloadImage({
 }
 
 /**
- * Sélection aléatoire SSR des bulles d’accueil (via getPanelsIllustrations /
+ * Sélection fixe des bulles d’accueil (via getPanelsIllustrations /
  * pickHomeScatterIllustrations) + preloads head pour le FCP.
  * L’UI panels est rendue par le layout → PanelsShell → SiteSlider.
  */

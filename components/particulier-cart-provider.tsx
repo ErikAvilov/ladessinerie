@@ -10,7 +10,11 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { FloatingCart, type FloatingCartSize } from '@/components/floating-cart'
+import {
+  FloatingCart,
+  type FloatingCartPlacement,
+  type FloatingCartSize,
+} from '@/components/floating-cart'
 import { FlyToCart, type FlyPayload } from '@/components/fly-to-cart'
 import {
   cartCount,
@@ -45,10 +49,12 @@ export function ParticulierCartProvider({
   children,
   visible = true,
   cartSize = 'lg',
+  cartPlacement = 'fixed',
 }: {
   children: ReactNode
   visible?: boolean
   cartSize?: FloatingCartSize
+  cartPlacement?: FloatingCartPlacement
 }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [ready, setReady] = useState(false)
@@ -154,6 +160,7 @@ export function ParticulierCartProvider({
             bump={bump}
             count={cartCount(cartItems)}
             size={cartSize}
+            placement={cartPlacement}
           />
         </>
       )}

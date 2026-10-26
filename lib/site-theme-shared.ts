@@ -182,7 +182,7 @@ export function parseSiteThemeInput(
     return { error: 'Couleur bouton Illustrations invalide (format #RRGGBB).' }
   }
   if (!bouton_grand_portraits) {
-    return { error: 'Couleur bouton Illustrations personnalisées invalide (format #RRGGBB).' }
+    return { error: 'Couleur bouton Illustrations sur mesure invalide (format #RRGGBB).' }
   }
   if (!bouton_stickers) return { error: 'Couleur bouton Stickers invalide (format #RRGGBB).' }
   if (!bouton_milklab) return { error: 'Couleur bouton Milklab invalide (format #RRGGBB).' }
@@ -190,7 +190,7 @@ export function parseSiteThemeInput(
     return { error: 'Couleur fond Illustrations invalide (format #RRGGBB).' }
   }
   if (!fond_grand_portraits) {
-    return { error: 'Couleur fond Illustrations personnalisées invalide (format #RRGGBB).' }
+    return { error: 'Couleur fond Illustrations sur mesure invalide (format #RRGGBB).' }
   }
   if (!fond_stickers) return { error: 'Couleur fond Stickers invalide (format #RRGGBB).' }
   if (!fond_milklab) return { error: 'Couleur fond Milklab invalide (format #RRGGBB).' }

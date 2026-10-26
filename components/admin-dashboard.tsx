@@ -18,7 +18,7 @@ import type { Illustration } from '@/lib/illustrations'
 import type { SiteTheme } from '@/lib/site-theme-shared'
 
 const SUBCATEGORIES = [
-  'Illustrations personnalisées',
+  'Illustrations sur mesure',
   'Stickers',
   'Milklab',
   'Petit portraits',
@@ -26,6 +26,7 @@ const SUBCATEGORIES = [
   'Fleurs',
   'Canapé',
   'Autour de la nourriture',
+  'Bâtiment',
 ] as const
 
 type SortOption = 'date-desc' | 'date-asc' | 'price-asc' | 'price-desc'

@@ -69,7 +69,8 @@ export function ParticulierPageClient() {
         startTransition(() => {
           router.push(href)
         })
-      }, Math.round(DIVE_DURATION_MS * 0.55))
+      // Naviguer quand le fondu est déjà bien engagé (évite le jank de fin).
+      }, Math.round(DIVE_DURATION_MS * 0.62))
     },
     [prefetch, router, startNav, theme],
   )

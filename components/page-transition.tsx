@@ -77,7 +77,8 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const showFloatingCart =
     pathname === '/particulier' || pathname.startsWith('/particulier/')
   const showFloatingCaddie =
-    pathname === '/pro' || pathname.startsWith('/pro/')
+    (pathname === '/pro' || pathname.startsWith('/pro/')) &&
+    pathname !== '/pro/contact'
   const isArtDetail = pathname.startsWith('/particulier/art/')
   const isProjectDetail = pathname.startsWith('/pro/projet/')
   const isDetailView = isArtDetail || isProjectDetail
@@ -105,7 +106,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     // Fiche détail : padding léger, panier/caddie sm ; le contenu est déjà « dézoomé ».
     const contentPad = isDetailView
-      ? 'relative flex min-h-0 flex-1 flex-col items-center overflow-hidden px-3 pb-20 pt-14 md:px-8 md:pb-24 md:pt-16'
+      ? 'relative flex min-h-0 flex-1 flex-col items-center overflow-hidden px-3 pb-6 pt-14 md:px-8 md:pb-8 md:pt-16'
       : isParticulierNested ||
           isProNested ||
           pathname === '/panier' ||
@@ -144,7 +145,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   return (
     <NavigationProgressProvider>
-      <ParticulierCartProvider visible={showFloatingCart} cartSize={cartSize}>
+      <ParticulierCartProvider
+        visible={showFloatingCart}
+        cartSize={cartSize}
+        cartPlacement={isArtDetail ? 'dock' : 'fixed'}
+      >
         {showFloatingCart ? <ShoppingReturnTracker /> : null}
         {shell}
       </ParticulierCartProvider>

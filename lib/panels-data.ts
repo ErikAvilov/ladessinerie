@@ -9,7 +9,7 @@ export type PanelsIllustrations = {
 }
 
 /**
- * Données panels (SSR). `cache()` = un seul tirage aléatoire home par requête.
+ * Données panels (SSR). `cache()` = un seul chargement home par requête.
  */
 export const getPanelsIllustrations = cache(async (): Promise<PanelsIllustrations> => {
   const [particulier, pro] = await Promise.all([

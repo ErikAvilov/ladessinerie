@@ -23,6 +23,7 @@ const SUBCATEGORIES = [
   'Fleurs',
   'Canapé',
   'Autour de la nourriture',
+  'Bâtiment',
 ] as const
 
 type AdminEditIllustrationProps = {

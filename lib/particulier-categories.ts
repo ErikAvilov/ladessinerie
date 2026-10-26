@@ -41,10 +41,10 @@ export const PARTICULIER_CATEGORIES: ParticulierCategory[] = [
   },
   {
     slug: 'personnalisees',
-    label: 'Illustrations personnalisées',
+    label: 'Illustrations sur mesure',
     color: '#e5b1b0',
     imageSrc: '/images/bouton-2.svg?v=2',
-    filter: { subcategory: 'Illustrations personnalisées' },
+    filter: { subcategory: 'Illustrations sur mesure' },
   },
 ]
 

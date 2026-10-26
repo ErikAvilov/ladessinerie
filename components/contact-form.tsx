@@ -13,6 +13,7 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [projectType, setProjectType] = useState('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -21,6 +22,14 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
 
     const form = event.currentTarget
     const data = new FormData(form)
+    const selectedType = String(data.get('projectType') ?? '')
+    const otherDetail = String(data.get('projectTypeOther') ?? '').trim()
+    const resolvedType =
+      selectedType === 'Autre'
+        ? otherDetail
+          ? `Autre — ${otherDetail}`
+          : 'Autre'
+        : selectedType
 
     try {
       const response = await fetch('/api/contact', {
@@ -30,7 +39,7 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
           name: data.get('name'),
           email: data.get('email'),
           company: data.get('company'),
-          projectType: data.get('projectType'),
+          projectType: resolvedType,
           message: data.get('message'),
           source,
         }),
@@ -47,6 +56,7 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
       }
 
       setSent(true)
+      setProjectType('')
       form.reset()
     } catch {
       setError('Envoi impossible. Vérifiez votre connexion.')
@@ -102,15 +112,33 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
             placeholder="Email"
             className={fieldClass}
           />
-          <input name="company" placeholder="Entreprise" className={fieldClass} />
-          <select name="projectType" className={fieldClass} defaultValue="">
+          <input
+            name="company"
+            placeholder="Entreprise (optionnel)"
+            className={fieldClass}
+          />
+          <select
+            name="projectType"
+            className={fieldClass}
+            value={projectType}
+            onChange={(event) => setProjectType(event.target.value)}
+          >
             <option value="" disabled>
               Type de projet
             </option>
             <option value="Branding">Branding</option>
             <option value="Fresque">Fresque</option>
             <option value="Evenementiel">Evenementiel</option>
+            <option value="Autre">Autre</option>
           </select>
+          {projectType === 'Autre' ? (
+            <input
+              required
+              name="projectTypeOther"
+              placeholder="Précisez le type de projet"
+              className={fieldClass}
+            />
+          ) : null}
           <textarea
             required
             name="message"
