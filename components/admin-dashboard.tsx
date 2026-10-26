@@ -76,6 +76,24 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [pendingDelete])
 
+  useEffect(() => {
+    function scrollToHash() {
+      const id = window.location.hash.replace(/^#/, '')
+      if (!id) return
+      const themeTabs = new Set(['textes', 'background', 'categories', 'panier', 'apparence'])
+      const targetId = themeTabs.has(id) ? (id === 'apparence' ? 'apparence' : id) : id
+      const el = document.getElementById(targetId) ?? document.getElementById('apparence')
+      if (!el) return
+      window.requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
+  }, [])
+
   const subcategoryOptions = useMemo(() => {
     const fromData = illustrations
       .map((item) => item.subcategory)
@@ -194,7 +212,7 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
 
   return (
     <div className="mx-auto w-full max-w-7xl px-5 py-8 md:px-10 md:py-12">
-      <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
             La Dessinerie
@@ -220,6 +238,30 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
         </div>
       </header>
 
+      <nav
+        aria-label="Sections admin"
+        className="mb-10 flex flex-wrap gap-2 text-sm"
+      >
+        {(
+          [
+            ['#textes', 'Textes'],
+            ['#background', 'Arrière-plan'],
+            ['#categories', 'Catégories'],
+            ['#panier', 'Panier'],
+            ['#ajouter', 'Ajouter'],
+            ['#illustrations', 'Illustrations'],
+          ] as const
+        ).map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="cursor-pointer rounded-full border border-foreground/12 bg-white/70 px-3 py-1.5 font-medium text-foreground/70 transition hover:border-[var(--forest)] hover:text-[var(--forest)]"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
       {error && (
         <p className="mb-6 rounded-xl bg-[var(--terracotta)]/10 px-4 py-3 text-sm text-[var(--terracotta)]">
           {error}
@@ -234,7 +276,10 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
 
       <AdminSiteThemePanel initialTheme={initialTheme} />
 
-      <section className="mb-10 rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
+      <section
+        id="ajouter"
+        className="mb-10 scroll-mt-6 rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow"
+      >
         <h2 className="display text-xl font-semibold">Ajouter une illustration</h2>
         <form onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
           <label className="block md:col-span-2">
@@ -329,7 +374,7 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
         </form>
       </section>
 
-      <section>
+      <section id="illustrations" className="scroll-mt-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="display text-xl font-semibold">Illustrations existantes</h2>

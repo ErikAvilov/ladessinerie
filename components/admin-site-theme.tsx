@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminSuccessBanner } from '@/components/admin-success-banner'
 import { BoutonIcon } from '@/components/bouton-icon'
@@ -29,6 +29,23 @@ const TABS: { id: ThemeTab; label: string }[] = [
   { id: 'categories', label: 'Catégories' },
   { id: 'panier', label: 'Panier' },
 ]
+
+function isThemeTab(value: string): value is ThemeTab {
+  return TABS.some((entry) => entry.id === value)
+}
+
+function themeTabFromHash(): ThemeTab | null {
+  if (typeof window === 'undefined') return null
+  const hash = window.location.hash.replace(/^#/, '')
+  return isThemeTab(hash) ? hash : null
+}
+
+function setHash(id: string) {
+  if (typeof window === 'undefined') return
+  const next = `#${id}`
+  if (window.location.hash === next) return
+  window.history.replaceState(null, '', next)
+}
 
 function ThemeColorField({
   label,
@@ -73,6 +90,23 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  useEffect(() => {
+    function syncFromHash() {
+      const fromHash = themeTabFromHash()
+      if (fromHash) setTab(fromHash)
+    }
+    syncFromHash()
+    window.addEventListener('hashchange', syncFromHash)
+    return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [])
+
+  function selectTab(next: ThemeTab) {
+    setTab(next)
+    setHash(next)
+    setError(null)
+    setSuccess(null)
+  }
+
   async function saveTheme(event: FormEvent, successMessage: string) {
     event.preventDefault()
     setSaving(true)
@@ -106,7 +140,7 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
   }
 
   return (
-    <div className="mb-10">
+    <div id="apparence" className="mb-10 scroll-mt-6">
       <div className="mb-5">
         <h2 className="display text-xl font-semibold">Apparence du site</h2>
         <p className="mt-1 text-sm text-foreground/55">
@@ -127,12 +161,9 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => {
-                setTab(entry.id)
-                setError(null)
-                setSuccess(null)
-              }}
-              className={`cursor-pointer shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
+              id={entry.id}
+              onClick={() => selectTab(entry.id)}
+              className={`cursor-pointer shrink-0 scroll-mt-6 rounded-full px-4 py-2 text-sm font-medium transition ${
                 active
                   ? 'bg-[var(--terracotta)] text-white shadow-sm'
                   : 'text-foreground/65 hover:bg-foreground/[0.05] hover:text-foreground'

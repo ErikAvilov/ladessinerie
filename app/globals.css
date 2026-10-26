@@ -443,6 +443,11 @@ input[type='file']::file-selector-button {
   font: inherit;
 }
 
+/* Laisse libre la bande footer (© / mentions) pour éviter le chevauchement. */
+.side-gate:not(.side-gate--top) {
+  bottom: 3.15rem;
+}
+
 .side-gate--left {
   left: 0;
   justify-content: flex-start;
@@ -572,6 +577,7 @@ input[type='file']::file-selector-button {
 
 @media (max-width: 767px) {
   .side-gate:not(.side-gate--top) {
+    bottom: 2.85rem;
     width: 2.65rem;
     padding-left: 0.1rem;
     padding-right: 0.1rem;
