@@ -13,6 +13,8 @@ function calendlyEmbedSrc(url: string) {
   const parsed = new URL(url)
   parsed.searchParams.set('embed_type', 'Inline')
   parsed.searchParams.set('hide_gdpr_banner', '1')
+  // Force l’UI invitee en français (indépendamment de la langue du navigateur).
+  parsed.searchParams.set('locale', 'fr')
   return parsed.toString()
 }
 
