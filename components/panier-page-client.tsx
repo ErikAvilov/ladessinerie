@@ -53,10 +53,7 @@ export function PanierPageClient() {
 
   return (
     <div className="content-reveal mx-auto flex min-h-full w-full max-w-3xl flex-col pb-10">
-      <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
-        Boutique
-      </p>
-      <h1 className="display mt-2 text-3xl font-semibold text-[var(--forest)] md:text-5xl">
+      <h1 className="display text-3xl font-semibold text-[var(--forest)] md:text-5xl">
         Votre panier
       </h1>
       <p className="mt-2 text-sm text-foreground/55">

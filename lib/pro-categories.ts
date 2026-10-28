@@ -45,14 +45,6 @@ export const PRO_CATEGORIES: ProCategory[] = [
   },
 ]
 
-function normalizeLabel(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .trim()
-    .toLowerCase()
-}
-
 export function getProCategory(slug: string): ProCategory | undefined {
   return PRO_CATEGORIES.find((entry) => entry.slug === slug)
 }
@@ -63,17 +55,4 @@ export function isProCategorySlug(value: string): value is ProCategorySlug {
 
 export function proCategoryPath(slug: ProCategorySlug) {
   return `/pro/${slug}`
-}
-
-export function filterProIllustrationsByCategory<
-  T extends { subcategory?: string | null },
->(illustrations: T[], category: ProCategory): T[] {
-  if (category.filter === 'all' || category.filter === 'contact') return illustrations
-
-  const target = normalizeLabel(category.filter.subcategory)
-  return illustrations.filter((item) => {
-    const sub = item.subcategory
-    if (!sub) return false
-    return normalizeLabel(sub) === target
-  })
 }

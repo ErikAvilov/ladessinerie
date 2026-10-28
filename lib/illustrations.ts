@@ -57,11 +57,6 @@ export function uniqueSlug(
   return candidate
 }
 
-export function illustrationPrice(illustration: Illustration): number | null {
-  if (!illustration.sizes?.length) return null
-  return Math.min(...illustration.sizes.map((entry) => entry.price))
-}
-
 async function readLocalFile(): Promise<Illustration[]> {
   const raw = await fs.readFile(DATA_PATH, 'utf8')
   const parsed = JSON.parse(raw) as Illustration[]

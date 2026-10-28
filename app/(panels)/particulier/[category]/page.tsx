@@ -7,6 +7,7 @@ import {
   isParticulierCategorySlug,
   PARTICULIER_CATEGORIES,
 } from '@/lib/particulier-categories'
+import { getParticulierCategoryContent } from '@/lib/particulier-content'
 import { getIllustrations } from '@/lib/illustrations'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
@@ -28,11 +29,19 @@ export async function generateMetadata({
   const category = getParticulierCategory(slug)
   if (!category) return { title: 'Collection introuvable' }
 
+  const content = getParticulierCategoryContent(category.slug)
+  const description =
+    content?.seoDescription ??
+    `Collection ${category.label} — tirages et illustrations La Dessinerie.`
+
   return {
     title: category.label,
-    description: `Collection ${category.label} — tirages et illustrations La Dessinerie.`,
+    description,
     openGraph: {
-      title: `${category.label} — La Dessinerie`,
+      title: content
+        ? `${category.label} — ${content.headline}`
+        : `${category.label} — La Dessinerie`,
+      description,
       url: `${siteUrl}/particulier/${category.slug}`,
       siteName: 'La Dessinerie',
       locale: 'fr_FR',
@@ -48,10 +57,13 @@ export default async function ParticulierCategoryPage({ params }: CategoryPagePr
   const category = getParticulierCategory(slug)
   if (!category) notFound()
 
-  const illustrations = filterIllustrationsByCategory(
-    await getIllustrations('particulier'),
-    category,
-  )
+  const content = getParticulierCategoryContent(category.slug)
+  const illustrations = content
+    ? []
+    : filterIllustrationsByCategory(
+        await getIllustrations('particulier'),
+        category,
+      )
 
   return (
     <ParticulierCategoryClient category={category} illustrations={illustrations} />

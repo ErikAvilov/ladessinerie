@@ -14,7 +14,7 @@ type ParticulierArtDetailProps = {
 
 export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps) {
   const { addToCart } = useParticulierCart()
-  const imageRef = useRef<HTMLImageElement>(null)
+  const imageRef = useRef<HTMLDivElement>(null)
   const [sizeIndex, setSizeIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
@@ -56,10 +56,12 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
       </InstantLink>
 
       <div className="mt-1.5 flex min-h-0 w-full flex-1 flex-col gap-4 overflow-auto md:flex-row md:items-center md:gap-6 md:overflow-hidden">
-        <div className="relative flex min-h-0 w-full flex-1 items-center justify-center md:h-full">
+        <div
+          ref={imageRef}
+          className="relative flex min-h-0 w-full flex-1 items-center justify-center md:h-full"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            ref={imageRef}
             src={illustration.image}
             alt={illustrationAlt(illustration)}
             className="max-h-[min(72dvh,36rem)] w-auto max-w-full object-contain drop-shadow-[0_8px_24px_rgba(43,41,39,0.12)]"
@@ -70,10 +72,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
           <div className="flex flex-col gap-2 rounded-2xl bg-white/92 px-3.5 py-3 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px] md:px-4 md:py-5 lg:px-5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[var(--sage)]">
-                  La Dessinerie
-                </p>
-                <h1 className="display mt-0.5 text-sm font-semibold leading-snug md:text-base lg:text-lg">
+                <h1 className="display text-sm font-semibold leading-snug md:text-base lg:text-lg">
                   {illustration.title}
                 </h1>
                 {illustration.subcategory ? (

@@ -30,10 +30,7 @@ export function ProProjectDetail({ illustration }: ProProjectDetailProps) {
 
         <div className="flex w-full shrink-0 flex-col justify-center gap-2 rounded-2xl bg-white/92 px-3.5 py-3 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px] md:w-[min(100%,20rem)] md:px-4 md:py-5 lg:w-[22rem] lg:px-5">
           <div className="min-w-0">
-            <p className="font-mono text-[8px] uppercase tracking-[.18em] text-[var(--cobalt)]">
-              Projet pro
-            </p>
-            <h1 className="display mt-0.5 text-sm font-semibold leading-snug md:text-base lg:text-lg">
+            <h1 className="display text-sm font-semibold leading-snug md:text-base lg:text-lg">
               {illustration.title}
             </h1>
             {illustration.subcategory ? (

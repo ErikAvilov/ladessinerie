@@ -75,10 +75,10 @@ export function PageTransition({ children }: { children: ReactNode }) {
   }
 
   const showFloatingCart =
-    pathname === '/particulier' || pathname.startsWith('/particulier/')
-  const showFloatingCaddie =
-    (pathname === '/pro' || pathname.startsWith('/pro/')) &&
-    pathname !== '/pro/contact'
+    (pathname === '/particulier' || pathname.startsWith('/particulier/')) &&
+    pathname !== '/particulier/personnalisees'
+  // Caddie uniquement sur le hub Pro (/pro), pas sur branding / fresque / etc.
+  const showFloatingCaddie = pathname === '/pro'
   const isArtDetail = pathname.startsWith('/particulier/art/')
   const isProjectDetail = pathname.startsWith('/pro/projet/')
   const isDetailView = isArtDetail || isProjectDetail
@@ -111,7 +111,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
           isProNested ||
           pathname === '/panier' ||
           pathname === '/succes'
-        ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-44 pt-[4.75rem] md:px-10 md:pb-56 md:pt-28'
+        ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-24 pt-16 md:px-10 md:pb-28 md:pt-20'
         : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
 
     const isScrollableContent = !isDetailView
@@ -135,7 +135,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
             >
               {children}
             </div>
-            {!isDetailView && <SiteFooter showTagline={false} />}
+            {!isDetailView && <SiteFooter />}
           </div>
           {showFloatingCaddie ? <FloatingCaddie size={cartSize} /> : null}
         </div>

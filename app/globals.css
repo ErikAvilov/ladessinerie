@@ -412,13 +412,14 @@ input[type='file']::file-selector-button {
   transform: none;
 }
 
-.cart-float--ready:hover:not(.cart-float--bump) {
-  animation: cart-hover-sway 0.75s ease-in-out;
+.cart-float--hover .cart-float__icon {
+  filter: drop-shadow(0 14px 22px rgba(43, 41, 39, 0.28))
+    brightness(1.04);
 }
 
+/* Entrée seulement — le hover/press est géré en JS (forcé). */
 @media (prefers-reduced-motion: reduce) {
-  .cart-float,
-  .cart-float--ready:hover:not(.cart-float--bump) {
+  .cart-float:not(.cart-float--ready) {
     animation: none;
     transform: none;
   }

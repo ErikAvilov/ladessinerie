@@ -79,15 +79,6 @@ export function ParticulierPageClient() {
 
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden">
-      <div
-        className={`shrink-0 transition-opacity duration-150 ${diving ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
-        aria-hidden={diving}
-      >
-        <p className="inline-block rounded-lg bg-white/92 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)] shadow-[0_2px_8px_rgba(43,41,39,0.06)]">
-          La boutique
-        </p>
-      </div>
-
       <div className="mt-2 flex min-h-0 flex-1 flex-col justify-center pb-[12.75rem] md:mt-3 md:pb-[21rem]">
         <div className="relative mx-auto mb-6 flex w-full max-w-3xl shrink-0 items-end justify-between gap-1 px-1 sm:mb-8 sm:gap-3 sm:px-4 md:mb-10 md:max-w-4xl md:gap-5 md:px-6">
           {PARTICULIER_CATEGORIES.map((category, index) => {

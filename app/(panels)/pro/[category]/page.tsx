@@ -2,12 +2,11 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ProCategoryClient } from '@/components/pro-category-client'
 import {
-  filterProIllustrationsByCategory,
   getProCategory,
   isProCategorySlug,
   PRO_CATEGORIES,
 } from '@/lib/pro-categories'
-import { getIllustrations } from '@/lib/illustrations'
+import { getProCategoryContent } from '@/lib/pro-content'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
@@ -28,11 +27,18 @@ export async function generateMetadata({
   const category = getProCategory(slug)
   if (!category) return { title: 'Collection introuvable' }
 
+  const content = getProCategoryContent(category.slug)
+  const description =
+    content?.seoDescription ?? `${category.label} — projets pro La Dessinerie.`
+
   return {
     title: category.label,
-    description: `${category.label} — projets pro La Dessinerie.`,
+    description,
     openGraph: {
-      title: `${category.label} — La Dessinerie`,
+      title: content
+        ? `${category.label} — ${content.headline}`
+        : `${category.label} — La Dessinerie`,
+      description,
       url: `${siteUrl}/pro/${category.slug}`,
       siteName: 'La Dessinerie',
       locale: 'fr_FR',
@@ -48,10 +54,9 @@ export default async function ProCategoryPage({ params }: CategoryPageProps) {
   const category = getProCategory(slug)
   if (!category) notFound()
 
-  const illustrations =
-    category.filter === 'contact'
-      ? []
-      : filterProIllustrationsByCategory(await getIllustrations('pro'), category)
+  const calendlyUrl = process.env.CALENDLY_URL?.trim() || null
 
-  return <ProCategoryClient category={category} illustrations={illustrations} />
+  return (
+    <ProCategoryClient category={category} calendlyUrl={calendlyUrl} />
+  )
 }

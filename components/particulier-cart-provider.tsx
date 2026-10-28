@@ -61,6 +61,9 @@ export function ParticulierCartProvider({
   const [bump, setBump] = useState(0)
   const [flights, setFlights] = useState<FlyPayload[]>([])
   const flightId = useRef(0)
+  const pendingByFlight = useRef(
+    new Map<number, { item: CartItem; quantity: number }>(),
+  )
 
   useEffect(() => {
     setCartItems(readCartFromStorage())
@@ -92,11 +95,10 @@ export function ParticulierCartProvider({
         image: illustration.image,
       }
 
-      // Optimiste : badge + total tout de suite ; le bump panier arrive avec la météorite.
-      setCartItems((current) => mergeCartItem(current, cartItem, quantity))
-
       const cartEl = document.querySelector<HTMLElement>('[data-cart-target]')
+      // Sans météorite : MAJ immédiate. Avec vol : badge + bump à l’atterrissage.
       if (!imageEl || !cartEl) {
+        setCartItems((current) => mergeCartItem(current, cartItem, quantity))
         setBump((value) => value + 1)
         return
       }
@@ -105,12 +107,20 @@ export function ParticulierCartProvider({
       const to = cartEl.getBoundingClientRect()
       flightId.current += 1
       const id = flightId.current
+      pendingByFlight.current.set(id, { item: cartItem, quantity })
       setFlights((current) => [...current, { id, src: illustration.image, from, to }])
     },
     [],
   )
 
   const handleFlightComplete = useCallback((id: number) => {
+    const pending = pendingByFlight.current.get(id)
+    if (pending) {
+      pendingByFlight.current.delete(id)
+      setCartItems((current) =>
+        mergeCartItem(current, pending.item, pending.quantity),
+      )
+    }
     setFlights((current) => current.filter((flight) => flight.id !== id))
     setBump((value) => value + 1)
   }, [])

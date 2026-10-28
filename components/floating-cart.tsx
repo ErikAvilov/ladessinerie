@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { InstantLink } from '@/components/instant-link'
 import { PanierIcon } from '@/components/panier-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
@@ -34,6 +34,9 @@ const CART_SIZE = {
   },
 } as const
 
+const springSnappy = { type: 'spring' as const, stiffness: 420, damping: 18, mass: 0.7 }
+const springSoft = { type: 'spring' as const, stiffness: 280, damping: 22 }
+
 export function FloatingCart({
   count,
   bump,
@@ -44,9 +47,11 @@ export function FloatingCart({
   const [dock, setDock] = useState<HTMLElement | null>(null)
   const [entranceReady, setEntranceReady] = useState(false)
   const [bumping, setBumping] = useState(false)
+  const [hovered, setHovered] = useState(false)
   const reduceMotion = useReducedMotion()
   const dims = CART_SIZE[size]
   const docked = placement === 'dock'
+  const canAnimate = entranceReady && !bumping
 
   useEffect(() => {
     setMounted(true)
@@ -69,19 +74,22 @@ export function FloatingCart({
 
   useEffect(() => {
     if (!mounted) return
-    if (reduceMotion) {
+    // Entrée courte même avec reduced motion — le hover reste forcé plus bas.
+    setEntranceReady(false)
+    const delay = reduceMotion ? 0 : docked ? 400 : 1150
+    if (delay === 0) {
       setEntranceReady(true)
       return
     }
-    setEntranceReady(false)
-    const timer = window.setTimeout(() => setEntranceReady(true), docked ? 400 : 1150)
+    const timer = window.setTimeout(() => setEntranceReady(true), delay)
     return () => window.clearTimeout(timer)
   }, [mounted, reduceMotion, docked])
 
   useEffect(() => {
     if (bump <= 0) return
     setBumping(true)
-    const timer = window.setTimeout(() => setBumping(false), 520)
+    setHovered(false)
+    const timer = window.setTimeout(() => setBumping(false), 560)
     return () => window.clearTimeout(timer)
   }, [bump])
 
@@ -91,9 +99,11 @@ export function FloatingCart({
   const cart = (
     <InstantLink
       href="/panier"
-      data-cart-target
+      data-cart-target="true"
       onWheel={forwardWheelToScroll}
       onClick={() => saveShoppingReturn(window.location.pathname)}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
       aria-label={
         count
           ? `Voir le panier, ${count} article${count > 1 ? 's' : ''}`
@@ -102,53 +112,108 @@ export function FloatingCart({
       className={[
         'cart-float pointer-events-auto relative flex cursor-pointer items-center justify-center',
         dims.shell,
-        entranceReady || reduceMotion ? 'cart-float--ready' : '',
+        entranceReady ? 'cart-float--ready' : '',
         bumping ? 'cart-float--bump' : '',
+        hovered && canAnimate ? 'cart-float--hover' : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      <motion.span
-        className="relative flex size-full items-center justify-center"
-        animate={
-          bumping
-            ? {
-                rotate: [0, -11, 9, -5, 0],
-                scale: [1, 1.12, 0.94, 1.05, 1],
-              }
-            : { rotate: 0, scale: 1 }
-        }
-        transition={
-          bumping
-            ? { duration: 0.52, ease: [0.34, 1.25, 0.48, 1] }
-            : { duration: 0 }
-        }
-        style={{ transformOrigin: '50% 12%' }}
-      >
-        {bumping && (
-          <motion.span
-            key={`bump-${bump}`}
-            aria-hidden
-            className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)] md:inset-[-16px] md:border-[3px]"
-            initial={{ opacity: 0.85, scale: 0.75 }}
-            animate={{ opacity: 0, scale: 1.75 }}
-            transition={{ duration: 0.48, ease: 'easeOut' }}
-          />
-        )}
-        <PanierIcon
-          className={`block drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] ${dims.icon}`}
-        />
-      </motion.span>
-      {count > 0 && (
+      {/* Interaction volontaire : hover/press même si Reduced Motion est actif. */}
+      <MotionConfig reducedMotion="never">
         <motion.span
-          key={`count-${count}`}
-          initial={{ scale: 0.5 }}
-          animate={{ scale: 1 }}
-          className={`absolute flex items-center justify-center rounded-full bg-[var(--terracotta)] font-semibold text-white shadow-md ${dims.badge}`}
+          className="relative flex size-full items-center justify-center"
+          style={{ transformOrigin: '50% 18%' }}
+          whileHover={
+            canAnimate ? { y: -10, scale: 1.08, rotate: 4 } : undefined
+          }
+          whileTap={canAnimate ? { y: 4, scale: 0.9, rotate: -3 } : undefined}
+          animate={
+            bumping
+              ? {
+                  y: [0, -14, 2, -6, 0],
+                  rotate: [0, -12, 10, -5, 0],
+                  scale: [1, 1.14, 0.92, 1.06, 1],
+                }
+              : { y: 0, rotate: 0, scale: 1 }
+          }
+          transition={
+            bumping
+              ? { duration: 0.56, ease: [0.34, 1.25, 0.48, 1] }
+              : springSnappy
+          }
         >
-          {count}
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[42%] size-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle, color-mix(in srgb, var(--terracotta) 42%, transparent) 0%, transparent 70%)',
+            }}
+            initial={false}
+            animate={
+              hovered && canAnimate
+                ? { opacity: 0.9, scale: 1.15 }
+                : { opacity: 0, scale: 0.7 }
+            }
+            transition={springSoft}
+          />
+
+          {bumping && (
+            <motion.span
+              key={`bump-${bump}`}
+              aria-hidden
+              className="pointer-events-none absolute inset-[-14px] rounded-full border-2 border-[var(--terracotta)] md:inset-[-16px] md:border-[3px]"
+              initial={{ opacity: 0.9, scale: 0.7 }}
+              animate={{ opacity: 0, scale: 1.85 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+          )}
+
+          <motion.span
+            className="relative block"
+            animate={
+              hovered && canAnimate
+                ? { rotate: [0, -5, 5, -3, 0] }
+                : { rotate: 0 }
+            }
+            transition={
+              hovered && canAnimate
+                ? {
+                    duration: 0.85,
+                    ease: 'easeInOut',
+                    repeat: Infinity,
+                    repeatDelay: 0.35,
+                  }
+                : { duration: 0.2 }
+            }
+          >
+            <PanierIcon
+              className={`cart-float__icon block drop-shadow-[0_8px_18px_rgba(43,41,39,0.2)] transition-[filter] duration-300 ${dims.icon}`}
+            />
+          </motion.span>
         </motion.span>
-      )}
+
+        {count > 0 && (
+          <motion.span
+            key={`count-${count}`}
+            initial={{ scale: 0.35, y: 8 }}
+            animate={
+              bumping
+                ? { scale: [1, 1.35, 0.92, 1.12, 1], y: 0 }
+                : { scale: 1, y: 0 }
+            }
+            transition={
+              bumping
+                ? { duration: 0.5, ease: [0.34, 1.3, 0.48, 1] }
+                : springSnappy
+            }
+            className={`absolute flex items-center justify-center rounded-full bg-[var(--terracotta)] font-semibold text-white shadow-md ${dims.badge}`}
+          >
+            {count}
+          </motion.span>
+        )}
+      </MotionConfig>
     </InstantLink>
   )
 

@@ -9,3 +9,5 @@ supabase/
 *.tsbuildinfo
 .vercel
 .env*
+
+propage/

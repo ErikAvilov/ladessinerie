@@ -37,7 +37,3 @@ export function sizesToFields(sizes?: IllustrationSize[]) {
     price: String(entry.price),
   }))
 }
-
-export function illustrationPriceLabel(illustration: Illustration) {
-  return formatFromPrice(illustration.sizes)
-}

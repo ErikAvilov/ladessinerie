@@ -23,10 +23,7 @@ export default async function SuccesPage({
     <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center pb-16">
       <ClearCartOnSuccess enabled={Boolean(sessionId)} />
 
-      <p className="font-mono text-[10px] uppercase tracking-[.2em] text-[var(--sage)]">
-        Commande confirmée
-      </p>
-      <h1 className="display mt-3 text-3xl font-semibold leading-tight text-[var(--forest)] md:text-5xl">
+      <h1 className="display text-3xl font-semibold leading-tight text-[var(--forest)] md:text-5xl">
         Merci — <em className="text-[var(--terracotta)]">c’est noté.</em>
       </h1>
       <p className="mt-5 text-base leading-relaxed text-foreground/70 md:text-lg md:leading-8">

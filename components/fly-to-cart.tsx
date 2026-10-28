@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -81,34 +81,19 @@ function buildFlightPath(from: DOMRect, to: DOMRect, size: number) {
 function MeteorFlight({
   flight,
   onComplete,
-  reduceMotion,
 }: {
   flight: FlyPayload
   onComplete: (id: number) => void
-  reduceMotion: boolean
 }) {
   const path = useMemo(
     () => buildFlightPath(flight.from, flight.to, METEOR_SIZE),
     [flight.from, flight.to],
   )
 
-  if (reduceMotion) {
-    return (
-      <motion.div
-        key={flight.id}
-        className="pointer-events-none fixed z-40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 1, 0] }}
-        transition={{ duration: 0.35 }}
-        onAnimationComplete={() => onComplete(flight.id)}
-      />
-    )
-  }
-
   return (
     <motion.div
       key={flight.id}
-      className="pointer-events-none fixed z-40"
+      className="pointer-events-none fixed z-[60]"
       style={{ width: METEOR_SIZE, height: METEOR_SIZE, left: 0, top: 0 }}
       initial={{
         x: path.startX,
@@ -152,7 +137,6 @@ function MeteorFlight({
 
 export function FlyToCart({ flights, onComplete }: FlyToCartProps) {
   const [mounted, setMounted] = useState(false)
-  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
     setMounted(true)
@@ -161,16 +145,17 @@ export function FlyToCart({ flights, onComplete }: FlyToCartProps) {
   if (!mounted) return null
 
   return createPortal(
-    <AnimatePresence>
-      {flights.map((flight) => (
-        <MeteorFlight
-          key={flight.id}
-          flight={flight}
-          onComplete={onComplete}
-          reduceMotion={Boolean(reduceMotion)}
-        />
-      ))}
-    </AnimatePresence>,
+    <MotionConfig reducedMotion="never">
+      <AnimatePresence>
+        {flights.map((flight) => (
+          <MeteorFlight
+            key={flight.id}
+            flight={flight}
+            onComplete={onComplete}
+          />
+        ))}
+      </AnimatePresence>
+    </MotionConfig>,
     document.body,
   )
 }
