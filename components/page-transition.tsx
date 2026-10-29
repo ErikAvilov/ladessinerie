@@ -169,7 +169,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
           {/* Hors du shell : ne pas démonter pendant un changement hub ↔ nested. */}
           <FloatingCaddie
             active={showFloatingCaddie}
-            size={cartSize}
+            size={cartSize === 'sm' ? 'sm' : 'lg'}
             enterDelayMs={caddieEnterDelayMs}
           />
         </ParticulierCartProvider>
