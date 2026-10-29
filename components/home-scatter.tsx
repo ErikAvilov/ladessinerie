@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { IllustrationImage } from '@/components/illustration-image'
 import { InstantLink } from '@/components/instant-link'
 import { PanelEnterContext } from '@/components/page-transition'
+import { useSitePanel } from '@/components/site-panel-context'
 import {
   HOME_SCATTER_INTRINSIC_PX,
   HOME_SCATTER_PRELOAD_COUNT,
@@ -92,7 +93,10 @@ type HomeScatterProps = {
 
 export function HomeScatter({ illustrations }: HomeScatterProps) {
   const enterDelay = useContext(PanelEnterContext)
+  const sitePanel = useSitePanel()
+  const panel = sitePanel?.panel ?? 'home'
   const containerRef = useRef<HTMLDivElement>(null)
+  const coldStart = useRef(true)
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
   const [cardSize, setCardSize] = useState(DESKTOP_CARD_SIZE)
   const [explode, setExplode] = useState(false)
@@ -110,13 +114,17 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
     }
   }, [illustrations])
 
-  // Explosion dès que le layout est prêt (+ délai panel) — les images shimmer en place.
+  // Rejoue l’explosion à chaque retour sur l’accueil (images déjà en cache).
   useEffect(() => {
-    if (!cards?.length) return
+    if (!cards?.length || panel !== 'home') return
+
     setExplode(false)
-    const timer = window.setTimeout(() => setExplode(true), Math.max(enterDelay, 40))
+    const timer = window.setTimeout(() => {
+      setExplode(true)
+      coldStart.current = false
+    }, Math.max(enterDelay, 40))
     return () => window.clearTimeout(timer)
-  }, [cards, enterDelay])
+  }, [cards, enterDelay, panel])
 
   useEffect(() => {
     const el = containerRef.current
@@ -147,8 +155,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
   return (
     <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      {/* Halo fantôme immédiat : le site « vit » avant les bitmaps. */}
+      {/* Shimmer uniquement au tout premier paint froid. */}
       {!explode &&
+        coldStart.current &&
         cards?.map((card) => (
           <div
             key={`ghost-${card.illustration.id}`}
@@ -229,9 +238,10 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                   width={HOME_SCATTER_INTRINSIC_PX}
                   height={HOME_SCATTER_INTRINSIC_PX}
                   rounded="full"
+                  priority={i < HOME_SCATTER_PRELOAD_COUNT}
                   loading="eager"
                   fetchPriority={i < HOME_SCATTER_PRELOAD_COUNT ? 'high' : 'auto'}
-                  fade
+                  fade={false}
                   className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
                   sizes={HOME_SCATTER_SIZES}
                 />

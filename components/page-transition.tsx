@@ -83,6 +83,14 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const isProjectDetail = pathname.startsWith('/pro/projet/')
   const isDetailView = isArtDetail || isProjectDetail
   const cartSize = isDetailView ? 'sm' : 'lg'
+  // Hub : attendre la fin du slide ; nested / fiche : apparition plus rapide.
+  const cartEnterDelayMs =
+    pathname === '/particulier'
+      ? SLIDE_DURATION_MS
+      : isArtDetail
+        ? 280
+        : 0
+  const caddieEnterDelayMs = pathname === '/pro' ? SLIDE_DURATION_MS : 0
 
   const shell = (() => {
     // /, /particulier, /pro, /a-propos → SiteSlider
@@ -90,7 +98,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
       return (
         <>
           {children}
-          {showFloatingCaddie ? <FloatingCaddie size={cartSize} /> : null}
+          <FloatingCaddie
+            active={showFloatingCaddie}
+            size={cartSize}
+            enterDelayMs={caddieEnterDelayMs}
+          />
         </>
       )
     }
@@ -137,7 +149,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
             </div>
             {!isDetailView && <SiteFooter />}
           </div>
-          {showFloatingCaddie ? <FloatingCaddie size={cartSize} /> : null}
+          <FloatingCaddie
+            active={showFloatingCaddie}
+            size={cartSize}
+            enterDelayMs={caddieEnterDelayMs}
+          />
         </div>
       </PanelEnterContext.Provider>
     )
@@ -149,6 +165,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
         visible={showFloatingCart}
         cartSize={cartSize}
         cartPlacement={isArtDetail ? 'dock' : 'fixed'}
+        cartEnterDelayMs={cartEnterDelayMs}
       >
         {showFloatingCart ? <ShoppingReturnTracker /> : null}
         {shell}

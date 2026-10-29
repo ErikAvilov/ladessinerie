@@ -7,7 +7,6 @@ import { HomePageClient } from '@/components/home-page-client'
 import { AboutPageClient } from '@/components/about-page-client'
 import { ParticulierPageClient } from '@/components/particulier-page-client'
 import { PanelEnterContext, SLIDE_DURATION_MS } from '@/components/page-transition'
-import { useNavigationProgress } from '@/components/navigation-progress'
 import { ProPageClient } from '@/components/pro-page-client'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { RouteSideGates } from '@/components/route-side-gates'
@@ -36,7 +35,6 @@ export function SiteSlider({
 }: SiteSliderProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const { start: startNav } = useNavigationProgress()
   const urlPanel = panelFromPathname(pathname)
 
   /** Panel affiché : optimiste pendant un goTo, sinon = URL. */
@@ -87,10 +85,10 @@ export function SiteSlider({
       setEnterDelay(next === 'home' ? SLIDE_DURATION_MS : 0)
       setPanel(next)
       document.title = SITE_PANEL_TITLE[next]
-      startNav(href)
+      // Pas de startNav / nav-veil : les panneaux sont déjà montés, le slide suffit.
       router.push(href, { scroll: false })
     },
-    [router, urlPanel, startNav],
+    [router, urlPanel],
   )
 
   useEffect(() => {

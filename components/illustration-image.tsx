@@ -12,6 +12,15 @@ type IllustrationImageProps = ImageProps & {
   onReady?: () => void
 }
 
+/** Survit aux remounts React — évite le flash opacity-0 sur images déjà vues. */
+const loadedImageSrcs = new Set<string>()
+
+function imageSrcKey(src: ImageProps['src']): string | null {
+  if (typeof src === 'string') return src
+  if (src && typeof src === 'object' && 'src' in src) return String(src.src)
+  return null
+}
+
 export function IllustrationImage({
   className,
   rounded = 'none',
@@ -23,9 +32,13 @@ export function IllustrationImage({
   onLoad,
   onError,
   onReady,
+  src,
   ...props
 }: IllustrationImageProps) {
-  const [loaded, setLoaded] = useState(false)
+  const srcKey = imageSrcKey(src)
+  const [loaded, setLoaded] = useState(() =>
+    srcKey ? loadedImageSrcs.has(srcKey) : false,
+  )
 
   const roundedClass =
     rounded === 'xl'
@@ -41,9 +54,12 @@ export function IllustrationImage({
   const placeholderBg = dominantColor || undefined
 
   function markReady() {
-    if (loaded) return
-    setLoaded(true)
-    onReady?.()
+    if (srcKey) loadedImageSrcs.add(srcKey)
+    setLoaded((current) => {
+      if (current) return current
+      onReady?.()
+      return true
+    })
   }
 
   function handleLoad(event: SyntheticEvent<HTMLImageElement, Event>) {
@@ -63,15 +79,15 @@ export function IllustrationImage({
       }`}
       style={placeholderBg ? { backgroundColor: placeholderBg } : undefined}
     >
-      <span
-        aria-hidden
-        className={[
-          'image-load-shimmer pointer-events-none absolute inset-0 z-[1]',
-          loaded ? 'opacity-0' : 'opacity-100',
-        ].join(' ')}
-      />
+      {!loaded ? (
+        <span
+          aria-hidden
+          className="image-load-shimmer pointer-events-none absolute inset-0 z-[1] opacity-100"
+        />
+      ) : null}
       <NextImage
         {...props}
+        src={src}
         fill={fill}
         priority={priority}
         preload={preload}
@@ -79,8 +95,8 @@ export function IllustrationImage({
         onError={handleError}
         className={[
           className,
-          fade ? 'transition-opacity duration-500 ease-out' : 'transition-opacity duration-300 ease-out',
           loaded ? 'opacity-100' : 'opacity-0',
+          fade ? 'transition-opacity duration-500 ease-out' : null,
         ]
           .filter(Boolean)
           .join(' ')}

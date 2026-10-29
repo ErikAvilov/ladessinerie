@@ -17,21 +17,32 @@ type HomePageClientProps = {
   illustrations: Illustration[]
 }
 
+/** Logo déjà révélé dans la session — pas de re-fade au retour. */
+let homeLogoHasShown = false
+
 export function HomePageClient({ illustrations }: HomePageClientProps) {
   const enterDelay = useContext(PanelEnterContext)
   const sitePanel = useSitePanel()
-  const [showLogo, setShowLogo] = useState(enterDelay === 0)
+  const [showLogo, setShowLogo] = useState(
+    () => homeLogoHasShown || enterDelay === 0,
+  )
   const [logoReady, setLogoReady] = useState(false)
 
   useEffect(() => {
+    if (homeLogoHasShown) {
+      setShowLogo(true)
+      return
+    }
     if (enterDelay === 0) {
+      homeLogoHasShown = true
       setShowLogo(true)
       return
     }
 
-    setShowLogo(false)
-
-    const logoTimer = window.setTimeout(() => setShowLogo(true), enterDelay)
+    const logoTimer = window.setTimeout(() => {
+      homeLogoHasShown = true
+      setShowLogo(true)
+    }, enterDelay)
     return () => {
       window.clearTimeout(logoTimer)
     }

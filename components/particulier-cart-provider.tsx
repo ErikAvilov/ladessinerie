@@ -50,11 +50,13 @@ export function ParticulierCartProvider({
   visible = true,
   cartSize = 'lg',
   cartPlacement = 'fixed',
+  cartEnterDelayMs = 0,
 }: {
   children: ReactNode
   visible?: boolean
   cartSize?: FloatingCartSize
   cartPlacement?: FloatingCartPlacement
+  cartEnterDelayMs?: number
 }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [ready, setReady] = useState(false)
@@ -163,17 +165,17 @@ export function ParticulierCartProvider({
   return (
     <ParticulierCartContext.Provider value={value}>
       {children}
-      {visible && (
-        <>
-          <FlyToCart flights={flights} onComplete={handleFlightComplete} />
-          <FloatingCart
-            bump={bump}
-            count={cartCount(cartItems)}
-            size={cartSize}
-            placement={cartPlacement}
-          />
-        </>
-      )}
+      {visible ? (
+        <FlyToCart flights={flights} onComplete={handleFlightComplete} />
+      ) : null}
+      <FloatingCart
+        active={visible}
+        bump={bump}
+        count={cartCount(cartItems)}
+        size={cartSize}
+        placement={cartPlacement}
+        enterDelayMs={cartEnterDelayMs}
+      />
     </ParticulierCartContext.Provider>
   )
 }

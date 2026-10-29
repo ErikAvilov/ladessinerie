@@ -51,7 +51,6 @@ function PreloadImage({
  */
 export default async function HomePage() {
   const { home } = await getPanelsIllustrations()
-  const criticalScatter = home.slice(0, HOME_SCATTER_PRELOAD_COUNT)
 
   return (
     <>
@@ -62,7 +61,7 @@ export default async function HomePage() {
         sizes={HOME_LOGO_SIZES}
         fetchPriority="high"
       />
-      {criticalScatter.map((item) =>
+      {home.map((item, index) =>
         item.image ? (
           <PreloadImage
             key={item.id}
@@ -70,6 +69,7 @@ export default async function HomePage() {
             width={HOME_SCATTER_INTRINSIC_PX}
             height={HOME_SCATTER_INTRINSIC_PX}
             sizes={HOME_SCATTER_SIZES}
+            fetchPriority={index < HOME_SCATTER_PRELOAD_COUNT ? 'high' : 'auto'}
           />
         ) : null,
       )}

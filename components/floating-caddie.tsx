@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MotionConfig, motion } from 'framer-motion'
+import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { InstantLink } from '@/components/instant-link'
 import { CaddieIcon } from '@/components/caddie-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
@@ -11,6 +11,10 @@ export type FloatingCaddieSize = 'sm' | 'lg'
 
 type FloatingCaddieProps = {
   size?: FloatingCaddieSize
+  /** Affiché / masqué — le fondu de sortie se joue avant le unmount interne. */
+  active?: boolean
+  /** Délai avant le fondu d’apparition (ex. fin du slide). */
+  enterDelayMs?: number
 }
 
 const CADDIE_SIZE = {
@@ -26,51 +30,74 @@ const CADDIE_SIZE = {
 
 const springSnappy = { type: 'spring' as const, stiffness: 420, damping: 18, mass: 0.7 }
 const springSoft = { type: 'spring' as const, stiffness: 280, damping: 22 }
+const FADE_MS = 380
 
-export function FloatingCaddie({ size = 'lg' }: FloatingCaddieProps) {
-  const [mounted, setMounted] = useState(false)
+export function FloatingCaddie({
+  size = 'lg',
+  active = true,
+  enterDelayMs = 0,
+}: FloatingCaddieProps) {
+  const [hydrated, setHydrated] = useState(false)
+  const [present, setPresent] = useState(active)
+  const [revealed, setRevealed] = useState(false)
   const [entranceReady, setEntranceReady] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const reduceMotion = useReducedMotion()
   const dims = CADDIE_SIZE[size]
-  const canAnimate = entranceReady
+  const canAnimate = entranceReady && revealed
 
   useEffect(() => {
-    setMounted(true)
+    setHydrated(true)
   }, [])
 
   useEffect(() => {
-    if (!mounted) return
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    setEntranceReady(false)
-    const delay = reduce ? 0 : 1150
-    if (delay === 0) {
-      setEntranceReady(true)
-      return
-    }
-    const timer = window.setTimeout(() => setEntranceReady(true), delay)
-    return () => window.clearTimeout(timer)
-  }, [mounted])
+    if (!hydrated) return
 
-  if (!mounted) return null
+    if (active) {
+      setPresent(true)
+      setRevealed(false)
+      setEntranceReady(false)
+      const delay = reduceMotion ? 0 : enterDelayMs
+      const timer = window.setTimeout(() => {
+        setRevealed(true)
+        setEntranceReady(true)
+      }, delay)
+      return () => window.clearTimeout(timer)
+    }
+
+    setRevealed(false)
+    setEntranceReady(false)
+    setHovered(false)
+    const outDelay = reduceMotion ? 0 : FADE_MS
+    const timer = window.setTimeout(() => setPresent(false), outDelay)
+    return () => window.clearTimeout(timer)
+  }, [hydrated, active, reduceMotion, enterDelayMs])
+
+  if (!hydrated || !present) return null
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2">
-      <InstantLink
-        href="/pro/contact"
-        onWheel={forwardWheelToScroll}
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-        aria-label="Contacter La Dessinerie"
-        className={[
-          'cart-float pointer-events-auto relative flex cursor-pointer items-center justify-center',
-          dims.shell,
-          entranceReady ? 'cart-float--ready' : '',
-          hovered && canAnimate ? 'cart-float--hover' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+    <MotionConfig reducedMotion="never">
+      <motion.div
+        className="pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2"
+        initial={false}
+        animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : 10 }}
+        transition={{ duration: FADE_MS / 1000, ease: 'easeOut' }}
       >
-        <MotionConfig reducedMotion="never">
+        <InstantLink
+          href="/pro/contact"
+          onWheel={forwardWheelToScroll}
+          onPointerEnter={() => setHovered(true)}
+          onPointerLeave={() => setHovered(false)}
+          aria-label="Contacter La Dessinerie"
+          className={[
+            'cart-float cart-float--ready relative flex items-center justify-center',
+            dims.shell,
+            revealed ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none',
+            hovered && canAnimate ? 'cart-float--hover' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <motion.span
             className="relative flex size-full items-center justify-center"
             style={{ transformOrigin: '50% 18%' }}
@@ -119,9 +146,9 @@ export function FloatingCaddie({ size = 'lg' }: FloatingCaddieProps) {
               />
             </motion.span>
           </motion.span>
-        </MotionConfig>
-      </InstantLink>
-    </div>,
+        </InstantLink>
+      </motion.div>
+    </MotionConfig>,
     document.body,
   )
 }
