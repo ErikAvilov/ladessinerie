@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { revalidatePath } from 'next/cache'
+import { revalidateIllustrationPaths } from '@/lib/revalidate-illustrations'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { processIllustrationUpload } from '@/lib/illustration-image-process'
 import {
@@ -90,10 +90,7 @@ export async function POST(request: Request) {
 
     await upsertIllustration(illustration)
 
-    revalidatePath('/')
-    revalidatePath('/admin')
-    revalidatePath('/particulier')
-    revalidatePath('/pro')
+    revalidateIllustrationPaths(illustration.id)
 
     return NextResponse.json({ illustration })
   } catch (error) {

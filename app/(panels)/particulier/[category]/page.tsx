@@ -12,7 +12,7 @@ import { getIllustrations } from '@/lib/illustrations'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 type CategoryPageProps = {
   params: Promise<{ category: string }>

@@ -3,7 +3,7 @@ import { ContactForm } from '@/components/contact-form'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ladessinerie.fr'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Contact',

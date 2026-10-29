@@ -15,6 +15,7 @@ import {
   uniqueSlug,
   upsertIllustration,
 } from '@/lib/illustrations'
+import { revalidateIllustrationPaths } from '@/lib/revalidate-illustrations'
 import { parseSiteThemeInput, writeSiteTheme, type SiteTheme } from '@/lib/site-theme'
 
 export type IllustrationFormValues = {
@@ -25,17 +26,6 @@ export type IllustrationFormValues = {
   sizes: IllustrationSize[]
   image?: string
   dominantColor?: string
-}
-
-function revalidateIllustrationPaths(id?: string) {
-  revalidatePath('/admin')
-  revalidatePath('/particulier')
-  revalidatePath('/pro')
-  revalidatePath('/')
-  if (id) {
-    revalidatePath(`/admin/${id}/edit`)
-    revalidatePath(`/particulier/art/${id}`)
-  }
 }
 
 async function requireAdmin() {

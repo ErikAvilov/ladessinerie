@@ -63,6 +63,33 @@ async function readLocalFile(): Promise<Illustration[]> {
   return Array.isArray(parsed) ? parsed : []
 }
 
+/**
+ * Ancien catalogue plat `/illustrations/file.webp` →
+ * `/illustrations/<sous-categorie>/file.webp`.
+ * Ne touche pas aux URLs Blob https://…
+ */
+export function withSubcategoryImagePath(item: Illustration): Illustration {
+  const { image } = item
+  if (!image.startsWith('/illustrations/')) return item
+  const relative = image.slice('/illustrations/'.length)
+  if (!relative || relative.includes('/')) return item
+  const folder = slugify(item.subcategory?.trim() || 'autres') || 'autres'
+  return { ...item, image: `/illustrations/${folder}/${relative}` }
+}
+
+function migrateIllustrationPaths(items: Illustration[]): {
+  items: Illustration[]
+  changed: boolean
+} {
+  let changed = false
+  const next = items.map((item) => {
+    const migrated = withSubcategoryImagePath(item)
+    if (migrated.image !== item.image) changed = true
+    return migrated
+  })
+  return { items: next, changed }
+}
+
 async function seedFromLocalIfNeeded(
   remote: Illustration[] | null,
 ): Promise<Illustration[]> {
@@ -81,17 +108,30 @@ async function seedFromLocalIfNeeded(
 
 async function readAll(): Promise<Illustration[]> {
   try {
+    let items: Illustration[] = []
+
     if (shouldUseBlobStorage()) {
       try {
         const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
-        return await seedFromLocalIfNeeded(remote)
+        items = await seedFromLocalIfNeeded(remote)
       } catch (error) {
         console.error('Lecture Blob illustrations — fallback local:', error)
-        return await readLocalFile().catch(() => [])
+        items = await readLocalFile().catch(() => [])
       }
+    } else {
+      items = await readLocalFile()
     }
 
-    return await readLocalFile()
+    const { items: migrated, changed } = migrateIllustrationPaths(items)
+    if (changed) {
+      // Persiste le catalogue migré (Blob prod inclus) pour ne pas rester sur les anciens paths.
+      try {
+        await writeIllustrations(migrated)
+      } catch (error) {
+        console.error('Migration paths illustrations non persistée:', error)
+      }
+    }
+    return migrated
   } catch (error) {
     console.error('Lecture data/illustrations.json:', error)
     return []

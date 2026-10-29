@@ -1,3 +1,37 @@
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const rootDir = dirname(fileURLToPath(import.meta.url))
+
+/** Redirects plats → sous-dossiers (ancien catalogue Blob / caches). */
+function illustrationFolderRedirects() {
+  try {
+    const raw = readFileSync(join(rootDir, 'data/illustrations.json'), 'utf8')
+    const items = JSON.parse(raw)
+    if (!Array.isArray(items)) return []
+
+    return items.flatMap((item) => {
+      const image = typeof item?.image === 'string' ? item.image : ''
+      if (!image.startsWith('/illustrations/')) return []
+      const relative = image.slice('/illustrations/'.length)
+      const slash = relative.indexOf('/')
+      if (slash <= 0) return []
+      const fileName = relative.slice(slash + 1)
+      if (!fileName || fileName.includes('/')) return []
+      return [
+        {
+          source: `/illustrations/${fileName}`,
+          destination: image,
+          permanent: true,
+        },
+      ]
+    })
+  } catch {
+    return []
+  }
+}
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -29,6 +63,7 @@ const nextConfig = {
         destination: '/particulier/personnalisees',
         permanent: true,
       },
+      ...illustrationFolderRedirects(),
     ]
   },
 }
