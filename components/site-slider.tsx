@@ -186,7 +186,7 @@ export function SiteSlider({
                   animate={{ x: `-${panelIndex(panel) * 100}vw` }}
                   transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
                 >
-                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
+                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-24 md:pt-24 md:pl-10 md:pr-20">
                     {mountedPanels.has('particulier') ? <ParticulierPageClient /> : null}
                     {/* Ancre panier : suit le slide avec le panneau (pas fixed viewport). */}
                     <div
@@ -201,7 +201,7 @@ export function SiteSlider({
                     ) : null}
                   </section>
 
-                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-14 pr-4 md:pt-24 md:pl-20 md:pr-10">
+                  <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-24 pr-4 md:pt-24 md:pl-20 md:pr-10">
                     {mountedPanels.has('pro') ? <ProPageClient /> : null}
                     <div
                       data-caddie-hub-dock

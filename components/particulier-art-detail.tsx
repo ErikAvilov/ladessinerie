@@ -71,7 +71,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
   }
 
   return (
-    <div className="content-reveal flex h-full min-h-0 w-full max-w-5xl flex-col self-center">
+    <div className="content-reveal mx-auto flex w-full max-w-5xl flex-col md:h-full md:min-h-0">
       <InstantLink
         href="/particulier/illustrations"
         className="inline-flex w-fit shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground active:scale-[0.98] md:text-[11px]"
@@ -79,28 +79,28 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
         ← Retour
       </InstantLink>
 
-      <div className="mt-1.5 flex min-h-0 w-full flex-1 flex-col gap-4 overflow-auto md:flex-row md:items-center md:gap-6 md:overflow-hidden">
+      <div className="mt-3 flex w-full flex-col gap-4 md:mt-1.5 md:min-h-0 md:flex-1 md:flex-row md:items-center md:gap-6 md:overflow-hidden">
         <div
           ref={imageRef}
-          className="relative flex min-h-0 w-full flex-1 items-center justify-center md:h-full"
+          className="relative flex w-full shrink-0 items-center justify-center md:min-h-0 md:h-full md:flex-1"
         >
           <button
             type="button"
             onClick={() => setZoomed(true)}
             aria-label={`Agrandir ${illustration.title}`}
-            className="group cursor-zoom-in rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--terracotta)]/50"
+            className="group max-w-full cursor-zoom-in rounded-lg bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--terracotta)]/50"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={illustration.image}
               alt={alt}
-              className="max-h-[min(72dvh,36rem)] w-auto max-w-full object-contain drop-shadow-[0_8px_24px_rgba(43,41,39,0.12)] transition duration-300 group-hover:scale-[1.02] group-hover:drop-shadow-[0_12px_28px_rgba(43,41,39,0.16)]"
+              className="mx-auto h-auto max-h-[min(38dvh,16rem)] w-auto max-w-full object-contain drop-shadow-[0_8px_24px_rgba(43,41,39,0.12)] transition duration-300 group-hover:scale-[1.02] group-hover:drop-shadow-[0_12px_28px_rgba(43,41,39,0.16)] sm:max-h-[min(42dvh,20rem)] md:max-h-[min(72dvh,36rem)]"
             />
           </button>
         </div>
 
-        <div className="flex w-full shrink-0 flex-col justify-center gap-2 md:w-[min(100%,20rem)] lg:w-[22rem]">
-          <div className="flex flex-col gap-3 rounded-2xl bg-white px-3.5 py-3.5 shadow-[0_4px_18px_rgba(43,41,39,0.08)] md:gap-3.5 md:px-4 md:py-5">
+        <div className="flex w-full shrink-0 flex-col gap-2 md:w-[min(100%,20rem)] lg:w-[22rem]">
+          <div className="flex w-full flex-col gap-3 rounded-2xl bg-white px-3.5 py-3.5 shadow-[0_4px_18px_rgba(43,41,39,0.08)] md:gap-3.5 md:px-4 md:py-5">
             <div className="flex w-full flex-wrap items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <h1 className="display max-w-full truncate text-sm font-semibold leading-snug md:text-base lg:text-lg">
@@ -213,7 +213,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
           {/* Ancrage du panier flottant : colonne droite, sous le bloc infos. */}
           <div
             data-cart-dock
-            className="relative flex min-h-[7.5rem] w-full items-center justify-center md:min-h-[10.5rem]"
+            className="relative flex min-h-[6.5rem] w-full items-center justify-center md:min-h-[10.5rem]"
           />
         </div>
       </div>

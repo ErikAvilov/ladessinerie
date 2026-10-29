@@ -71,7 +71,7 @@ function IllustrationCard({
         </div>
       </InstantLink>
 
-      <div className="mt-1.5 flex w-full min-w-0 flex-col gap-1.5 rounded-xl bg-white px-2 py-2 shadow-[0_2px_10px_rgba(43,41,39,0.06)] md:px-2.5 md:py-2.5">
+      <div className="mt-5 flex w-full min-w-0 flex-col gap-1.5 rounded-xl bg-white px-2 py-2 shadow-[0_2px_10px_rgba(43,41,39,0.06)] md:mt-6 md:px-2.5 md:py-2.5">
         <div className="min-w-0">
           <h2 className="max-w-full truncate text-[11px] font-semibold leading-tight md:text-xs">
             {item.title}

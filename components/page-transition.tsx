@@ -117,9 +117,9 @@ export function PageTransition({ children }: { children: ReactNode }) {
     const hideSideGates =
       pathname === '/succes' || pathname === '/panier' || isDetailView
 
-    // Fiche détail : padding léger, panier/caddie sm ; le contenu est déjà « dézoomé ».
+    // Fiche détail : scroll mobile (évite le crush) ; desktop reste en overflow hidden.
     const contentPad = isDetailView
-      ? 'relative flex min-h-0 flex-1 flex-col items-center overflow-hidden px-3 pb-6 pt-14 md:px-8 md:pb-8 md:pt-16'
+      ? 'relative flex min-h-0 flex-1 flex-col items-stretch overflow-y-auto px-3 pb-6 pt-14 md:items-center md:overflow-hidden md:px-8 md:pb-8 md:pt-16'
       : isParticulierNested ||
           isProNested ||
           pathname === '/panier' ||
@@ -127,7 +127,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
         ? 'relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-24 pt-16 md:px-10 md:pb-28 md:pt-20'
         : 'relative min-h-0 flex-1 overflow-y-auto px-5 pb-24 pt-28 md:px-10'
 
-    const isScrollableContent = !isDetailView
+    const isScrollableContent = true
 
     return (
       <PanelEnterContext.Provider value={0}>
