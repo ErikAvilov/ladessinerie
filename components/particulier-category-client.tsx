@@ -69,20 +69,22 @@ function IllustrationCard({
         </div>
       </InstantLink>
 
-      <div className="mt-1.5 min-w-0 px-0.5">
-        <h2 className="truncate text-[11px] font-semibold leading-tight md:text-xs">
+      <div className="mt-1.5 flex min-w-0 flex-col items-start gap-0.5 px-0.5">
+        <h2 className="inline-block max-w-full truncate rounded-md bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-tight md:text-xs">
           {item.title}
         </h2>
         {selected ? (
-          <p className="mt-0.5 text-[10px] font-semibold text-foreground/70 md:text-[11px]">
+          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] font-semibold text-foreground/70 md:text-[11px]">
             {formatEuro(selected.price)}
           </p>
         ) : formatFromPrice(item.sizes) ? (
-          <p className="mt-0.5 text-[10px] text-foreground/55">
+          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/55">
             {formatFromPrice(item.sizes)}
           </p>
         ) : (
-          <p className="mt-0.5 text-[10px] text-foreground/45">Prix sur demande</p>
+          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/45">
+            Prix sur demande
+          </p>
         )}
       </div>
 
@@ -96,10 +98,10 @@ function IllustrationCard({
                   key={`${entry.size}-${i}`}
                   type="button"
                   onClick={() => setSizeIndex(i)}
-                  className={`cursor-pointer rounded-full border px-2 py-0.5 text-[9px] font-medium transition md:text-[10px] ${
+                  className={`w-fit cursor-pointer rounded-md border px-2 py-0.5 text-[9px] font-medium transition md:text-[10px] ${
                     active
                       ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
-                      : 'border-foreground/15 hover:border-foreground/35'
+                      : 'border-transparent bg-white hover:border-foreground/20'
                   }`}
                 >
                   {entry.size}
@@ -109,13 +111,13 @@ function IllustrationCard({
           </div>
 
           <div className="mt-1.5 flex items-center gap-1.5 px-0.5">
-            <div className="inline-flex items-center rounded-full border border-foreground/15">
+            <div className="inline-flex w-fit items-center rounded-md bg-white">
               <button
                 type="button"
                 aria-label="Diminuer la quantité"
                 disabled={quantity <= 1}
                 onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                className="flex size-6 cursor-pointer items-center justify-center rounded-l-full transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex size-6 cursor-pointer items-center justify-center rounded-l-md transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Minus size={10} />
               </button>
@@ -126,7 +128,7 @@ function IllustrationCard({
                 type="button"
                 aria-label="Augmenter la quantité"
                 onClick={() => setQuantity((value) => Math.min(99, value + 1))}
-                className="flex size-6 cursor-pointer items-center justify-center rounded-r-full transition hover:bg-foreground/5"
+                className="flex size-6 cursor-pointer items-center justify-center rounded-r-md transition hover:bg-foreground/5"
               >
                 <Plus size={10} />
               </button>
@@ -136,7 +138,7 @@ function IllustrationCard({
               type="button"
               disabled={!canAdd}
               onClick={() => addToCart(item, sizeIndex, quantity, imageRef.current)}
-              className="min-w-0 flex-1 cursor-pointer rounded-full bg-[var(--terracotta)] px-2 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-fit cursor-pointer rounded-md bg-[var(--terracotta)] px-2.5 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Ajouter
             </button>
@@ -147,7 +149,7 @@ function IllustrationCard({
       <InstantLink
         href={href}
         onPointerEnter={() => onIntent(href)}
-        className="mt-1.5 inline-flex cursor-pointer px-0.5 text-[10px] text-foreground/55 underline-offset-2 transition hover:text-foreground hover:underline"
+        className="mt-1.5 inline-flex w-fit cursor-pointer rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/55 underline-offset-2 transition hover:text-foreground hover:underline"
       >
         Détails
       </InstantLink>
