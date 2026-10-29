@@ -6,13 +6,13 @@ export function AboutPageClient() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col">
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain pb-4 md:grid md:grid-cols-[1.2fr_0.8fr] md:items-center md:gap-10 md:overflow-hidden md:pb-0 lg:gap-14">
-        <div className="min-w-0 shrink-0 md:min-h-0 md:overflow-hidden">
-          <h1 className="display text-3xl font-semibold leading-tight text-[var(--text-titre-a-propos)] sm:text-4xl md:text-4xl lg:text-5xl">
+        <div className="flex min-w-0 shrink-0 flex-col gap-3 md:min-h-0 md:gap-4 md:overflow-hidden">
+          <h1 className="display w-full rounded-2xl bg-white px-4 py-3 text-3xl font-semibold leading-tight text-[var(--text-titre-a-propos)] shadow-[0_3px_12px_rgba(43,41,39,0.07)] sm:text-4xl md:px-5 md:py-4 md:text-4xl lg:text-5xl">
             Salut, moi c’est{' '}
             <em className="text-[var(--terracotta)]">Anna.</em>
           </h1>
 
-          <div className="mt-5 flex justify-center md:hidden">
+          <div className="flex justify-center md:hidden">
             <div className="relative aspect-[3/4] w-full max-w-[14.5rem] overflow-hidden rounded-2xl sm:max-w-[16rem]">
               <Image
                 src="/images/photo-anna.jpeg"
@@ -26,8 +26,8 @@ export function AboutPageClient() {
             </div>
           </div>
 
-          <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--text-a-propos)] opacity-70 sm:text-[15px] sm:leading-7 md:mt-6 md:space-y-4 md:text-sm md:leading-7 lg:text-base lg:leading-8">
-            <p>
+          <div className="flex w-full flex-col gap-3 text-sm leading-7 sm:text-[15px] sm:leading-7 md:gap-4 md:text-sm md:leading-7 lg:text-base lg:leading-8">
+            <p className="w-full rounded-2xl bg-white px-4 py-3.5 text-[color:color-mix(in_srgb,var(--text-a-propos)_70%,transparent)] shadow-[0_3px_12px_rgba(43,41,39,0.07)] md:px-5 md:py-4">
               Entrer dans mon univers, c’est mettre les pieds dans des fleurs par
               centaines, mes petites obsessions du quotidien que j’essaie
               d’embellir. Tout commence par une idée, une phrase, un sentiment ou
@@ -38,7 +38,7 @@ export function AboutPageClient() {
               s’assombrit, et surtout créer, pour moi, pour vous et pour se
               souvenir.
             </p>
-            <p>
+            <p className="w-full rounded-2xl bg-white px-4 py-3.5 text-[color:color-mix(in_srgb,var(--text-a-propos)_70%,transparent)] shadow-[0_3px_12px_rgba(43,41,39,0.07)] md:px-5 md:py-4">
               J’aime illustrer et découvrir de nouvelles manières de penser, de
               communiquer et de vous faire ressentir des émotions. Alors,
               bienvenue dans mon jardin pas si secret.
