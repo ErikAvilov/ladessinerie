@@ -1,19 +1,42 @@
 'use client'
 
 import { InstantLink } from '@/components/instant-link'
+import { useSiteTheme } from '@/components/site-theme-context'
 import { illustrationAlt } from '@/lib/illustration-utils'
 import type { Illustration } from '@/lib/illustrations'
+import {
+  isProEditorialSection,
+  proEditorialColorsFromTheme,
+} from '@/lib/site-theme-shared'
 
 type ProProjectDetailProps = {
   illustration: Illustration
 }
 
+function sectionFromSubcategory(subcategory: string | null | undefined) {
+  const normalized = (subcategory ?? '').trim().toLowerCase()
+  if (normalized === 'branding') return 'branding' as const
+  if (normalized === 'fresque') return 'fresque' as const
+  if (normalized === 'evenementiel' || normalized === 'événementiel') {
+    return 'evenementiel' as const
+  }
+  return null
+}
+
 export function ProProjectDetail({ illustration }: ProProjectDetailProps) {
+  const theme = useSiteTheme()
+  const section = sectionFromSubcategory(illustration.subcategory)
+  const colors = proEditorialColorsFromTheme(
+    theme,
+    section && isProEditorialSection(section) ? section : 'branding',
+  )
+
   return (
     <div className="content-reveal flex h-full min-h-0 w-full max-w-5xl flex-col self-center">
       <InstantLink
         href="/pro"
-        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground active:scale-[0.98] md:text-[11px]"
+        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] opacity-60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:opacity-100 active:scale-[0.98] md:text-[11px]"
+        style={{ color: colors.titre }}
       >
         ← Retour
       </InstantLink>
@@ -30,18 +53,27 @@ export function ProProjectDetail({ illustration }: ProProjectDetailProps) {
 
         <div className="flex w-full shrink-0 flex-col justify-center gap-2 rounded-2xl bg-white/92 px-3.5 py-3 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px] md:w-[min(100%,20rem)] md:px-4 md:py-5 lg:w-[22rem] lg:px-5">
           <div className="min-w-0">
-            <h1 className="display text-sm font-semibold leading-snug md:text-base lg:text-lg">
+            <h1
+              className="display text-sm font-semibold leading-snug md:text-base lg:text-lg"
+              style={{ color: colors.titre }}
+            >
               {illustration.title}
             </h1>
             {illustration.subcategory ? (
-              <p className="mt-0.5 text-[10px] text-foreground/50">
+              <p
+                className="mt-0.5 text-[10px] opacity-50"
+                style={{ color: colors.sous_titre }}
+              >
                 {illustration.subcategory}
               </p>
             ) : null}
           </div>
 
           {illustration.alt_text ? (
-            <p className="text-[11px] leading-relaxed text-foreground/65 md:text-xs">
+            <p
+              className="text-[11px] leading-relaxed opacity-65 md:text-xs"
+              style={{ color: colors.description }}
+            >
               {illustration.alt_text}
             </p>
           ) : null}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { motion } from '@/components/motion'
 import { Minus, Plus } from 'lucide-react'
 import { IllustrationImage } from '@/components/illustration-image'
@@ -138,21 +138,13 @@ function IllustrationCard({
               type="button"
               disabled={!canAdd}
               onClick={() => addToCart(item, sizeIndex, quantity, imageRef.current)}
-              className="w-fit cursor-pointer rounded-md bg-[var(--terracotta)] px-2.5 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-fit cursor-pointer rounded-md bg-[var(--bouton-ajouter-panier)] px-2.5 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Ajouter
             </button>
           </div>
         </>
       ) : null}
-
-      <InstantLink
-        href={href}
-        onPointerEnter={() => onIntent(href)}
-        className="mt-1.5 inline-flex w-fit cursor-pointer rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/55 underline-offset-2 transition hover:text-foreground hover:underline"
-      >
-        Détails
-      </InstantLink>
     </motion.article>
   )
 }
@@ -164,6 +156,23 @@ export function ParticulierCategoryClient({
   const theme = useSiteTheme()
   const color = theme.boutonColor(category.slug)
   const content = getParticulierCategoryContent(category.slug)
+  const showSubcategoryFilter = category.filter === 'all'
+  const subcategoryFilters = useMemo(() => {
+    if (!showSubcategoryFilter) return [] as string[]
+    const subs = [
+      ...new Set(
+        illustrations
+          .map((item) => item.subcategory?.trim())
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'fr'))
+    return ['Tous', ...subs]
+  }, [illustrations, showSubcategoryFilter])
+  const [subcategoryFilter, setSubcategoryFilter] = useState('Tous')
+  const shownIllustrations = useMemo(() => {
+    if (!showSubcategoryFilter || subcategoryFilter === 'Tous') return illustrations
+    return illustrations.filter((item) => item.subcategory === subcategoryFilter)
+  }, [illustrations, showSubcategoryFilter, subcategoryFilter])
 
   if (content) {
     return (
@@ -285,15 +294,37 @@ export function ParticulierCategoryClient({
         </div>
       </header>
 
+      {showSubcategoryFilter && subcategoryFilters.length > 1 ? (
+        <div className="mt-4 flex flex-wrap gap-1.5 px-0.5 md:mt-5">
+          {subcategoryFilters.map((label) => {
+            const active = subcategoryFilter === label
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setSubcategoryFilter(label)}
+                className={`w-fit cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-medium transition md:text-xs ${
+                  active
+                    ? 'bg-[var(--forest)] text-white'
+                    : 'bg-white text-foreground/70 hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+
       <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:mt-6 md:gap-x-5 md:gap-y-6 lg:gap-x-6 lg:gap-y-7">
-        {illustrations.length === 0 ? (
+        {shownIllustrations.length === 0 ? (
           <p className="col-span-full rounded-xl bg-white/92 px-4 py-12 text-center text-sm text-foreground/50 shadow-[0_3px_12px_rgba(43,41,39,0.07)]">
             {category.filter === 'all'
               ? 'Aucune illustration pour le moment.'
               : 'Aucune illustration dans cette collection pour le moment.'}
           </p>
         ) : (
-          illustrations.map((item, index) => (
+          shownIllustrations.map((item, index) => (
             <IllustrationCard key={item.id} item={item} index={index} />
           ))
         )}

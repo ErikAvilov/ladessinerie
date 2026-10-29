@@ -96,7 +96,7 @@ const FRESQUE_CONTENT: ProCategoryContent = {
       text: 'La réalisation sur place, en 2 à 6 heures selon la surface.',
     },
   ],
-  pricing: 'À partir de 250 € · Intervention dans la région lyonnaise',
+  pricing: 'À partir de 250 € TTC · Intervention dans la région lyonnaise',
   delay: 'Délai : à réserver 2 semaines avant la date souhaitée',
   cta: { label: 'En parler', kind: 'contact' },
   seoDescription:
@@ -129,7 +129,7 @@ const EVENEMENTIEL_CONTENT: ProCategoryContent = {
       text: 'Les portraits dessinés en direct pendant toute la durée de l’intervention.',
     },
   ],
-  pricing: 'À partir de 500 € · Déplacement possible dans la région lyonnaise',
+  pricing: 'À partir de 500 € TTC · Déplacement possible dans la région lyonnaise',
   delay: 'Durée d’intervention : à partir de 3 heures',
   cta: { label: 'Réserver une date', kind: 'calendly' },
   seoDescription:

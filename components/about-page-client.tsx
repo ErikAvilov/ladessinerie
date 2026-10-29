@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 export function AboutPageClient() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden">
@@ -31,10 +33,16 @@ export function AboutPageClient() {
         </div>
 
         <div className="flex min-h-0 items-center justify-end self-stretch">
-          <div className="flex aspect-[3/4] h-[min(52dvh,22rem)] w-auto max-w-full items-center justify-center overflow-hidden rounded-2xl bg-foreground/[0.06] md:h-[min(58dvh,28rem)]">
-            <p className="px-4 text-center text-[11px] text-foreground/40 md:text-sm">
-              Photo à venir
-            </p>
+          <div className="relative aspect-[3/4] h-[min(52dvh,22rem)] w-auto max-w-full overflow-hidden rounded-2xl md:h-[min(58dvh,28rem)]">
+            <Image
+              src="/images/photo-anna.jpeg"
+              alt="Anna, illustratrice de La Dessinerie"
+              width={1200}
+              height={1600}
+              className="h-full w-full object-cover object-center"
+              sizes="(max-width: 768px) 42vw, 28rem"
+              priority
+            />
           </div>
         </div>
       </div>

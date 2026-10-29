@@ -50,7 +50,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
     <div className="content-reveal flex h-full min-h-0 w-full max-w-5xl flex-col self-center">
       <InstantLink
         href="/particulier/illustrations"
-        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white/92 px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground active:scale-[0.98] md:text-[11px]"
+        className="inline-flex w-fit shrink-0 cursor-pointer items-center gap-1 self-start rounded-lg bg-white px-2.5 py-1 text-[10px] text-foreground/60 shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition hover:text-foreground active:scale-[0.98] md:text-[11px]"
       >
         ← Retour
       </InstantLink>
@@ -68,11 +68,11 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
           />
         </div>
 
-        <div className="flex w-full shrink-0 flex-col justify-center md:w-[min(100%,20rem)] lg:w-[22rem]">
-          <div className="flex flex-col gap-2 rounded-2xl bg-white/92 px-3.5 py-3 shadow-[0_4px_18px_rgba(43,41,39,0.08)] backdrop-blur-[2px] md:px-4 md:py-5 lg:px-5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h1 className="display text-sm font-semibold leading-snug md:text-base lg:text-lg">
+        <div className="flex w-full shrink-0 flex-col justify-center gap-2 md:w-[min(100%,20rem)] lg:w-[22rem]">
+          <div className="flex flex-col gap-3 rounded-2xl bg-white px-3.5 py-3.5 shadow-[0_4px_18px_rgba(43,41,39,0.08)] md:gap-3.5 md:px-4 md:py-5">
+            <div className="flex w-full flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h1 className="display max-w-full truncate text-sm font-semibold leading-snug md:text-base lg:text-lg">
                   {illustration.title}
                 </h1>
                 {illustration.subcategory ? (
@@ -90,15 +90,15 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
                 ) : (
                   <p className="text-[10px] text-foreground/50">Prix sur demande</p>
                 )}
-                <p className="text-[9px] text-foreground/45">Taxes incluses.</p>
+                <p className="mt-0.5 text-[9px] text-foreground/45">Taxes incluses.</p>
               </div>
             </div>
 
             {illustration.sizes && illustration.sizes.length > 0 ? (
               <>
                 <div>
-                  <p className="text-[10px] font-medium">Format</p>
-                  <div className="mt-1 flex flex-wrap gap-1">
+                  <p className="mb-1.5 text-[10px] font-medium">Format</p>
+                  <div className="flex flex-wrap gap-1">
                     {illustration.sizes.map((entry, index) => {
                       const active = index === sizeIndex
                       return (
@@ -106,10 +106,10 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
                           key={`${entry.size}-${index}`}
                           type="button"
                           onClick={() => setSizeIndex(index)}
-                          className={`cursor-pointer rounded-full border px-2.5 py-1 text-[10px] font-medium transition ${
+                          className={`w-fit cursor-pointer rounded-md border px-2.5 py-1 text-[10px] font-medium transition ${
                             active
                               ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
-                              : 'border-foreground/20 bg-transparent hover:border-foreground/40'
+                              : 'border-foreground/15 bg-transparent hover:border-foreground/30'
                           }`}
                         >
                           {entry.size}
@@ -120,13 +120,13 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <div className="inline-flex items-center rounded-full border border-foreground/15">
+                  <div className="inline-flex w-fit items-center rounded-md border border-foreground/15">
                     <button
                       type="button"
                       aria-label="Diminuer la quantité"
                       disabled={quantity <= 1}
                       onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                      className="flex size-7 cursor-pointer items-center justify-center rounded-l-full transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-l-md transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <Minus size={12} />
                     </button>
@@ -137,7 +137,7 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
                       type="button"
                       aria-label="Augmenter la quantité"
                       onClick={() => setQuantity((value) => Math.min(99, value + 1))}
-                      className="flex size-7 cursor-pointer items-center justify-center rounded-r-full transition hover:bg-foreground/5"
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-r-md transition hover:bg-foreground/5"
                     >
                       <Plus size={12} />
                     </button>
@@ -147,20 +147,11 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
                     type="button"
                     disabled={!selectedSize}
                     onClick={handleAddToCart}
-                    className="min-w-0 flex-1 cursor-pointer rounded-full border-2 border-[var(--terracotta)] bg-background px-2.5 py-1.5 text-[10px] font-semibold text-[var(--terracotta)] transition hover:bg-[var(--terracotta)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-fit cursor-pointer rounded-md border-2 border-[var(--bouton-ajouter-panier)] bg-transparent px-2.5 py-1.5 text-[10px] font-semibold text-[var(--bouton-ajouter-panier)] transition hover:bg-[var(--bouton-ajouter-panier)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Ajouter au panier
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  disabled={!selectedSize || checkoutLoading}
-                  onClick={() => void handleBuy()}
-                  className="w-full cursor-pointer rounded-full bg-[var(--terracotta)] px-3 py-2 text-[11px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {checkoutLoading ? 'Redirection…' : 'Acheter'}
-                </button>
 
                 <p className="text-[9px] leading-snug text-foreground/45">
                   Stripe · facture PDF · retrait atelier (gratuit).
@@ -177,10 +168,21 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
             )}
           </div>
 
+          {illustration.sizes && illustration.sizes.length > 0 ? (
+            <button
+              type="button"
+              disabled={!selectedSize || checkoutLoading}
+              onClick={() => void handleBuy()}
+              className="w-full cursor-pointer rounded-2xl border-2 border-[var(--bouton-acheter)] bg-white px-3 py-3 text-[11px] font-semibold text-[var(--bouton-acheter)] shadow-[0_4px_18px_rgba(43,41,39,0.08)] transition hover:bg-[var(--bouton-acheter)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {checkoutLoading ? 'Redirection…' : 'Acheter'}
+            </button>
+          ) : null}
+
           {/* Ancrage du panier flottant : colonne droite, sous le bloc infos. */}
           <div
             data-cart-dock
-            className="relative mt-1 flex min-h-[7.5rem] w-full items-center justify-center md:min-h-[10.5rem]"
+            className="relative flex min-h-[7.5rem] w-full items-center justify-center md:min-h-[10.5rem]"
           />
         </div>
       </div>

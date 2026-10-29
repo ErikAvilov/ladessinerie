@@ -33,6 +33,8 @@ export default async function RootLayout({
     '--text-portes': theme.texte_portes,
     '--text-a-propos': theme.texte_a_propos,
     '--text-titre-a-propos': theme.texte_titre_a_propos,
+    '--bouton-ajouter-panier': theme.bouton_ajouter_panier,
+    '--bouton-acheter': theme.bouton_acheter,
     /* SVG boutique uniquement — ne pas écraser --cream (chrome / admin). */
     '--background-fond': theme.background_fond,
     '--background-traits': theme.background_traits,

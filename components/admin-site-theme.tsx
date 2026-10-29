@@ -12,8 +12,16 @@ import {
   BOUTON_THEME_BY_SLUG,
   CATEGORY_BACKGROUND_TRAITS,
   FOND_THEME_BY_SLUG,
+  PRO_CONTACT_TEXT_BLOCKS,
+  PRO_CONTACT_TEXT_LABELS,
+  PRO_EDITORIAL_TEXT_BLOCKS,
+  PRO_EDITORIAL_TEXT_LABELS,
+  proContactTextKey,
+  proEditorialColorsFromTheme,
+  proEditorialTextKey,
   type BoutonThemeKey,
   type FondThemeKey,
+  type ProEditorialSection,
   type SiteTheme,
 } from '@/lib/site-theme-shared'
 
@@ -21,10 +29,19 @@ type AdminSiteThemePanelProps = {
   initialTheme: SiteTheme
 }
 
-type ThemeTab = 'textes' | 'background' | 'categories' | 'panier'
+type ThemeTab = 'textes' | 'textes_pro' | 'background' | 'categories' | 'panier'
+type ProTextSubTab = ProEditorialSection | 'contact'
+
+const PRO_TEXT_SUB_TABS: { id: ProTextSubTab; label: string }[] = [
+  { id: 'branding', label: 'Branding' },
+  { id: 'fresque', label: 'Fresque' },
+  { id: 'evenementiel', label: 'Événementiel' },
+  { id: 'contact', label: 'Contact' },
+]
 
 const TABS: { id: ThemeTab; label: string }[] = [
   { id: 'textes', label: 'Textes' },
+  { id: 'textes_pro', label: 'Textes Pro' },
   { id: 'background', label: 'Arrière-plan' },
   { id: 'categories', label: 'Catégories' },
   { id: 'panier', label: 'Panier' },
@@ -82,10 +99,68 @@ function ThemeColorField({
   )
 }
 
+function ProEditorialPreview({
+  theme,
+  section,
+}: {
+  theme: SiteTheme
+  section: ProEditorialSection
+}) {
+  const colors = proEditorialColorsFromTheme(theme, section)
+  const labels: Record<ProEditorialSection, { titre: string; sousTitre: string }> = {
+    branding: {
+      titre: 'Branding',
+      sousTitre: 'Une identité visuelle qui vous ressemble',
+    },
+    fresque: {
+      titre: 'Fresque',
+      sousTitre: 'Une vitrine qui attire les regards !',
+    },
+    evenementiel: {
+      titre: 'Evenementiel',
+      sousTitre: 'Votre portrait dessiné en quelques minutes',
+    },
+  }
+  const copy = labels[section]
+
+  return (
+    <div className="space-y-2.5">
+      <p className="display text-2xl font-semibold" style={{ color: colors.titre }}>
+        {copy.titre}
+      </p>
+      <p className="display text-base font-semibold" style={{ color: colors.sous_titre }}>
+        {copy.sousTitre}
+      </p>
+      <p className="text-sm leading-relaxed opacity-70" style={{ color: colors.description }}>
+        Description introductive de la prestation…
+      </p>
+      <p className="display text-sm font-semibold" style={{ color: colors.livrables_titre }}>
+        Ce que vous recevrez
+      </p>
+      <p className="text-sm opacity-70" style={{ color: colors.livrables }}>
+        • Élément livrable
+      </p>
+      <p className="display text-sm font-semibold" style={{ color: colors.etapes_titre }}>
+        Comment ça se passe
+      </p>
+      <p className="text-sm opacity-70" style={{ color: colors.etapes }}>
+        1. Première étape
+      </p>
+      <p className="display text-sm font-semibold" style={{ color: colors.tarif }}>
+        À partir de …
+      </p>
+      <p className="text-xs opacity-60" style={{ color: colors.delai }}>
+        Délai indicatif
+      </p>
+    </div>
+  )
+}
+
 export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) {
   const router = useRouter()
   const [theme, setTheme] = useState<SiteTheme>(initialTheme)
   const [tab, setTab] = useState<ThemeTab>('textes')
+  const [proSubTab, setProSubTab] = useState<ProTextSubTab>('branding')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -144,7 +219,7 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
       <div className="mb-5">
         <h2 className="display text-xl font-semibold">Apparence du site</h2>
         <p className="mt-1 text-sm text-foreground/55">
-          Couleurs de textes, fond, catégories et panier.
+          Couleurs de textes, textes Pro, fond, catégories et panier.
         </p>
       </div>
 
@@ -258,6 +333,129 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
               className="cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? 'Enregistrement…' : 'Enregistrer les textes'}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {tab === 'textes_pro' && (
+        <section className="rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
+          <p className="text-sm text-foreground/55">
+            Une couleur par bloc, indépendante pour chaque page Pro
+            (/pro/branding, /pro/fresque…).
+          </p>
+
+          <div
+            role="tablist"
+            aria-label="Pages Pro"
+            className="mt-5 flex gap-1 overflow-x-auto rounded-full border border-foreground/10 bg-foreground/[0.03] p-1"
+          >
+            {PRO_TEXT_SUB_TABS.map((entry) => {
+              const active = proSubTab === entry.id
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    setProSubTab(entry.id)
+                    setError(null)
+                    setSuccess(null)
+                  }}
+                  className={`cursor-pointer shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                    active
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'text-foreground/65 hover:bg-foreground/[0.05] hover:text-foreground'
+                  }`}
+                >
+                  {entry.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <form
+            onSubmit={(event) =>
+              void saveTheme(event, 'Couleurs des textes Pro enregistrées.')
+            }
+            className="mt-6 space-y-6"
+          >
+            {proSubTab === 'contact' ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {PRO_CONTACT_TEXT_BLOCKS.map((block) => {
+                  const key = proContactTextKey(block)
+                  return (
+                    <ThemeColorField
+                      key={key}
+                      label={PRO_CONTACT_TEXT_LABELS[block]}
+                      value={theme[key]}
+                      onChange={(value) => setTextColor(key, value)}
+                    />
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {PRO_EDITORIAL_TEXT_BLOCKS.map((block) => {
+                  const key = proEditorialTextKey(proSubTab, block)
+                  return (
+                    <ThemeColorField
+                      key={key}
+                      label={PRO_EDITORIAL_TEXT_LABELS[block]}
+                      value={theme[key]}
+                      onChange={(value) => setTextColor(key, value)}
+                    />
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="rounded-xl border border-foreground/10 bg-[var(--cream)] p-4 md:p-5">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-foreground/45">
+                Aperçu · {PRO_TEXT_SUB_TABS.find((entry) => entry.id === proSubTab)?.label}
+              </p>
+              {proSubTab === 'contact' ? (
+                <div className="space-y-2">
+                  <p
+                    className="display text-2xl font-semibold"
+                    style={{ color: theme.texte_pro_contact_titre }}
+                  >
+                    Contact
+                  </p>
+                  <p
+                    className="display text-lg font-semibold"
+                    style={{ color: theme.texte_pro_contact_accroche_titre }}
+                  >
+                    On imagine quelque chose ?
+                  </p>
+                  <p
+                    className="text-sm leading-relaxed opacity-70"
+                    style={{ color: theme.texte_pro_contact_accroche }}
+                  >
+                    Parlez-moi de votre projet, même s’il n’est pas encore très précis.
+                  </p>
+                  <p
+                    className="text-sm opacity-60"
+                    style={{ color: theme.texte_pro_contact_formulaire }}
+                  >
+                    Votre nom · Email · Message…
+                  </p>
+                </div>
+              ) : (
+                <ProEditorialPreview
+                  theme={theme}
+                  section={proSubTab}
+                />
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? 'Enregistrement…' : 'Enregistrer les textes Pro'}
             </button>
           </form>
         </section>
@@ -394,42 +592,81 @@ export function AdminSiteThemePanel({ initialTheme }: AdminSiteThemePanelProps) 
       {tab === 'panier' && (
         <section className="rounded-2xl border border-foreground/10 bg-background p-5 md:p-6 paper-shadow">
           <p className="text-sm text-foreground/55">
-            Couleurs du SVG panier (fond + traits).
+            Couleurs du SVG panier et des boutons d’achat.
           </p>
 
           <form
             onSubmit={(event) => void saveTheme(event, 'Couleurs du panier enregistrées.')}
-            className="mt-6"
+            className="mt-6 space-y-8"
           >
-            <div className="grid gap-4 md:grid-cols-2">
-              <ThemeColorField
-                label="Fond"
-                value={theme.panier_fond}
-                onChange={(value) => setTextColor('panier_fond', value)}
-              />
-              <ThemeColorField
-                label="Traits"
-                value={theme.panier_traits}
-                onChange={(value) => setTextColor('panier_traits', value)}
-              />
-            </div>
-
-            <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end">
-              <div className="flex h-36 w-full max-w-xs items-center justify-center rounded-xl border border-foreground/10 bg-[var(--cream)] p-4 md:h-44">
+            <div>
+              <p className="mb-3 text-sm font-medium">Icône panier</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <ThemeColorField
+                  label="Fond"
+                  value={theme.panier_fond}
+                  onChange={(value) => setTextColor('panier_fond', value)}
+                />
+                <ThemeColorField
+                  label="Traits"
+                  value={theme.panier_traits}
+                  onChange={(value) => setTextColor('panier_traits', value)}
+                />
+              </div>
+              <div className="mt-4 flex h-36 w-full max-w-xs items-center justify-center rounded-xl border border-foreground/10 bg-[var(--cream)] p-4 md:h-44">
                 <PanierIcon
                   fond={theme.panier_fond}
                   traits={theme.panier_traits}
                   className="block h-32 w-44 md:h-36 md:w-52"
                 />
               </div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saving ? 'Enregistrement…' : 'Enregistrer le panier'}
-              </button>
             </div>
+
+            <div>
+              <p className="mb-3 text-sm font-medium">Boutons boutique</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <ThemeColorField
+                  label="Ajouter au panier"
+                  hint="Grille Illustrations + fiche art"
+                  value={theme.bouton_ajouter_panier}
+                  onChange={(value) => setTextColor('bouton_ajouter_panier', value)}
+                />
+                <ThemeColorField
+                  label="Acheter"
+                  hint="Paiement direct sur la fiche art"
+                  value={theme.bouton_acheter}
+                  onChange={(value) => setTextColor('bouton_acheter', value)}
+                />
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span
+                  className="rounded-md border-2 bg-white px-2.5 py-1.5 text-[10px] font-semibold"
+                  style={{
+                    borderColor: theme.bouton_ajouter_panier,
+                    color: theme.bouton_ajouter_panier,
+                  }}
+                >
+                  Ajouter au panier
+                </span>
+                <span
+                  className="rounded-md border-2 bg-white px-3 py-2 text-[11px] font-semibold"
+                  style={{
+                    borderColor: theme.bouton_acheter,
+                    color: theme.bouton_acheter,
+                  }}
+                >
+                  Acheter
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="cursor-pointer rounded-full bg-[var(--terracotta)] px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? 'Enregistrement…' : 'Enregistrer le panier'}
+            </button>
           </form>
         </section>
       )}

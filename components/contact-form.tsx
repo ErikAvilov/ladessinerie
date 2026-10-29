@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from 'react'
 import { Upload } from 'lucide-react'
+import { useSiteTheme } from '@/components/site-theme-context'
+import { proContactColorsFromTheme } from '@/lib/site-theme-shared'
 
 type ContactFormProps = {
   /** `pro` = layout côte pro ; `page` = page /contact */
@@ -10,6 +12,8 @@ type ContactFormProps = {
 }
 
 export function ContactForm({ variant = 'page', source = 'contact' }: ContactFormProps) {
+  const theme = useSiteTheme()
+  const proColors = variant === 'pro' ? proContactColorsFromTheme(theme) : null
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,9 +77,10 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
     <p
       className={
         variant === 'pro'
-          ? 'rounded-xl bg-white/92 px-4 py-12 text-center text-sm text-foreground/60 shadow-[0_3px_12px_rgba(43,41,39,0.07)]'
+          ? 'rounded-xl bg-white/92 px-4 py-12 text-center text-sm opacity-60 shadow-[0_3px_12px_rgba(43,41,39,0.07)]'
           : 'rounded-2xl border border-[var(--grass)]/40 bg-[var(--grass)]/10 px-5 py-10 text-center text-sm text-[var(--forest)]'
       }
+      style={proColors ? { color: proColors.formulaire } : undefined}
     >
       Merci — votre message est bien parti. Anna vous répondra bientôt.
     </p>
@@ -86,6 +91,7 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
           ? 'flex flex-col gap-3 rounded-xl bg-white/92 p-4 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:gap-4 md:p-5'
           : 'mt-10 flex flex-col gap-4'
       }
+      style={proColors ? { color: proColors.formulaire } : undefined}
       onSubmit={(event) => void handleSubmit(event)}
     >
       {variant === 'page' ? (
@@ -146,7 +152,7 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
             rows={4}
             className={fieldClass}
           />
-          <p className="flex items-center gap-2 text-sm text-foreground/45">
+          <p className="flex items-center gap-2 text-sm opacity-45">
             <Upload size={16} /> Brief en pièce jointe bientôt disponible
           </p>
         </>
@@ -173,10 +179,16 @@ export function ContactForm({ variant = 'page', source = 'contact' }: ContactFor
   return (
     <div className="mt-5 grid gap-8 md:mt-6 md:grid-cols-2 md:gap-10">
       <div className="rounded-xl bg-white/92 px-4 py-5 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:px-5 md:py-6">
-        <h2 className="display text-2xl font-semibold md:text-3xl">
+        <h2
+          className="display text-2xl font-semibold md:text-3xl"
+          style={{ color: proColors?.accroche_titre }}
+        >
           On imagine quelque chose ?
         </h2>
-        <p className="mt-3 text-sm leading-6 text-foreground/60 md:text-base md:leading-7">
+        <p
+          className="mt-3 text-sm leading-6 opacity-60 md:text-base md:leading-7"
+          style={{ color: proColors?.accroche }}
+        >
           Parlez-moi de votre projet, même s&apos;il n&apos;est pas encore très précis.
         </p>
       </div>

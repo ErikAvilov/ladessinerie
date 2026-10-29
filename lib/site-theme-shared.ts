@@ -1,6 +1,90 @@
 import type { ParticulierCategorySlug } from '@/lib/particulier-categories'
 import type { ProCategorySlug } from '@/lib/pro-categories'
 
+/** Blocs texte des pages éditoriales Pro (branding / fresque / événementiel). */
+export const PRO_EDITORIAL_TEXT_BLOCKS = [
+  'titre',
+  'sous_titre',
+  'description',
+  'livrables_titre',
+  'livrables',
+  'etapes_titre',
+  'etapes',
+  'tarif',
+  'delai',
+] as const
+
+export type ProEditorialTextBlock = (typeof PRO_EDITORIAL_TEXT_BLOCKS)[number]
+
+export const PRO_EDITORIAL_TEXT_LABELS: Record<ProEditorialTextBlock, string> = {
+  titre: 'Titre',
+  sous_titre: 'Sous-titre',
+  description: 'Description',
+  livrables_titre: 'Titre « Ce que vous recevrez »',
+  livrables: 'Liste livrables',
+  etapes_titre: 'Titre « Comment ça se passe »',
+  etapes: 'Liste étapes',
+  tarif: 'Tarif',
+  delai: 'Délai',
+}
+
+/** Blocs texte page Contact Pro. */
+export const PRO_CONTACT_TEXT_BLOCKS = [
+  'titre',
+  'accroche_titre',
+  'accroche',
+  'formulaire',
+] as const
+
+export type ProContactTextBlock = (typeof PRO_CONTACT_TEXT_BLOCKS)[number]
+
+export const PRO_CONTACT_TEXT_LABELS: Record<ProContactTextBlock, string> = {
+  titre: 'Titre',
+  accroche_titre: 'Accroche — titre',
+  accroche: 'Accroche — texte',
+  formulaire: 'Formulaire',
+}
+
+export const PRO_EDITORIAL_SECTIONS = ['branding', 'fresque', 'evenementiel'] as const
+export type ProEditorialSection = (typeof PRO_EDITORIAL_SECTIONS)[number]
+
+export type ProTextThemeKey =
+  | `texte_pro_${ProEditorialSection}_${ProEditorialTextBlock}`
+  | `texte_pro_contact_${ProContactTextBlock}`
+
+export function proEditorialTextKey(
+  section: ProEditorialSection,
+  block: ProEditorialTextBlock,
+): `texte_pro_${ProEditorialSection}_${ProEditorialTextBlock}` {
+  return `texte_pro_${section}_${block}`
+}
+
+export function proContactTextKey(
+  block: ProContactTextBlock,
+): `texte_pro_contact_${ProContactTextBlock}` {
+  return `texte_pro_contact_${block}`
+}
+
+function buildDefaultProTextTheme(
+  color: string,
+): Record<ProTextThemeKey, string> {
+  const out = {} as Record<ProTextThemeKey, string>
+  for (const section of PRO_EDITORIAL_SECTIONS) {
+    for (const block of PRO_EDITORIAL_TEXT_BLOCKS) {
+      out[proEditorialTextKey(section, block)] = color
+    }
+  }
+  for (const block of PRO_CONTACT_TEXT_BLOCKS) {
+    out[proContactTextKey(block)] = color
+  }
+  return out
+}
+
+const DEFAULT_PRO_TEXT = '#2b2927'
+const DEFAULT_PRO_TEXT_THEME = buildDefaultProTextTheme(DEFAULT_PRO_TEXT)
+
+export const PRO_TEXT_THEME_KEYS = Object.keys(DEFAULT_PRO_TEXT_THEME) as ProTextThemeKey[]
+
 export type SiteTheme = {
   panier_fond: string
   panier_traits: string
@@ -26,7 +110,11 @@ export type SiteTheme = {
   texte_a_propos: string
   /** Titre page À propos */
   texte_titre_a_propos: string
-}
+  /** CTA « Ajouter » / « Ajouter au panier » */
+  bouton_ajouter_panier: string
+  /** CTA « Acheter » (paiement direct) */
+  bouton_acheter: string
+} & Record<ProTextThemeKey, string>
 
 export const DEFAULT_SITE_THEME: SiteTheme = {
   panier_fond: '#ffffff',
@@ -46,6 +134,34 @@ export const DEFAULT_SITE_THEME: SiteTheme = {
   texte_portes: '#2b2927',
   texte_a_propos: '#2b2927',
   texte_titre_a_propos: '#2b2927',
+  bouton_ajouter_panier: '#d96b43',
+  bouton_acheter: '#d96b43',
+  ...DEFAULT_PRO_TEXT_THEME,
+}
+
+export function isProEditorialSection(value: string): value is ProEditorialSection {
+  return (PRO_EDITORIAL_SECTIONS as readonly string[]).includes(value)
+}
+
+export function proEditorialColorsFromTheme(
+  theme: SiteTheme,
+  section: ProEditorialSection,
+): Record<ProEditorialTextBlock, string> {
+  const colors = {} as Record<ProEditorialTextBlock, string>
+  for (const block of PRO_EDITORIAL_TEXT_BLOCKS) {
+    colors[block] = theme[proEditorialTextKey(section, block)]
+  }
+  return colors
+}
+
+export function proContactColorsFromTheme(
+  theme: SiteTheme,
+): Record<ProContactTextBlock, string> {
+  const colors = {} as Record<ProContactTextBlock, string>
+  for (const block of PRO_CONTACT_TEXT_BLOCKS) {
+    colors[block] = theme[proContactTextKey(block)]
+  }
+  return colors
 }
 
 export const BOUTON_THEME_KEYS = [
@@ -112,6 +228,18 @@ export function normalizeHexColor(value: string): string | null {
 type LegacyTheme = Partial<SiteTheme> & {
   texte_titres?: string
   texte_corps?: string
+  /** Ancienne couleur unique pour tous les textes Pro. */
+  texte_pro?: string
+}
+
+function coalesceProTextTheme(row: LegacyTheme): Record<ProTextThemeKey, string> {
+  const legacy =
+    row.texte_pro ?? row.texte_corps ?? DEFAULT_PRO_TEXT
+  const out = {} as Record<ProTextThemeKey, string>
+  for (const key of PRO_TEXT_THEME_KEYS) {
+    out[key] = row[key] ?? legacy
+  }
+  return out
 }
 
 export function coalesceSiteTheme(row: LegacyTheme | null | undefined): SiteTheme {
@@ -148,6 +276,10 @@ export function coalesceSiteTheme(row: LegacyTheme | null | undefined): SiteThem
       row.texte_a_propos ?? row.texte_corps ?? DEFAULT_SITE_THEME.texte_a_propos,
     texte_titre_a_propos:
       row.texte_titre_a_propos ?? row.texte_titres ?? DEFAULT_SITE_THEME.texte_titre_a_propos,
+    bouton_ajouter_panier:
+      row.bouton_ajouter_panier ?? DEFAULT_SITE_THEME.bouton_ajouter_panier,
+    bouton_acheter: row.bouton_acheter ?? DEFAULT_SITE_THEME.bouton_acheter,
+    ...coalesceProTextTheme(row),
   }
 }
 
@@ -171,6 +303,8 @@ export function parseSiteThemeInput(
   const texte_portes = normalizeHexColor(input.texte_portes ?? '')
   const texte_a_propos = normalizeHexColor(input.texte_a_propos ?? '')
   const texte_titre_a_propos = normalizeHexColor(input.texte_titre_a_propos ?? '')
+  const bouton_ajouter_panier = normalizeHexColor(input.bouton_ajouter_panier ?? '')
+  const bouton_acheter = normalizeHexColor(input.bouton_acheter ?? '')
 
   if (!panier_fond) return { error: 'Couleur panier fond invalide (format #RRGGBB).' }
   if (!panier_traits) return { error: 'Couleur panier traits invalide (format #RRGGBB).' }
@@ -199,6 +333,19 @@ export function parseSiteThemeInput(
   if (!texte_portes) return { error: 'Couleur portes Accueil/Particulier/Pro invalide (format #RRGGBB).' }
   if (!texte_a_propos) return { error: 'Couleur texte À propos invalide (format #RRGGBB).' }
   if (!texte_titre_a_propos) return { error: 'Couleur titre À propos invalide (format #RRGGBB).' }
+  if (!bouton_ajouter_panier) {
+    return { error: 'Couleur bouton Ajouter au panier invalide (format #RRGGBB).' }
+  }
+  if (!bouton_acheter) return { error: 'Couleur bouton Acheter invalide (format #RRGGBB).' }
+
+  const proText = {} as Record<ProTextThemeKey, string>
+  for (const key of PRO_TEXT_THEME_KEYS) {
+    const value = normalizeHexColor(input[key] ?? '')
+    if (!value) {
+      return { error: `Couleur ${key.replace(/_/g, ' ')} invalide (format #RRGGBB).` }
+    }
+    proText[key] = value
+  }
 
   return {
     panier_fond,
@@ -218,6 +365,9 @@ export function parseSiteThemeInput(
     texte_portes,
     texte_a_propos,
     texte_titre_a_propos,
+    bouton_ajouter_panier,
+    bouton_acheter,
+    ...proText,
   }
 }
 
