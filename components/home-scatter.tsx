@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion } from '@/components/motion'
 import { IllustrationImage } from '@/components/illustration-image'
 import { InstantLink } from '@/components/instant-link'
@@ -96,11 +96,14 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
   const sitePanel = useSitePanel()
   const panel = sitePanel?.panel ?? 'home'
   const containerRef = useRef<HTMLDivElement>(null)
-  const coldStart = useRef(true)
+  const readyIdsRef = useRef(new Set<string>())
   const [cards, setCards] = useState<PlacedCard[] | null>(null)
   const [cardSize, setCardSize] = useState(DESKTOP_CARD_SIZE)
+  const [readyCount, setReadyCount] = useState(0)
   const [explode, setExplode] = useState(false)
   const { onIntent, cancelIntent } = usePrefetchOnIntent()
+
+  const imagesReady = Boolean(cards?.length && readyCount >= cards.length)
 
   useLayoutEffect(() => {
     const el = containerRef.current
@@ -114,17 +117,33 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
     }
   }, [illustrations])
 
-  // Rejoue l’explosion à chaque retour sur l’accueil (images déjà en cache).
+  // Reset readiness when the card set changes.
   useEffect(() => {
-    if (!cards?.length || panel !== 'home') return
-
+    readyIdsRef.current = new Set()
+    setReadyCount(0)
     setExplode(false)
+  }, [cards])
+
+  const markCardReady = useCallback((id: string) => {
+    if (readyIdsRef.current.has(id)) return
+    readyIdsRef.current.add(id)
+    const count = readyIdsRef.current.size
+    // Hors du render courant (onLoad sync / useEffect parent).
+    queueMicrotask(() => setReadyCount(count))
+  }, [])
+
+  // Explosion seulement quand les bitmaps sont prêts (+ délai slide éventuel).
+  useEffect(() => {
+    if (!cards?.length || panel !== 'home' || !imagesReady) {
+      setExplode(false)
+      return
+    }
+
     const timer = window.setTimeout(() => {
       setExplode(true)
-      coldStart.current = false
     }, Math.max(enterDelay, 40))
     return () => window.clearTimeout(timer)
-  }, [cards, enterDelay, panel])
+  }, [cards, enterDelay, panel, imagesReady])
 
   useEffect(() => {
     const el = containerRef.current
@@ -155,26 +174,6 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
 
   return (
     <div ref={containerRef} className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      {/* Shimmer uniquement au tout premier paint froid. */}
-      {!explode &&
-        coldStart.current &&
-        cards?.map((card) => (
-          <div
-            key={`ghost-${card.illustration.id}`}
-            aria-hidden
-            className="absolute left-1/2 top-1/2 overflow-hidden rounded-full"
-            style={{
-              width: cardSize,
-              height: cardSize,
-              marginLeft: -cardSize / 2,
-              marginTop: -cardSize / 2,
-              transform: `translate(${card.x}px, ${card.y}px) rotate(${card.rotate}deg)`,
-            }}
-          >
-            <span className="image-load-shimmer block h-full w-full rounded-full" />
-          </div>
-        ))}
-
       {cards?.map((card, i) => {
         const href = particulierArtPath(card.illustration.id)
 
@@ -205,7 +204,7 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                     opacity: 0,
                   }
             }
-            whileHover={{ scale: 1.12 }}
+            whileHover={explode ? { scale: 1.12 } : undefined}
             transition={{
               translateX: { delay: i * 0.055, type: 'spring', stiffness: 85, damping: 14 },
               translateY: { delay: i * 0.055, type: 'spring', stiffness: 85, damping: 14 },
@@ -219,12 +218,14 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
               height: cardSize,
               marginLeft: -cardSize / 2,
               marginTop: -cardSize / 2,
+              pointerEvents: explode ? undefined : 'none',
             }}
           >
             <InstantLink
               href={href}
               aria-label={card.illustration.title}
               className="block h-full w-full"
+              tabIndex={explode ? undefined : -1}
               onPointerEnter={() => onIntent(href)}
               onFocus={() => onIntent(href)}
               onPointerLeave={cancelIntent}
@@ -242,7 +243,9 @@ export function HomeScatter({ illustrations }: HomeScatterProps) {
                   loading="eager"
                   fetchPriority={i < HOME_SCATTER_PRELOAD_COUNT ? 'high' : 'auto'}
                   fade={false}
-                  className="h-full w-full object-cover transition duration-300 group-hover:brightness-105"
+                  shimmer={false}
+                  onReady={() => markCardReady(card.illustration.id)}
+                  className="h-full w-full scale-[1.28] object-cover transition duration-300 group-hover:brightness-105"
                   sizes={HOME_SCATTER_SIZES}
                 />
               </div>

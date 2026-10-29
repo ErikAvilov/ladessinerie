@@ -1,12 +1,14 @@
 'use client'
 
 import NextImage, { type ImageProps } from 'next/image'
-import { useState, type SyntheticEvent } from 'react'
+import { useEffect, useState, type SyntheticEvent } from 'react'
 
 type IllustrationImageProps = ImageProps & {
   rounded?: 'xl' | 'lg' | 'full' | 'none'
   /** Soft fade-in when the bitmap is ready (default true). */
   fade?: boolean
+  /** Shimmer pendant le chargement (default true). */
+  shimmer?: boolean
   /** Couleur dominante HEX — placeholder pendant le chargement. */
   dominantColor?: string
   onReady?: () => void
@@ -28,6 +30,7 @@ export function IllustrationImage({
   preload,
   fill,
   fade = true,
+  shimmer = true,
   dominantColor,
   onLoad,
   onError,
@@ -39,6 +42,11 @@ export function IllustrationImage({
   const [loaded, setLoaded] = useState(() =>
     srcKey ? loadedImageSrcs.has(srcKey) : false,
   )
+
+  // Cache hit : notifier le parent (ex. home scatter) sans attendre onLoad.
+  useEffect(() => {
+    if (loaded) onReady?.()
+  }, [loaded, onReady])
 
   const roundedClass =
     rounded === 'xl'
@@ -55,11 +63,8 @@ export function IllustrationImage({
 
   function markReady() {
     if (srcKey) loadedImageSrcs.add(srcKey)
-    setLoaded((current) => {
-      if (current) return current
-      onReady?.()
-      return true
-    })
+    // Ne pas appeler onReady ici : onLoad peut être sync pendant le render (cache).
+    setLoaded(true)
   }
 
   function handleLoad(event: SyntheticEvent<HTMLImageElement, Event>) {
@@ -79,7 +84,7 @@ export function IllustrationImage({
       }`}
       style={placeholderBg ? { backgroundColor: placeholderBg } : undefined}
     >
-      {!loaded ? (
+      {shimmer && !loaded ? (
         <span
           aria-hidden
           className="image-load-shimmer pointer-events-none absolute inset-0 z-[1] opacity-100"
