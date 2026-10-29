@@ -95,16 +95,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const shell = (() => {
     // /, /particulier, /pro, /a-propos → SiteSlider
     if (isPanelRoute) {
-      return (
-        <>
-          {children}
-          <FloatingCaddie
-            active={showFloatingCaddie}
-            size={cartSize}
-            enterDelayMs={caddieEnterDelayMs}
-          />
-        </>
-      )
+      return children
     }
 
     const panel = pathname.startsWith('/particulier')
@@ -149,11 +140,6 @@ export function PageTransition({ children }: { children: ReactNode }) {
             </div>
             {!isDetailView && <SiteFooter />}
           </div>
-          <FloatingCaddie
-            active={showFloatingCaddie}
-            size={cartSize}
-            enterDelayMs={caddieEnterDelayMs}
-          />
         </div>
       </PanelEnterContext.Provider>
     )
@@ -169,6 +155,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
       >
         {showFloatingCart ? <ShoppingReturnTracker /> : null}
         {shell}
+        {/* Hors du shell : ne pas démonter pendant un changement hub ↔ nested. */}
+        <FloatingCaddie
+          active={showFloatingCaddie}
+          size={cartSize}
+          enterDelayMs={caddieEnterDelayMs}
+        />
       </ParticulierCartProvider>
     </NavigationProgressProvider>
   )

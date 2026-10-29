@@ -37,14 +37,14 @@ const DESKTOP_LAYOUT = [
   { nx: 0.3, ny: 0.38, rotate: 4 },
 ] as const
 
-/** Tighter 6-card halo — clears logo, tagline, and narrow side gates. */
+/** 6-card halo — un peu plus loin du centre, hors logo / portes. */
 const MOBILE_LAYOUT = [
-  { nx: -0.4, ny: -0.58, rotate: -8 },
-  { nx: -0.46, ny: -0.08, rotate: 6 },
-  { nx: -0.34, ny: 0.4, rotate: -5 },
-  { nx: 0.4, ny: -0.58, rotate: 8 },
-  { nx: 0.46, ny: -0.08, rotate: -6 },
-  { nx: 0.34, ny: 0.4, rotate: 5 },
+  { nx: -0.5, ny: -0.68, rotate: -8 },
+  { nx: -0.56, ny: -0.1, rotate: 6 },
+  { nx: -0.44, ny: 0.48, rotate: -5 },
+  { nx: 0.5, ny: -0.68, rotate: 8 },
+  { nx: 0.56, ny: -0.1, rotate: -6 },
+  { nx: 0.44, ny: 0.48, rotate: 5 },
 ] as const
 
 type LayoutSlot = { nx: number; ny: number; rotate: number }
@@ -65,8 +65,8 @@ function placeCards(
 ): PlacedCard[] {
   const maxX = Math.max(boxW / 2 - cardSize / 2 - 4, 8)
   const maxY = Math.max(boxH / 2 - cardSize / 2 - 4, 8)
-  const spreadX = boxW < MOBILE_MAX ? 0.9 : 0.86
-  const spreadY = boxW < MOBILE_MAX ? 0.88 : 0.94
+  const spreadX = boxW < MOBILE_MAX ? 0.96 : 0.86
+  const spreadY = boxW < MOBILE_MAX ? 0.95 : 0.94
 
   return illustrations.slice(0, layout.length).map((illustration, i) => {
     const slot = layout[i]

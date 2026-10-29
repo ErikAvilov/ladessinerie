@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MotionConfig, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
 import { InstantLink } from '@/components/instant-link'
 import { PanierIcon } from '@/components/panier-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
@@ -17,7 +17,7 @@ type FloatingCartProps = {
   size?: FloatingCartSize
   /** `dock` = ancré dans `[data-cart-dock]` (fiche illustration). */
   placement?: FloatingCartPlacement
-  /** Affiché / masqué — le fondu de sortie se joue avant le unmount interne. */
+  /** Affiché / masqué — entrée après délai, sortie en fondu. */
   active?: boolean
   /** Délai avant le fondu d’apparition (ex. fin du slide). */
   enterDelayMs?: number
@@ -40,7 +40,7 @@ const CART_SIZE = {
 
 const springSnappy = { type: 'spring' as const, stiffness: 420, damping: 18, mass: 0.7 }
 const springSoft = { type: 'spring' as const, stiffness: 280, damping: 22 }
-const FADE_MS = 380
+const FADE_S = 0.38
 
 export function FloatingCart({
   count,
@@ -52,15 +52,13 @@ export function FloatingCart({
 }: FloatingCartProps) {
   const [hydrated, setHydrated] = useState(false)
   const [dock, setDock] = useState<HTMLElement | null>(null)
-  const [present, setPresent] = useState(active)
-  const [revealed, setRevealed] = useState(false)
-  const [entranceReady, setEntranceReady] = useState(false)
+  const [show, setShow] = useState(false)
   const [bumping, setBumping] = useState(false)
   const [hovered, setHovered] = useState(false)
   const reduceMotion = useReducedMotion()
   const dims = CART_SIZE[size]
   const docked = placement === 'dock'
-  const canAnimate = entranceReady && !bumping && revealed
+  const canAnimate = show && !bumping
 
   useEffect(() => {
     setHydrated(true)
@@ -83,28 +81,18 @@ export function FloatingCart({
 
   useEffect(() => {
     if (!hydrated) return
-    if (docked && !dock && active) return
+    if (docked && active && !dock) return
 
-    if (active) {
-      setPresent(true)
-      setRevealed(false)
-      setEntranceReady(false)
-      const delay = reduceMotion ? 0 : enterDelayMs
-      const timer = window.setTimeout(() => {
-        setRevealed(true)
-        setEntranceReady(true)
-      }, delay)
-      return () => window.clearTimeout(timer)
+    if (!active) {
+      setShow(false)
+      setHovered(false)
+      return
     }
 
-    // Sortie : fondu puis unmount interne.
-    setRevealed(false)
-    setEntranceReady(false)
-    setHovered(false)
-    const outDelay = reduceMotion ? 0 : FADE_MS
-    const timer = window.setTimeout(() => setPresent(false), outDelay)
+    const delay = reduceMotion ? 0 : enterDelayMs
+    const timer = window.setTimeout(() => setShow(true), delay)
     return () => window.clearTimeout(timer)
-  }, [hydrated, active, reduceMotion, enterDelayMs, docked, dock])
+  }, [hydrated, active, enterDelayMs, reduceMotion, docked, dock])
 
   useEffect(() => {
     if (bump <= 0) return
@@ -114,7 +102,7 @@ export function FloatingCart({
     return () => window.clearTimeout(timer)
   }, [bump])
 
-  if (!hydrated || !present) return null
+  if (!hydrated) return null
   if (docked && !dock) return null
 
   const cart = (
@@ -131,11 +119,10 @@ export function FloatingCart({
           : 'Voir le panier'
       }
       className={[
-        'cart-float cart-float--ready relative flex items-center justify-center',
+        'cart-float cart-float--ready pointer-events-auto relative flex cursor-pointer items-center justify-center',
         dims.shell,
         bumping ? 'cart-float--bump' : '',
         hovered && canAnimate ? 'cart-float--hover' : '',
-        revealed ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -238,20 +225,26 @@ export function FloatingCart({
   )
 
   const shell = (
-    <MotionConfig reducedMotion="never">
-      <motion.div
-        className={
-          docked
-            ? 'pointer-events-none flex w-full items-center justify-center'
-            : 'pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2'
-        }
-        initial={false}
-        animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : 10 }}
-        transition={{ duration: FADE_MS / 1000, ease: 'easeOut' }}
-      >
-        {cart}
-      </motion.div>
-    </MotionConfig>
+    <AnimatePresence>
+      {show ? (
+        <MotionConfig reducedMotion="never">
+          <motion.div
+            key="floating-cart"
+            className={
+              docked
+                ? 'pointer-events-none flex w-full items-center justify-center'
+                : 'pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2'
+            }
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: FADE_S, ease: 'easeOut' }}
+          >
+            {cart}
+          </motion.div>
+        </MotionConfig>
+      ) : null}
+    </AnimatePresence>
   )
 
   if (docked && dock) {

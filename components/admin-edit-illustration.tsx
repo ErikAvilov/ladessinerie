@@ -233,7 +233,13 @@ export function AdminEditIllustration({ illustration }: AdminEditIllustrationPro
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              onChange={(event) => {
+                const next = event.target.files?.[0] ?? null
+                setFile(next)
+                if (next && !title.trim()) {
+                  setTitle(next.name.replace(/\.[^.]+$/, '').trim())
+                }
+              }}
               className="sr-only"
             />
             <span className="mt-1.5 block text-xs text-foreground/50">

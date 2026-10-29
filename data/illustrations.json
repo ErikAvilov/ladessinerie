@@ -1,5 +1,45 @@
 [
   {
+    "id": "6b771eaa-459b-4f17-8683-67d7c98a3e9c",
+    "title": "Tête d'or",
+    "slug": "tete-d-or",
+    "image": "/illustrations/tete-d-or-f6490916.webp",
+    "dominantColor": "#d5c3bc",
+    "category": "particulier",
+    "subcategory": "Bâtiment",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 4
+      },
+      {
+        "size": "A5",
+        "price": 7
+      }
+    ],
+    "created_at": "2026-10-29T02:38:43.263Z"
+  },
+  {
+    "id": "e8b99059-511f-416b-aec1-601a64210f93",
+    "title": "Homard",
+    "slug": "homard",
+    "image": "/illustrations/homard-e39206bd.webp",
+    "dominantColor": "#a8b9b7",
+    "category": "particulier",
+    "subcategory": "Autour de la nourriture",
+    "sizes": [
+      {
+        "size": "A6",
+        "price": 4
+      },
+      {
+        "size": "A5",
+        "price": 7
+      }
+    ],
+    "created_at": "2026-10-29T02:38:08.850Z"
+  },
+  {
     "id": "6130a136-36b4-4af6-a18d-13bf601c8ebb",
     "title": "Boule d'été",
     "slug": "boule-dete",

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { BoutonIcon } from '@/components/bouton-icon'
@@ -21,13 +21,15 @@ type DiveState = {
   from: { top: number; left: number; width: number; height: number }
 }
 
-/** Arc ∩ : extrémités un peu plus bas, centre plus haut. */
+/** Arc ∩ : extrémités un peu plus bas, centre plus haut (desktop / tablette). */
 const ARC_LAYOUT = [
   { y: 22, rotate: -16 },
   { y: 0, rotate: -6 },
   { y: 0, rotate: 6 },
   { y: 22, rotate: 16 },
 ] as const
+
+const FLAT_LAYOUT = { y: 0, rotate: 0 } as const
 
 export function ProPageClient() {
   const router = useRouter()
@@ -36,7 +38,16 @@ export function ProPageClient() {
   const { start: startNav } = useNavigationProgress()
   const [, startTransition] = useTransition()
   const [dive, setDive] = useState<DiveState | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const divingRef = useRef(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const sync = () => setIsMobile(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const handleSelect = useCallback(
     (category: ProCategory, button: HTMLButtonElement) => {
@@ -75,10 +86,10 @@ export function ProPageClient() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col overflow-hidden">
       <div className="mt-2 flex min-h-0 flex-1 flex-col justify-center pb-[12.75rem] md:mt-3 md:pb-[21rem]">
-        <div className="relative mx-auto mb-6 flex w-full max-w-3xl shrink-0 items-end justify-between gap-1 px-1 sm:mb-8 sm:gap-3 sm:px-4 md:mb-10 md:max-w-4xl md:gap-5 md:px-6">
+        <div className="relative mx-auto mb-6 grid w-full max-w-[16rem] shrink-0 grid-cols-2 place-items-center gap-x-5 gap-y-5 px-3 sm:mb-8 sm:flex sm:max-w-3xl sm:items-end sm:justify-between sm:gap-3 sm:px-4 md:mb-10 md:max-w-4xl md:gap-5 md:px-6">
           {PRO_CATEGORIES.map((category, index) => {
             const color = theme.boutonColor(category.slug)
-            const arc = ARC_LAYOUT[index] ?? ARC_LAYOUT[0]
+            const arc = isMobile ? FLAT_LAYOUT : (ARC_LAYOUT[index] ?? ARC_LAYOUT[0])
             const isDiveTarget = dive?.category.slug === category.slug
             const hideChrome = diving && !isDiveTarget
             const href = proCategoryPath(category.slug)
@@ -104,7 +115,7 @@ export function ProPageClient() {
                 onPointerEnter={() => onIntent(href)}
                 onFocus={() => onIntent(href)}
                 onPointerLeave={cancelIntent}
-                className="group relative flex min-w-0 flex-1 cursor-pointer flex-col items-center gap-1 sm:gap-1.5 md:gap-2"
+                className="group relative flex w-full max-w-[5.75rem] cursor-pointer flex-col items-center gap-1 sm:min-w-0 sm:max-w-none sm:flex-1 sm:gap-1.5 md:gap-2"
                 style={{ transformOrigin: '50% 100%' }}
                 aria-label={`Ouvrir ${category.label}`}
                 aria-hidden={hideChrome}
@@ -112,7 +123,7 @@ export function ProPageClient() {
               >
                 <span
                   data-dive-target
-                  className={`relative flex aspect-square w-full max-w-[4.75rem] items-center justify-center sm:max-w-[6.25rem] md:max-w-[8.5rem] ${isDiveTarget ? 'opacity-0' : ''}`}
+                  className={`relative flex aspect-square w-full max-w-[5.75rem] items-center justify-center md:max-w-[8.5rem] ${isDiveTarget ? 'opacity-0' : ''}`}
                 >
                   <BoutonIcon
                     src={category.imageSrc}
@@ -121,7 +132,7 @@ export function ProPageClient() {
                   />
                 </span>
                 <span
-                  className={`display relative line-clamp-2 max-w-[6.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[9px] font-semibold leading-tight text-[var(--text-noms-boutons)] shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 sm:max-w-[7.5rem] sm:text-[10px] md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
+                  className={`display relative line-clamp-2 max-w-[7.5rem] rounded-md bg-white/92 px-1.5 py-0.5 text-center text-[10px] font-semibold leading-tight text-[var(--text-noms-boutons)] shadow-[0_2px_8px_rgba(43,41,39,0.06)] transition-opacity duration-100 md:max-w-[9rem] md:text-xs ${diving ? 'opacity-0' : 'opacity-100'}`}
                 >
                   {category.label}
                 </span>

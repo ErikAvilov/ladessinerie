@@ -29,6 +29,10 @@ const SUBCATEGORIES = [
   'Bâtiment',
 ] as const
 
+function titleFromFileName(name: string) {
+  return name.replace(/\.[^.]+$/, '').trim()
+}
+
 type SortOption = 'date-desc' | 'date-asc' | 'price-asc' | 'price-desc'
 
 type AdminDashboardProps = {
@@ -219,7 +223,7 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
             La Dessinerie
           </p>
           <h1 className="display mt-1.5 text-2xl font-semibold text-[var(--forest)] md:text-3xl">
-            Dashboard admin
+            Salut Anna :)
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -355,7 +359,13 @@ export function AdminDashboard({ initialIllustrations, initialTheme }: AdminDash
               type="file"
               required
               accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              onChange={(event) => {
+                const next = event.target.files?.[0] ?? null
+                setFile(next)
+                if (next && !title.trim()) {
+                  setTitle(titleFromFileName(next.name))
+                }
+              }}
               className="sr-only"
             />
             <span className="mt-1.5 block text-xs text-foreground/50">
