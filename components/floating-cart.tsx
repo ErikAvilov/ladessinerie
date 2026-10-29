@@ -9,13 +9,13 @@ import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
 import { saveShoppingReturn } from '@/lib/shopping-return'
 
 export type FloatingCartSize = 'sm' | 'lg'
-export type FloatingCartPlacement = 'fixed' | 'dock'
+/** `hub` = dans le panneau slider (suit le slide) ; `dock` = fiche art ; `fixed` = nested. */
+export type FloatingCartPlacement = 'fixed' | 'dock' | 'hub'
 
 type FloatingCartProps = {
   count: number
   bump: number
   size?: FloatingCartSize
-  /** `dock` = ancré dans `[data-cart-dock]` (fiche illustration). */
   placement?: FloatingCartPlacement
   /** Affiché / masqué — entrée après délai, sortie en fondu. */
   active?: boolean
@@ -42,6 +42,12 @@ const springSnappy = { type: 'spring' as const, stiffness: 420, damping: 18, mas
 const springSoft = { type: 'spring' as const, stiffness: 280, damping: 22 }
 const FADE_S = 0.38
 
+function dockSelector(placement: FloatingCartPlacement): string | null {
+  if (placement === 'dock') return '[data-cart-dock]'
+  if (placement === 'hub') return '[data-cart-hub-dock]'
+  return null
+}
+
 export function FloatingCart({
   count,
   bump,
@@ -57,7 +63,8 @@ export function FloatingCart({
   const [hovered, setHovered] = useState(false)
   const reduceMotion = useReducedMotion()
   const dims = CART_SIZE[size]
-  const docked = placement === 'dock'
+  const selector = dockSelector(placement)
+  const anchored = selector !== null
   const canAnimate = show && !bumping
 
   useEffect(() => {
@@ -65,23 +72,23 @@ export function FloatingCart({
   }, [])
 
   useEffect(() => {
-    if (!hydrated || !docked) {
+    if (!hydrated || !selector) {
       setDock(null)
       return
     }
 
     function resolveDock() {
-      setDock(document.querySelector<HTMLElement>('[data-cart-dock]'))
+      setDock(document.querySelector<HTMLElement>(selector!))
     }
 
     resolveDock()
     const timer = window.setInterval(resolveDock, 200)
     return () => window.clearInterval(timer)
-  }, [hydrated, docked])
+  }, [hydrated, selector])
 
   useEffect(() => {
     if (!hydrated) return
-    if (docked && active && !dock) return
+    if (anchored && active && !dock) return
 
     if (!active) {
       setShow(false)
@@ -92,7 +99,7 @@ export function FloatingCart({
     const delay = reduceMotion ? 0 : enterDelayMs
     const timer = window.setTimeout(() => setShow(true), delay)
     return () => window.clearTimeout(timer)
-  }, [hydrated, active, enterDelayMs, reduceMotion, docked, dock])
+  }, [hydrated, active, enterDelayMs, reduceMotion, anchored, dock])
 
   useEffect(() => {
     if (bump <= 0) return
@@ -103,7 +110,7 @@ export function FloatingCart({
   }, [bump])
 
   if (!hydrated) return null
-  if (docked && !dock) return null
+  if (anchored && !dock) return null
 
   const cart = (
     <InstantLink
@@ -231,7 +238,7 @@ export function FloatingCart({
           <motion.div
             key="floating-cart"
             className={
-              docked
+              anchored
                 ? 'pointer-events-none flex w-full items-center justify-center'
                 : 'pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2'
             }
@@ -247,7 +254,7 @@ export function FloatingCart({
     </AnimatePresence>
   )
 
-  if (docked && dock) {
+  if (anchored && dock) {
     return createPortal(shell, dock)
   }
 

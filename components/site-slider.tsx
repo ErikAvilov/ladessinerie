@@ -143,21 +143,20 @@ export function SiteSlider({
 
   // Précharge les chunks des autres panneaux hors chemin critique.
   useEffect(() => {
-    const idle =
-      typeof window !== 'undefined' && 'requestIdleCallback' in window
-        ? window.requestIdleCallback.bind(window)
-        : (cb: () => void) => window.setTimeout(cb, 400)
-    const cancel =
-      typeof window !== 'undefined' && 'cancelIdleCallback' in window
-        ? window.cancelIdleCallback.bind(window)
-        : window.clearTimeout
-
-    const id = idle(() => {
+    const prefetch = () => {
       void import('@/components/particulier-page-client')
       void import('@/components/pro-page-client')
       void import('@/components/about-page-client')
-    })
-    return () => cancel(id as number)
+    }
+
+    const ric = window.requestIdleCallback?.bind(window)
+    if (ric) {
+      const id = ric(prefetch)
+      return () => window.cancelIdleCallback?.(id)
+    }
+
+    const id = window.setTimeout(prefetch, 400)
+    return () => window.clearTimeout(id)
   }, [])
 
   const contextValue = useMemo(
@@ -189,6 +188,11 @@ export function SiteSlider({
                 >
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
                     {mountedPanels.has('particulier') ? <ParticulierPageClient /> : null}
+                    {/* Ancre panier : suit le slide avec le panneau (pas fixed viewport). */}
+                    <div
+                      data-cart-hub-dock
+                      className="pointer-events-none absolute inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2"
+                    />
                   </section>
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
@@ -199,6 +203,10 @@ export function SiteSlider({
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-14 pr-4 md:pt-24 md:pl-20 md:pr-10">
                     {mountedPanels.has('pro') ? <ProPageClient /> : null}
+                    <div
+                      data-caddie-hub-dock
+                      className="pointer-events-none absolute inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2"
+                    />
                   </section>
                 </motion.div>
               </div>

@@ -92,6 +92,13 @@ export function PageTransition({ children }: { children: ReactNode }) {
         ? 280
         : 0
   const caddieEnterDelayMs = pathname === '/pro' ? SLIDE_DURATION_MS : 0
+  // Hub slider → ancré dans le panneau (suit le slide). Nested → fixed viewport.
+  // Sur `/` on garde `hub` pour que la sortie reste dans le panneau qui slide.
+  const cartPlacement = isArtDetail
+    ? 'dock'
+    : pathname.startsWith('/particulier/')
+      ? 'fixed'
+      : 'hub'
 
   const shell = (() => {
     // /, /particulier, /pro, /a-propos → SiteSlider
@@ -152,7 +159,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
         <ParticulierCartProvider
           visible={showFloatingCart}
           cartSize={cartSize}
-          cartPlacement={isArtDetail ? 'dock' : 'fixed'}
+          cartPlacement={cartPlacement}
           cartEnterDelayMs={cartEnterDelayMs}
         >
           {showFloatingCart ? <ShoppingReturnTracker /> : null}

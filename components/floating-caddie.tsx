@@ -31,6 +31,7 @@ const CADDIE_SIZE = {
 const springSnappy = { type: 'spring' as const, stiffness: 420, damping: 18, mass: 0.7 }
 const springSoft = { type: 'spring' as const, stiffness: 280, damping: 22 }
 const FADE_S = 0.38
+const HUB_DOCK = '[data-caddie-hub-dock]'
 
 export function FloatingCaddie({
   size = 'lg',
@@ -38,6 +39,7 @@ export function FloatingCaddie({
   enterDelayMs = 0,
 }: FloatingCaddieProps) {
   const [hydrated, setHydrated] = useState(false)
+  const [dock, setDock] = useState<HTMLElement | null>(null)
   const [show, setShow] = useState(false)
   const [hovered, setHovered] = useState(false)
   const reduceMotion = useReducedMotion()
@@ -48,7 +50,23 @@ export function FloatingCaddie({
   }, [])
 
   useEffect(() => {
+    if (!hydrated) {
+      setDock(null)
+      return
+    }
+
+    function resolveDock() {
+      setDock(document.querySelector<HTMLElement>(HUB_DOCK))
+    }
+
+    resolveDock()
+    const timer = window.setInterval(resolveDock, 200)
+    return () => window.clearInterval(timer)
+  }, [hydrated])
+
+  useEffect(() => {
     if (!hydrated) return
+    if (active && !dock) return
 
     if (!active) {
       setShow(false)
@@ -59,9 +77,9 @@ export function FloatingCaddie({
     const delay = reduceMotion ? 0 : enterDelayMs
     const timer = window.setTimeout(() => setShow(true), delay)
     return () => window.clearTimeout(timer)
-  }, [hydrated, active, enterDelayMs, reduceMotion])
+  }, [hydrated, active, enterDelayMs, reduceMotion, dock])
 
-  if (!hydrated) return null
+  if (!hydrated || !dock) return null
 
   return createPortal(
     <AnimatePresence>
@@ -69,7 +87,7 @@ export function FloatingCaddie({
         <MotionConfig reducedMotion="never">
           <motion.div
             key="floating-caddie"
-            className="pointer-events-none fixed inset-x-0 bottom-1 z-20 flex justify-center md:bottom-2"
+            className="pointer-events-none flex w-full items-center justify-center"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
@@ -136,6 +154,6 @@ export function FloatingCaddie({
         </MotionConfig>
       ) : null}
     </AnimatePresence>,
-    document.body,
+    dock,
   )
 }
