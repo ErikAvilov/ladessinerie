@@ -83,7 +83,9 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const isArtDetail = pathname.startsWith('/particulier/art/')
   const isProjectDetail = pathname.startsWith('/pro/projet/')
   const isDetailView = isArtDetail || isProjectDetail
-  const cartSize = isDetailView ? 'sm' : 'lg'
+  const isParticulierCategory =
+    pathname.startsWith('/particulier/') && !isArtDetail
+  const cartSize = isDetailView ? 'sm' : isParticulierCategory ? 'md' : 'lg'
   // Hub : attendre la fin du slide ; nested / fiche : apparition plus rapide.
   const cartEnterDelayMs =
     pathname === '/particulier'

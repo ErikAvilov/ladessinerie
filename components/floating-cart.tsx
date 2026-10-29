@@ -8,7 +8,7 @@ import { PanierIcon } from '@/components/panier-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'
 import { saveShoppingReturn } from '@/lib/shopping-return'
 
-export type FloatingCartSize = 'sm' | 'lg'
+export type FloatingCartSize = 'sm' | 'md' | 'lg'
 /** `hub` = dans le panneau slider (suit le slide) ; `dock` = fiche art ; `fixed` = nested. */
 export type FloatingCartPlacement = 'fixed' | 'dock' | 'hub'
 
@@ -23,12 +23,19 @@ type FloatingCartProps = {
   enterDelayMs?: number
 }
 
+/** `md` ≈ 80 % de `lg` — grilles catégorie (/particulier/illustrations…). */
 const CART_SIZE = {
   sm: {
     shell: 'size-[7.5rem] md:size-[10.5rem]',
     icon: 'h-[6.5rem] w-[9.25rem] md:h-[9rem] md:w-[12.5rem]',
     badge:
       'right-1 top-1 size-5 text-[9px] md:right-2 md:top-2 md:size-7 md:text-xs',
+  },
+  md: {
+    shell: 'size-[9.9rem] md:size-[16.2rem]',
+    icon: 'h-[8.55rem] w-[12rem] md:h-[13.5rem] md:w-[19.2rem]',
+    badge:
+      'right-1.5 top-1.5 size-7 text-[11px] md:right-3 md:top-3 md:size-9 md:text-sm',
   },
   lg: {
     shell: 'size-[12.375rem] md:size-[20.25rem]',
