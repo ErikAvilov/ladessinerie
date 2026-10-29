@@ -33,13 +33,35 @@ export type ProcessedUpload = {
   dominantColor: string
 }
 
+function subcategoryFolder(subcategory?: string): string {
+  const slug = slugify(subcategory?.trim() || 'autres')
+  return slug || 'autres'
+}
+
+/** Chemin relatif sous /illustrations/ — refuse traversal. */
+function relativeIllustrationPath(publicPath: string): string | null {
+  if (!publicPath.startsWith('/illustrations/')) return null
+  const relative = publicPath.slice('/illustrations/'.length)
+  if (
+    !relative ||
+    relative.includes('..') ||
+    path.isAbsolute(relative) ||
+    relative.split('/').some((part) => !part || part === '.' || part === '..')
+  ) {
+    return null
+  }
+  return relative
+}
+
 /**
  * JPG/PNG → WebP (quality 80).
  * WebP déjà fourni : enregistré tel quel (toujours sous un nom .webp).
+ * Stocké dans `public/illustrations/<sous-categorie-slug>/`.
  */
 export async function processIllustrationUpload(
   file: File,
   titleHint?: string,
+  subcategory?: string,
 ): Promise<ProcessedUpload> {
   const bytes = Buffer.from(await file.arrayBuffer())
   const isAlreadyWebp =
@@ -52,9 +74,14 @@ export async function processIllustrationUpload(
   const base =
     slugify(titleHint || file.name.replace(/\.[^.]+$/, '')) || 'illustration'
   const fileName = `${base}-${randomUUID().slice(0, 8)}.webp`
+  const folder = subcategoryFolder(subcategory)
+  const relativePath = `${folder}/${fileName}`
 
   if (shouldUseBlobStorage()) {
-    const url = await putPublicWebpBlob(`${ILLUSTRATIONS_BLOB_PREFIX}/${fileName}`, output)
+    const url = await putPublicWebpBlob(
+      `${ILLUSTRATIONS_BLOB_PREFIX}/${relativePath}`,
+      output,
+    )
     return {
       publicPath: url,
       fileName,
@@ -63,11 +90,12 @@ export async function processIllustrationUpload(
   }
 
   assertPersistentStorageConfigured()
-  await fs.mkdir(ILLUSTRATIONS_DIR, { recursive: true })
-  await fs.writeFile(path.join(ILLUSTRATIONS_DIR, fileName), output)
+  const destDir = path.join(ILLUSTRATIONS_DIR, folder)
+  await fs.mkdir(destDir, { recursive: true })
+  await fs.writeFile(path.join(destDir, fileName), output)
 
   return {
-    publicPath: `/illustrations/${fileName}`,
+    publicPath: `/illustrations/${relativePath}`,
     fileName,
     dominantColor,
   }
@@ -79,12 +107,11 @@ export async function deleteIllustrationFile(publicPath: string) {
     return
   }
 
-  if (!publicPath.startsWith('/illustrations/')) return
-  const fileName = publicPath.replace('/illustrations/', '')
-  if (!fileName || fileName.includes('..') || fileName.includes('/')) return
-  if (fileName === 'placeholder.webp') return
+  const relative = relativeIllustrationPath(publicPath)
+  if (!relative) return
+  if (path.basename(relative) === 'placeholder.webp') return
   try {
-    await fs.unlink(path.join(ILLUSTRATIONS_DIR, fileName))
+    await fs.unlink(path.join(ILLUSTRATIONS_DIR, relative))
   } catch {
     /* déjà absent */
   }

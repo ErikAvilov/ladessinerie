@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const processed = await processIllustrationUpload(file, title)
+    const processed = await processIllustrationUpload(file, title, subcategory)
     const existing = await getIllustrations()
     const illustration: Illustration = {
       id: randomUUID(),

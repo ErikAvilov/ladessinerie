@@ -103,7 +103,11 @@ export async function updateIllustrationImage(
   }
 
   try {
-    const processed = await processIllustrationUpload(file, current.title)
+    const processed = await processIllustrationUpload(
+      file,
+      current.title,
+      current.subcategory,
+    )
     await deleteIllustrationFile(current.image)
     await upsertIllustration({
       ...current,

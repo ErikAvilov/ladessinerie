@@ -16,7 +16,7 @@ export type Illustration = {
   id: string
   title: string
   slug: string
-  /** Chemin public, ex. `/illustrations/nom.webp` */
+  /** Chemin public, ex. `/illustrations/fleurs/nom.webp` */
   image: string
   /** Couleur dominante HEX extraite à l’upload */
   dominantColor: string
