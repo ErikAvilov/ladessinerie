@@ -1,13 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { HomePageClient } from '@/components/home-page-client'
-import { AboutPageClient } from '@/components/about-page-client'
-import { ParticulierPageClient } from '@/components/particulier-page-client'
+import { motion } from '@/components/motion'
 import { PanelEnterContext, SLIDE_DURATION_MS } from '@/components/page-transition'
-import { ProPageClient } from '@/components/pro-page-client'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
 import { RouteSideGates } from '@/components/route-side-gates'
 import { SiteFooter } from '@/components/site-footer'
@@ -24,9 +22,51 @@ import type { Illustration } from '@/lib/illustrations'
 
 const slideEase = [0.65, 0, 0.35, 1] as const
 
+const ParticulierPageClient = dynamic(
+  () =>
+    import('@/components/particulier-page-client').then(
+      (mod) => mod.ParticulierPageClient,
+    ),
+)
+
+const ProPageClient = dynamic(
+  () => import('@/components/pro-page-client').then((mod) => mod.ProPageClient),
+)
+
+const AboutPageClient = dynamic(
+  () =>
+    import('@/components/about-page-client').then((mod) => mod.AboutPageClient),
+)
+
 type SiteSliderProps = {
   initialPanel: SitePanel
   initialHome?: Illustration[]
+}
+
+/** Panneaux à garder montés : actif + précédent le temps du slide. */
+function useMountedPanels(panel: SitePanel, initialPanel: SitePanel) {
+  const [mounted, setMounted] = useState(() => new Set<SitePanel>([initialPanel]))
+  const prevPanelRef = useRef(panel)
+
+  useEffect(() => {
+    const from = prevPanelRef.current
+    prevPanelRef.current = panel
+
+    setMounted((current) => {
+      const next = new Set(current)
+      next.add(panel)
+      next.add(from)
+      return next
+    })
+
+    const timer = window.setTimeout(() => {
+      setMounted(new Set<SitePanel>([panel]))
+    }, SLIDE_DURATION_MS + 80)
+
+    return () => window.clearTimeout(timer)
+  }, [panel])
+
+  return mounted
 }
 
 export function SiteSlider({
@@ -40,6 +80,7 @@ export function SiteSlider({
   /** Panel affiché : optimiste pendant un goTo, sinon = URL. */
   const [panel, setPanel] = useState<SitePanel>(urlPanel ?? initialPanel)
   const [enterDelay, setEnterDelay] = useState(0)
+  const mountedPanels = useMountedPanels(panel, urlPanel ?? initialPanel)
 
   const panelRef = useRef(panel)
   const pendingRef = useRef<SitePanel | null>(null)
@@ -85,7 +126,6 @@ export function SiteSlider({
       setEnterDelay(next === 'home' ? SLIDE_DURATION_MS : 0)
       setPanel(next)
       document.title = SITE_PANEL_TITLE[next]
-      // Pas de startNav / nav-veil : les panneaux sont déjà montés, le slide suffit.
       router.push(href, { scroll: false })
     },
     [router, urlPanel],
@@ -100,6 +140,25 @@ export function SiteSlider({
       document.body.classList.remove('no-scroll')
     }
   }, [panel])
+
+  // Précharge les chunks des autres panneaux hors chemin critique.
+  useEffect(() => {
+    const idle =
+      typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? window.requestIdleCallback.bind(window)
+        : (cb: () => void) => window.setTimeout(cb, 400)
+    const cancel =
+      typeof window !== 'undefined' && 'cancelIdleCallback' in window
+        ? window.cancelIdleCallback.bind(window)
+        : window.clearTimeout
+
+    const id = idle(() => {
+      void import('@/components/particulier-page-client')
+      void import('@/components/pro-page-client')
+      void import('@/components/about-page-client')
+    })
+    return () => cancel(id as number)
+  }, [])
 
   const contextValue = useMemo(
     () => ({ panel, goTo, isSlider: true as const }),
@@ -129,21 +188,23 @@ export function SiteSlider({
                   transition={{ duration: SLIDE_DURATION_MS / 1000, ease: slideEase }}
                 >
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-4 pr-14 md:pt-24 md:pl-10 md:pr-20">
-                    <ParticulierPageClient />
+                    {mountedPanels.has('particulier') ? <ParticulierPageClient /> : null}
                   </section>
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden px-0 pb-10 pt-16 md:px-10 md:pt-24">
-                    <HomePageClient illustrations={initialHome} />
+                    {mountedPanels.has('home') ? (
+                      <HomePageClient illustrations={initialHome} />
+                    ) : null}
                   </section>
 
                   <section className="relative h-dvh w-screen shrink-0 overflow-hidden pt-20 pb-2 pl-14 pr-4 md:pt-24 md:pl-20 md:pr-10">
-                    <ProPageClient />
+                    {mountedPanels.has('pro') ? <ProPageClient /> : null}
                   </section>
                 </motion.div>
               </div>
 
               <section className="relative h-dvh w-full overflow-hidden px-5 pb-8 pt-24 md:px-16 md:pb-10 md:pt-28">
-                <AboutPageClient />
+                {mountedPanels.has('about') ? <AboutPageClient /> : null}
               </section>
             </motion.div>
 

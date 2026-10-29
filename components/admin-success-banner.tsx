@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from '@/components/motion'
 import { Check } from 'lucide-react'
 
 type AdminSuccessBannerProps = {

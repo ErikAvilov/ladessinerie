@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from '@/components/motion'
 import { InstantLink } from '@/components/instant-link'
 import { PanierIcon } from '@/components/panier-icon'
 import { forwardWheelToScroll } from '@/lib/scroll-pass-through'

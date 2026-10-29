@@ -1,12 +1,9 @@
 'use client'
 
-import {
-  CategoryDiveOverlay,
-  DIVE_DURATION_MS,
-} from '@/components/category-dive-overlay'
+import { CategoryDiveOverlay } from '@/components/category-dive-overlay'
 import type { ProCategory } from '@/lib/pro-categories'
 
-export { DIVE_DURATION_MS }
+export { DIVE_DURATION_MS } from '@/lib/dive'
 
 type Rect = {
   top: number

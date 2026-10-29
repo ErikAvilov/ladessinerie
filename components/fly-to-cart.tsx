@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from '@/components/motion'
 import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useState } from 'react'
 

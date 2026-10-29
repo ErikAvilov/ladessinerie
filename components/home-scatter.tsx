@@ -1,7 +1,7 @@
 'use client'
 
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { IllustrationImage } from '@/components/illustration-image'
 import { InstantLink } from '@/components/instant-link'
 import { PanelEnterContext } from '@/components/page-transition'

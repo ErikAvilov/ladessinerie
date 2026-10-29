@@ -1,13 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { CalendlyModal } from '@/components/calendly-modal'
+import dynamic from 'next/dynamic'
 import { ContactForm } from '@/components/contact-form'
 import { InstantLink } from '@/components/instant-link'
 import { useSiteTheme } from '@/components/site-theme-context'
 import { getProCategoryContent } from '@/lib/pro-content'
 import type { ProCategory } from '@/lib/pro-categories'
 import { proCategoryPath } from '@/lib/pro-categories'
+
+const CalendlyModal = dynamic(
+  () => import('@/components/calendly-modal').then((mod) => mod.CalendlyModal),
+  { ssr: false },
+)
 
 type ProCategoryClientProps = {
   category: ProCategory
@@ -139,7 +144,7 @@ export function ProCategoryClient({
         </section>
       ) : null}
 
-      {useCalendly && calendlyUrl ? (
+      {useCalendly && calendlyUrl && calendlyOpen ? (
         <CalendlyModal
           url={calendlyUrl}
           open={calendlyOpen}

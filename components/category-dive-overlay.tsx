@@ -2,12 +2,13 @@
 
 import { useLayoutEffect, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { BoutonIcon } from '@/components/bouton-icon'
 import { SiteBackgroundLayer } from '@/components/site-background-layer'
+import { DIVE_DURATION_MS } from '@/lib/dive'
 import { CATEGORY_BACKGROUND_TRAITS } from '@/lib/site-theme-shared'
 
-export const DIVE_DURATION_MS = 860
+export { DIVE_DURATION_MS }
 
 /** Ease-out doux : accélération courte, freinage long (évite le « cran » final). */
 const DIVE_EASE = [0.16, 1, 0.3, 1] as const

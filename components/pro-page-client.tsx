@@ -1,18 +1,24 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { BoutonIcon } from '@/components/bouton-icon'
-import { DIVE_DURATION_MS, ProDiveOverlay } from '@/components/pro-dive-overlay'
 import { useSiteTheme } from '@/components/site-theme-context'
 import { useNavigationProgress } from '@/components/navigation-progress'
+import { DIVE_DURATION_MS } from '@/lib/dive'
 import {
   PRO_CATEGORIES,
   proCategoryPath,
   type ProCategory,
 } from '@/lib/pro-categories'
 import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
+
+const ProDiveOverlay = dynamic(
+  () => import('@/components/pro-dive-overlay').then((mod) => mod.ProDiveOverlay),
+  { ssr: false },
+)
 
 type DiveState = {
   category: ProCategory

@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache'
+import { cache } from 'react'
 import { promises as fs } from 'fs'
 import path from 'path'
 import {
@@ -6,6 +8,8 @@ import {
   shouldUseBlobStorage,
   writePublicJsonBlob,
 } from '@/lib/blob-storage'
+import { ILLUSTRATIONS_CACHE_TAG } from '@/lib/cache-tags'
+import { revalidateIllustrationData } from '@/lib/revalidate-illustrations'
 
 export type IllustrationSize = {
   size: string
@@ -77,75 +81,63 @@ export function withSubcategoryImagePath(item: Illustration): Illustration {
   return { ...item, image: `/illustrations/${folder}/${relative}` }
 }
 
-function migrateIllustrationPaths(items: Illustration[]): {
-  items: Illustration[]
-  changed: boolean
-} {
-  let changed = false
-  const next = items.map((item) => {
-    const migrated = withSubcategoryImagePath(item)
-    if (migrated.image !== item.image) changed = true
-    return migrated
-  })
-  return { items: next, changed }
+function migrateIllustrationPaths(items: Illustration[]): Illustration[] {
+  return items.map(withSubcategoryImagePath)
 }
 
-async function seedFromLocalIfNeeded(
-  remote: Illustration[] | null,
-): Promise<Illustration[]> {
-  const local = await readLocalFile().catch(() => [] as Illustration[])
+async function loadIllustrationsFromStore(): Promise<Illustration[]> {
+  if (shouldUseBlobStorage()) {
+    try {
+      const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
+      const local = await readLocalFile().catch(() => [] as Illustration[])
+      const remoteEmpty =
+        remote === null || (Array.isArray(remote) && remote.length === 0)
 
-  // Blob manquant ou vide + catalogue repo non vide → (re)seed.
-  const remoteEmpty = remote === null || (Array.isArray(remote) && remote.length === 0)
-  if (remoteEmpty && local.length > 0) {
-    await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, local)
-    return local
+      if (remoteEmpty && local.length > 0) {
+        // Seed hors du Data Cache (écriture) — le résultat migré part en cache ensuite.
+        await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, local)
+        return migrateIllustrationPaths(local)
+      }
+
+      if (Array.isArray(remote)) return migrateIllustrationPaths(remote)
+      return migrateIllustrationPaths(local)
+    } catch (error) {
+      console.error('Lecture Blob illustrations — fallback local:', error)
+      return migrateIllustrationPaths(await readLocalFile().catch(() => []))
+    }
   }
 
-  if (Array.isArray(remote)) return remote
-  return local
+  return migrateIllustrationPaths(await readLocalFile())
 }
 
-async function readAll(): Promise<Illustration[]> {
+/** Data Cache Vercel / Next — 60s + tag pour invalidation admin. */
+const getCachedIllustrationsCatalog = unstable_cache(
+  async () => loadIllustrationsFromStore(),
+  ['illustrations-catalog'],
+  { tags: [ILLUSTRATIONS_CACHE_TAG], revalidate: 60 },
+)
+
+/** Déduplique les lectures catalogue au sein d’une même requête RSC. */
+const readAll = cache(async (): Promise<Illustration[]> => {
   try {
-    let items: Illustration[] = []
-
-    if (shouldUseBlobStorage()) {
-      try {
-        const remote = await readPublicJsonBlob<Illustration[]>(ILLUSTRATIONS_BLOB_PATH)
-        items = await seedFromLocalIfNeeded(remote)
-      } catch (error) {
-        console.error('Lecture Blob illustrations — fallback local:', error)
-        items = await readLocalFile().catch(() => [])
-      }
-    } else {
-      items = await readLocalFile()
-    }
-
-    const { items: migrated, changed } = migrateIllustrationPaths(items)
-    if (changed) {
-      // Persiste le catalogue migré (Blob prod inclus) pour ne pas rester sur les anciens paths.
-      try {
-        await writeIllustrations(migrated)
-      } catch (error) {
-        console.error('Migration paths illustrations non persistée:', error)
-      }
-    }
-    return migrated
+    return await getCachedIllustrationsCatalog()
   } catch (error) {
-    console.error('Lecture data/illustrations.json:', error)
+    console.error('Lecture catalogue illustrations:', error)
     return []
   }
-}
+})
 
 export async function writeIllustrations(illustrations: Illustration[]): Promise<void> {
+  const normalized = migrateIllustrationPaths(illustrations)
+
   if (shouldUseBlobStorage()) {
-    await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, illustrations)
-    return
+    await writePublicJsonBlob(ILLUSTRATIONS_BLOB_PATH, normalized)
+  } else {
+    assertPersistentStorageConfigured()
+    await fs.writeFile(DATA_PATH, `${JSON.stringify(normalized, null, 2)}\n`, 'utf8')
   }
 
-  assertPersistentStorageConfigured()
-  await fs.writeFile(DATA_PATH, `${JSON.stringify(illustrations, null, 2)}\n`, 'utf8')
+  revalidateIllustrationData()
 }
 
 export async function getIllustrations(
@@ -167,15 +159,16 @@ export async function getIllustrationById(
 }
 
 export async function upsertIllustration(illustration: Illustration): Promise<void> {
-  const all = await readAll()
-  const index = all.findIndex((item) => item.id === illustration.id)
-  if (index === -1) all.unshift(illustration)
-  else all[index] = illustration
+  const all = [...(await readAll())]
+  const normalized = withSubcategoryImagePath(illustration)
+  const index = all.findIndex((item) => item.id === normalized.id)
+  if (index === -1) all.unshift(normalized)
+  else all[index] = normalized
   await writeIllustrations(all)
 }
 
 export async function removeIllustration(id: string): Promise<Illustration | null> {
-  const all = await readAll()
+  const all = [...(await readAll())]
   const index = all.findIndex((item) => item.id === id)
   if (index === -1) return null
   const [removed] = all.splice(index, 1)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { Minus, Plus } from 'lucide-react'
 import { IllustrationImage } from '@/components/illustration-image'
 import { InstantLink } from '@/components/instant-link'

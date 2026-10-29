@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { createContext, useEffect, type ReactNode } from 'react'
+import { LazyMotionProvider } from '@/components/lazy-motion-provider'
 import { NavigationProgressProvider } from '@/components/navigation-progress'
 import { FloatingCaddie } from '@/components/floating-caddie'
 import { ParticulierCartProvider } from '@/components/particulier-cart-provider'
@@ -146,22 +147,24 @@ export function PageTransition({ children }: { children: ReactNode }) {
   })()
 
   return (
-    <NavigationProgressProvider>
-      <ParticulierCartProvider
-        visible={showFloatingCart}
-        cartSize={cartSize}
-        cartPlacement={isArtDetail ? 'dock' : 'fixed'}
-        cartEnterDelayMs={cartEnterDelayMs}
-      >
-        {showFloatingCart ? <ShoppingReturnTracker /> : null}
-        {shell}
-        {/* Hors du shell : ne pas démonter pendant un changement hub ↔ nested. */}
-        <FloatingCaddie
-          active={showFloatingCaddie}
-          size={cartSize}
-          enterDelayMs={caddieEnterDelayMs}
-        />
-      </ParticulierCartProvider>
-    </NavigationProgressProvider>
+    <LazyMotionProvider>
+      <NavigationProgressProvider>
+        <ParticulierCartProvider
+          visible={showFloatingCart}
+          cartSize={cartSize}
+          cartPlacement={isArtDetail ? 'dock' : 'fixed'}
+          cartEnterDelayMs={cartEnterDelayMs}
+        >
+          {showFloatingCart ? <ShoppingReturnTracker /> : null}
+          {shell}
+          {/* Hors du shell : ne pas démonter pendant un changement hub ↔ nested. */}
+          <FloatingCaddie
+            active={showFloatingCaddie}
+            size={cartSize}
+            enterDelayMs={caddieEnterDelayMs}
+          />
+        </ParticulierCartProvider>
+      </NavigationProgressProvider>
+    </LazyMotionProvider>
   )
 }

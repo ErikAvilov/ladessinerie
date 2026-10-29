@@ -1,21 +1,27 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { BoutonIcon } from '@/components/bouton-icon'
-import {
-  DIVE_DURATION_MS,
-  ParticulierDiveOverlay,
-} from '@/components/particulier-dive-overlay'
 import { useSiteTheme } from '@/components/site-theme-context'
 import { useNavigationProgress } from '@/components/navigation-progress'
+import { DIVE_DURATION_MS } from '@/lib/dive'
 import {
   PARTICULIER_CATEGORIES,
   particulierCategoryPath,
   type ParticulierCategory,
 } from '@/lib/particulier-categories'
 import { usePrefetchOnIntent } from '@/lib/use-prefetch-on-intent'
+
+const ParticulierDiveOverlay = dynamic(
+  () =>
+    import('@/components/particulier-dive-overlay').then(
+      (mod) => mod.ParticulierDiveOverlay,
+    ),
+  { ssr: false },
+)
 
 type DiveState = {
   category: ParticulierCategory

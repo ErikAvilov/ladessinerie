@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/components/motion'
 import { HomeScatter } from '@/components/home-scatter'
 import { PanelEnterContext } from '@/components/page-transition'
 import { useSitePanel } from '@/components/site-panel-context'
