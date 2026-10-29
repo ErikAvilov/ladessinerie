@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import { ContactForm } from '@/components/contact-form'
 import { InstantLink } from '@/components/instant-link'
 import { useSiteTheme } from '@/components/site-theme-context'
@@ -69,6 +70,20 @@ export function ProCategoryClient({
               {content.intro}
             </p>
           </div>
+
+          {content.showcaseImage ? (
+            <div className="overflow-hidden rounded-xl bg-white/92 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px]">
+              <Image
+                src={content.showcaseImage.src}
+                alt={content.showcaseImage.alt}
+                width={content.showcaseImage.width}
+                height={content.showcaseImage.height}
+                className="h-auto w-full object-cover object-center"
+                sizes="(max-width: 768px) 100vw, 72rem"
+                priority
+              />
+            </div>
+          ) : null}
 
           <div className="rounded-xl bg-white/92 px-4 py-4 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:px-6 md:py-5">
             <h2 className="display text-xl font-semibold md:text-2xl">

@@ -16,6 +16,13 @@ export type ProCategoryContent = {
   pricing: string
   delay: string
   cta: ProCategoryCta
+  /** Visuel d’exemple, affiché avant les livrables. */
+  showcaseImage?: {
+    src: string
+    alt: string
+    width: number
+    height: number
+  }
   /** Description SEO. */
   seoDescription: string
 }
@@ -54,6 +61,12 @@ const BRANDING_CONTENT: ProCategoryContent = {
   pricing: 'À partir de 1 000 € TTC',
   delay: 'Délai : de 3 à 6 semaines à compter de la signature du devis',
   cta: { label: 'En parler', kind: 'contact' },
+  showcaseImage: {
+    src: '/images/branding.png',
+    alt: 'Exemple d’identité visuelle — logo, lettering et illustrations pour un coffee shop',
+    width: 1120,
+    height: 480,
+  },
   seoDescription:
     'Identité visuelle sur mesure : logo, palette, typographies, motifs et charte graphique. À partir de 1 000 € TTC — La Dessinerie.',
 }

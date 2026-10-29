@@ -42,7 +42,7 @@ function IllustrationCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.28, ease: 'easeOut' }}
-      className="flex flex-col rounded-xl bg-white/92 p-2 shadow-[0_3px_12px_rgba(43,41,39,0.07)] backdrop-blur-[2px] md:p-2.5"
+      className="flex flex-col p-1 md:p-1.5"
     >
       <InstantLink
         href={href}
@@ -53,12 +53,13 @@ function IllustrationCard({
       >
         <div
           ref={imageRef}
-          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg bg-white"
+          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg bg-transparent"
         >
           <IllustrationImage
             src={item.image}
             alt={illustrationAlt(item)}
-            dominantColor="#ffffff"
+            shimmer={false}
+            dominantColor="transparent"
             fill
             rounded="lg"
             priority={index < 3}
