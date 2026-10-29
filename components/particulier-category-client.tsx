@@ -44,107 +44,110 @@ function IllustrationCard({
       transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.28, ease: 'easeOut' }}
       className="flex flex-col p-1 md:p-1.5"
     >
+      <div className="mx-auto flex w-full flex-col">
       <InstantLink
         href={href}
         onPointerEnter={() => onIntent(href)}
         onFocus={() => onIntent(href)}
         onPointerLeave={cancelIntent}
-        className="block"
+        className="block w-full"
       >
         <div
           ref={imageRef}
-          className="relative aspect-[5/6] w-full overflow-hidden rounded-lg bg-transparent"
+          className="relative w-full overflow-hidden rounded-lg bg-transparent [&>div]:!mx-0 [&>div]:!w-full [&>div]:!max-w-full"
         >
           <IllustrationImage
             src={item.image}
             alt={illustrationAlt(item)}
             shimmer={false}
             dominantColor="transparent"
-            fill
+            width={800}
+            height={1000}
             rounded="lg"
             priority={index < 3}
-            className="object-contain object-center"
+            className="!h-auto !w-full"
             sizes="(max-width: 640px) 45vw, 22vw"
           />
         </div>
       </InstantLink>
 
-      <div className="mt-1.5 flex min-w-0 flex-col items-start gap-0.5 px-0.5">
-        <h2 className="inline-block max-w-full truncate rounded-md bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-tight md:text-xs">
-          {item.title}
-        </h2>
-        {selected ? (
-          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] font-semibold text-foreground/70 md:text-[11px]">
-            {formatEuro(selected.price)}
-          </p>
-        ) : formatFromPrice(item.sizes) ? (
-          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/55">
-            {formatFromPrice(item.sizes)}
-          </p>
-        ) : (
-          <p className="w-fit rounded-md bg-white px-1.5 py-0.5 text-[10px] text-foreground/45">
-            Prix sur demande
-          </p>
-        )}
-      </div>
+      <div className="mt-1.5 flex w-full min-w-0 flex-col gap-1.5 rounded-xl bg-white px-2 py-2 shadow-[0_2px_10px_rgba(43,41,39,0.06)] md:px-2.5 md:py-2.5">
+        <div className="min-w-0">
+          <h2 className="max-w-full truncate text-[11px] font-semibold leading-tight md:text-xs">
+            {item.title}
+          </h2>
+          {selected ? (
+            <p className="mt-0.5 text-[10px] font-semibold text-foreground/70 md:text-[11px]">
+              {formatEuro(selected.price)}
+            </p>
+          ) : formatFromPrice(item.sizes) ? (
+            <p className="mt-0.5 text-[10px] text-foreground/55">
+              {formatFromPrice(item.sizes)}
+            </p>
+          ) : (
+            <p className="mt-0.5 text-[10px] text-foreground/45">Prix sur demande</p>
+          )}
+        </div>
 
-      {sizes.length > 0 ? (
-        <>
-          <div className="mt-1.5 flex flex-wrap gap-1 px-0.5">
-            {sizes.map((entry, i) => {
-              const active = i === sizeIndex
-              return (
-                <button
-                  key={`${entry.size}-${i}`}
-                  type="button"
-                  onClick={() => setSizeIndex(i)}
-                  className={`w-fit cursor-pointer rounded-md border px-2 py-0.5 text-[9px] font-medium transition md:text-[10px] ${
-                    active
-                      ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
-                      : 'border-transparent bg-white hover:border-foreground/20'
-                  }`}
-                >
-                  {entry.size}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-1.5 flex items-center gap-1.5 px-0.5">
-            <div className="inline-flex w-fit items-center rounded-md bg-white">
-              <button
-                type="button"
-                aria-label="Diminuer la quantité"
-                disabled={quantity <= 1}
-                onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                className="flex size-6 cursor-pointer items-center justify-center rounded-l-md transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Minus size={10} />
-              </button>
-              <span className="min-w-[1.15rem] text-center text-[10px] font-semibold tabular-nums">
-                {quantity}
-              </span>
-              <button
-                type="button"
-                aria-label="Augmenter la quantité"
-                onClick={() => setQuantity((value) => Math.min(99, value + 1))}
-                className="flex size-6 cursor-pointer items-center justify-center rounded-r-md transition hover:bg-foreground/5"
-              >
-                <Plus size={10} />
-              </button>
+        {sizes.length > 0 ? (
+          <>
+            <div className="flex flex-wrap gap-1">
+              {sizes.map((entry, i) => {
+                const active = i === sizeIndex
+                return (
+                  <button
+                    key={`${entry.size}-${i}`}
+                    type="button"
+                    onClick={() => setSizeIndex(i)}
+                    className={`w-fit cursor-pointer rounded-md border px-2 py-0.5 text-[9px] font-medium transition md:text-[10px] ${
+                      active
+                        ? 'border-[var(--forest)] bg-[var(--forest)] text-white'
+                        : 'border-foreground/15 bg-transparent hover:border-foreground/30'
+                    }`}
+                  >
+                    {entry.size}
+                  </button>
+                )
+              })}
             </div>
 
-            <button
-              type="button"
-              disabled={!canAdd}
-              onClick={() => addToCart(item, sizeIndex, quantity, imageRef.current)}
-              className="w-fit cursor-pointer rounded-md bg-[var(--bouton-ajouter-panier)] px-2.5 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Ajouter
-            </button>
-          </div>
-        </>
-      ) : null}
+            <div className="flex items-center gap-1.5">
+              <div className="inline-flex w-fit items-center rounded-md border border-foreground/15">
+                <button
+                  type="button"
+                  aria-label="Diminuer la quantité"
+                  disabled={quantity <= 1}
+                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                  className="flex size-6 cursor-pointer items-center justify-center rounded-l-md transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Minus size={10} />
+                </button>
+                <span className="min-w-[1.15rem] text-center text-[10px] font-semibold tabular-nums">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Augmenter la quantité"
+                  onClick={() => setQuantity((value) => Math.min(99, value + 1))}
+                  className="flex size-6 cursor-pointer items-center justify-center rounded-r-md transition hover:bg-foreground/5"
+                >
+                  <Plus size={10} />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                disabled={!canAdd}
+                onClick={() => addToCart(item, sizeIndex, quantity, imageRef.current)}
+                className="w-fit cursor-pointer rounded-md bg-[var(--bouton-ajouter-panier)] px-2.5 py-1 text-[10px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Ajouter
+              </button>
+            </div>
+          </>
+        ) : null}
+      </div>
+      </div>
     </motion.article>
   )
 }

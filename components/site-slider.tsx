@@ -211,7 +211,7 @@ export function SiteSlider({
                 </motion.div>
               </div>
 
-              <section className="relative h-dvh w-full overflow-hidden px-5 pb-8 pt-24 md:px-16 md:pb-10 md:pt-28">
+              <section className="relative h-dvh w-full overflow-hidden px-5 pb-6 pt-20 sm:px-8 md:px-16 md:pb-10 md:pt-28">
                 {mountedPanels.has('about') ? <AboutPageClient /> : null}
               </section>
             </motion.div>

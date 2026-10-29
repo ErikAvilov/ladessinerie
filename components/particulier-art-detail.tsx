@@ -1,8 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Minus, Plus } from 'lucide-react'
 import { InstantLink } from '@/components/instant-link'
+import { AnimatePresence, motion } from '@/components/motion'
 import { useParticulierCart } from '@/components/particulier-cart-provider'
 import { formatEuro, illustrationAlt } from '@/lib/illustration-utils'
 import { startCheckout } from '@/lib/stripe-checkout-client'
@@ -15,12 +17,34 @@ type ParticulierArtDetailProps = {
 export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps) {
   const { addToCart } = useParticulierCart()
   const imageRef = useRef<HTMLDivElement>(null)
+  const zoomTitleId = useId()
   const [sizeIndex, setSizeIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [zoomed, setZoomed] = useState(false)
+  const [portalReady, setPortalReady] = useState(false)
 
   const selectedSize = illustration.sizes?.[sizeIndex]
+  const alt = illustrationAlt(illustration)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!zoomed) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setZoomed(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = previous
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [zoomed])
 
   function handleAddToCart() {
     if (!selectedSize) return
@@ -60,12 +84,19 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
           ref={imageRef}
           className="relative flex min-h-0 w-full flex-1 items-center justify-center md:h-full"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={illustration.image}
-            alt={illustrationAlt(illustration)}
-            className="max-h-[min(72dvh,36rem)] w-auto max-w-full object-contain drop-shadow-[0_8px_24px_rgba(43,41,39,0.12)]"
-          />
+          <button
+            type="button"
+            onClick={() => setZoomed(true)}
+            aria-label={`Agrandir ${illustration.title}`}
+            className="group cursor-zoom-in rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--terracotta)]/50"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={illustration.image}
+              alt={alt}
+              className="max-h-[min(72dvh,36rem)] w-auto max-w-full object-contain drop-shadow-[0_8px_24px_rgba(43,41,39,0.12)] transition duration-300 group-hover:scale-[1.02] group-hover:drop-shadow-[0_12px_28px_rgba(43,41,39,0.16)]"
+            />
+          </button>
         </div>
 
         <div className="flex w-full shrink-0 flex-col justify-center gap-2 md:w-[min(100%,20rem)] lg:w-[22rem]">
@@ -186,6 +217,53 @@ export function ParticulierArtDetail({ illustration }: ParticulierArtDetailProps
           />
         </div>
       </div>
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {zoomed ? (
+                <motion.div
+                  key="art-zoom"
+                  className="fixed inset-0 z-[80] flex items-center justify-center p-4 md:p-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                >
+                  <button
+                    type="button"
+                    aria-label="Fermer le zoom"
+                    className="absolute inset-0 cursor-zoom-out bg-foreground/45 backdrop-blur-[3px]"
+                    onClick={() => setZoomed(false)}
+                  />
+
+                  <motion.div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={zoomTitleId}
+                    className="relative z-[1] flex max-h-full max-w-full flex-col items-center"
+                    initial={{ opacity: 0, scale: 0.86, y: 18 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.92, y: 10 }}
+                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <span id={zoomTitleId} className="sr-only">
+                      {illustration.title}
+                    </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={illustration.image}
+                      alt={alt}
+                      className="max-h-[min(92dvh,56rem)] w-auto max-w-[min(96vw,56rem)] cursor-zoom-out object-contain drop-shadow-[0_20px_48px_rgba(43,41,39,0.35)]"
+                      onClick={() => setZoomed(false)}
+                    />
+                  </motion.div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
